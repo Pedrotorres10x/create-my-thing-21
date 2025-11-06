@@ -137,6 +137,56 @@ export type Database = {
           },
         ]
       }
+      sector_catalog: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      specializations: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+          sector_id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name: string
+          sector_id: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string
+          sector_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "specializations_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "sector_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
