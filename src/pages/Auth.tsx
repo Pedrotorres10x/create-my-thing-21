@@ -30,6 +30,14 @@ const Auth = () => {
         navigate("/dashboard");
       }
     });
+
+    // Check for referral code in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      // Store in localStorage to persist during signup
+      localStorage.setItem('referral_code', refCode);
+    }
   }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -65,7 +73,14 @@ const Auth = () => {
 
       if (signInError) throw signInError;
 
-      navigate("/profile");
+      // Pass referral code to profile page
+      const refCode = localStorage.getItem('referral_code');
+      if (refCode) {
+        navigate(`/profile?ref=${refCode}`);
+        localStorage.removeItem('referral_code');
+      } else {
+        navigate("/profile");
+      }
     } catch (error: any) {
       toast({
         title: "Error",

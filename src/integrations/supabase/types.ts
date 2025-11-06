@@ -14,16 +14,143 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      professionals: {
+        Row: {
+          business_description: string | null
+          business_name: string
+          city: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          linkedin: string | null
+          logo_url: string | null
+          phone: string | null
+          photo_url: string | null
+          referral_code: string | null
+          referred_by_code: string | null
+          sector_id: number
+          specialization_id: number
+          state: string
+          status: Database["public"]["Enums"]["professional_status"]
+          updated_at: string
+          user_id: string
+          video_url: string | null
+          website: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          business_description?: string | null
+          business_name: string
+          city: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          linkedin?: string | null
+          logo_url?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          referral_code?: string | null
+          referred_by_code?: string | null
+          sector_id: number
+          specialization_id: number
+          state: string
+          status?: Database["public"]["Enums"]["professional_status"]
+          updated_at?: string
+          user_id: string
+          video_url?: string | null
+          website?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          business_description?: string | null
+          business_name?: string
+          city?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          linkedin?: string | null
+          logo_url?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          referral_code?: string | null
+          referred_by_code?: string | null
+          sector_id?: number
+          specialization_id?: number
+          state?: string
+          status?: Database["public"]["Enums"]["professional_status"]
+          updated_at?: string
+          user_id?: string
+          video_url?: string | null
+          website?: string | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          referred_email: string
+          referred_id: string | null
+          referrer_id: string
+          reward_points: number | null
+          status: Database["public"]["Enums"]["referral_status"]
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referred_email: string
+          referred_id?: string | null
+          referrer_id: string
+          reward_points?: number | null
+          status?: Database["public"]["Enums"]["referral_status"]
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referred_email?: string
+          referred_id?: string | null
+          referrer_id?: string
+          reward_points?: number | null
+          status?: Database["public"]["Enums"]["referral_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_referral_code: { Args: never; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      professional_status:
+        | "waiting_approval"
+        | "approved"
+        | "rejected"
+        | "inactive"
+      referral_status: "pending" | "completed" | "approved"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +277,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      professional_status: [
+        "waiting_approval",
+        "approved",
+        "rejected",
+        "inactive",
+      ],
+      referral_status: ["pending", "completed", "approved"],
+    },
   },
 } as const

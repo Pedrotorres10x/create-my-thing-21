@@ -66,12 +66,20 @@ export function ProfileForm() {
     logo_url: "",
     photo_url: "",
     video_url: "",
+    referred_by_code: "",
   });
 
   useEffect(() => {
     loadSectors();
     loadSpecializations();
     loadProfile();
+    
+    // Check for referral code in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      setFormData(prev => ({ ...prev, referred_by_code: refCode }));
+    }
   }, [user]);
 
   useEffect(() => {
@@ -119,6 +127,7 @@ export function ProfileForm() {
         logo_url: data.logo_url || "",
         photo_url: data.photo_url || "",
         video_url: data.video_url || "",
+        referred_by_code: data.referred_by_code || "",
       });
     }
   };
@@ -209,6 +218,7 @@ export function ProfileForm() {
           logo_url: formData.logo_url,
           photo_url: formData.photo_url,
           video_url: formData.video_url,
+          referred_by_code: formData.referred_by_code || null,
           status: "waiting_approval",
         });
 
@@ -264,6 +274,21 @@ export function ProfileForm() {
             onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
             maxLength={20}
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="referred_by_code">Código de Referido (Opcional)</Label>
+          <Input
+            id="referred_by_code"
+            type="text"
+            placeholder="Ingresa el código de quien te invitó"
+            value={formData.referred_by_code}
+            onChange={(e) => setFormData(prev => ({ ...prev, referred_by_code: e.target.value.toUpperCase() }))}
+            maxLength={8}
+          />
+          <p className="text-xs text-muted-foreground">
+            Si alguien te compartió un código de referido, ingrésalo aquí
+          </p>
         </div>
 
         <div className="space-y-2">
