@@ -26,6 +26,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ProfessionalDetailsModal } from "@/components/ProfessionalDetailsModal";
+import { StatusDistributionChart } from "@/components/admin/StatusDistributionChart";
+import { SectorDistributionChart } from "@/components/admin/SectorDistributionChart";
+import { RegistrationTrendChart } from "@/components/admin/RegistrationTrendChart";
+import { BarChart3 } from "lucide-react";
 
 interface Professional {
   id: string;
@@ -409,11 +413,25 @@ const Admin = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="professionals" className="w-full">
+      <Tabs defaultValue="dashboard" className="w-full">
         <TabsList>
+          <TabsTrigger value="dashboard">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Dashboard
+          </TabsTrigger>
           <TabsTrigger value="professionals">Profesionales</TabsTrigger>
           <TabsTrigger value="referrals">Referidos</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="dashboard" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <StatusDistributionChart professionals={professionals} />
+            <SectorDistributionChart professionals={professionals} />
+          </div>
+          <div className="grid grid-cols-1 gap-6">
+            <RegistrationTrendChart professionals={professionals} />
+          </div>
+        </TabsContent>
 
         <TabsContent value="professionals" className="space-y-4">
           <Card>
