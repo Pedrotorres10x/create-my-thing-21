@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter } from "lucide-react";
+import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Input } from "@/components/ui/input";
 
 interface Professional {
   id: string;
@@ -50,6 +51,7 @@ const Admin = () => {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [stats, setStats] = useState({
     totalProfessionals: 0,
     pendingApproval: 0,
@@ -147,8 +149,22 @@ const Admin = () => {
   };
 
   const filteredProfessionals = professionals.filter((prof) => {
-    if (statusFilter === "all") return true;
-    return prof.status === statusFilter;
+    // Filter by status
+    if (statusFilter !== "all" && prof.status !== statusFilter) {
+      return false;
+    }
+
+    // Filter by search term
+    if (searchTerm.trim() !== "") {
+      const search = searchTerm.toLowerCase();
+      const matchesName = prof.full_name.toLowerCase().includes(search);
+      const matchesEmail = prof.email.toLowerCase().includes(search);
+      const matchesCompany = (prof.company_name || prof.business_name || "").toLowerCase().includes(search);
+      
+      return matchesName || matchesEmail || matchesCompany;
+    }
+
+    return true;
   });
 
   if (adminLoading || loading) {
@@ -219,31 +235,43 @@ const Admin = () => {
         <TabsContent value="professionals" className="space-y-4">
           <Card>
             <CardHeader>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <CardTitle>Gestión de Profesionales</CardTitle>
-                  <CardDescription>Aprobar o rechazar solicitudes de registro</CardDescription>
+              <div className="space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div>
+                    <CardTitle>Gestión de Profesionales</CardTitle>
+                    <CardDescription>Aprobar o rechazar solicitudes de registro</CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-muted-foreground" />
+                    <ToggleGroup 
+                      type="single" 
+                      value={statusFilter} 
+                      onValueChange={(value) => setStatusFilter(value || "all")}
+                    >
+                      <ToggleGroupItem value="all" aria-label="Todos">
+                        Todos ({professionals.length})
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="waiting_approval" aria-label="Pendientes">
+                        Pendientes ({stats.pendingApproval})
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="approved" aria-label="Aprobados">
+                        Aprobados ({stats.approved})
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="rejected" aria-label="Rechazados">
+                        Rechazados
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-muted-foreground" />
-                  <ToggleGroup 
-                    type="single" 
-                    value={statusFilter} 
-                    onValueChange={(value) => setStatusFilter(value || "all")}
-                  >
-                    <ToggleGroupItem value="all" aria-label="Todos">
-                      Todos ({professionals.length})
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="waiting_approval" aria-label="Pendientes">
-                      Pendientes ({stats.pendingApproval})
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="approved" aria-label="Aprobados">
-                      Aprobados ({stats.approved})
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="rejected" aria-label="Rechazados">
-                      Rechazados
-                    </ToggleGroupItem>
-                  </ToggleGroup>
+                
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nombre, email o empresa..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
               </div>
             </CardHeader>
@@ -371,9 +399,11 @@ const Admin = () => {
                 ))}
                 {filteredProfessionals.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
-                    {statusFilter === "all" 
-                      ? "No hay profesionales registrados" 
-                      : `No hay profesionales con estado: ${getStatusBadge(statusFilter).props.children}`}
+                    {searchTerm.trim() !== "" 
+                      ? `No se encontraron profesionales con "${searchTerm}"`
+                      : statusFilter === "all" 
+                        ? "No hay profesionales registrados" 
+                        : `No hay profesionales con estado: ${getStatusBadge(statusFilter).props.children}`}
                   </div>
                 )}
               </div>
