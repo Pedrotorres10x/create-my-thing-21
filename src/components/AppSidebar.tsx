@@ -41,8 +41,6 @@ export function AppSidebar() {
 
   return (
     <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
-      <SidebarTrigger className="m-2 self-end" />
-
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Principal</SidebarGroupLabel>
