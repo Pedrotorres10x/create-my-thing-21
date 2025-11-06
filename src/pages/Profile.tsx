@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProfileForm } from "@/components/ProfileForm";
+import { ProfileProgress } from "@/components/ProfileProgress";
 
 const Profile = () => {
   return (
@@ -8,6 +9,8 @@ const Profile = () => {
         <h1 className="text-3xl font-bold">Mi Perfil</h1>
         <p className="text-muted-foreground">Completa tu información profesional</p>
       </div>
+
+      <ProfileProgress />
 
       <Card>
         <CardHeader>

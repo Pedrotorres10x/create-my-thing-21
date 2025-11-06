@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      point_levels: {
+        Row: {
+          badge_color: string
+          created_at: string | null
+          id: number
+          level_number: number
+          max_points: number | null
+          min_points: number
+          name: string
+        }
+        Insert: {
+          badge_color: string
+          created_at?: string | null
+          id?: number
+          level_number: number
+          max_points?: number | null
+          min_points: number
+          name: string
+        }
+        Update: {
+          badge_color?: string
+          created_at?: string | null
+          id?: number
+          level_number?: number
+          max_points?: number | null
+          min_points?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      point_transactions: {
+        Row: {
+          created_at: string | null
+          id: string
+          points: number
+          professional_id: string
+          reason: string
+          referral_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          points: number
+          professional_id: string
+          reason: string
+          referral_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          points?: number
+          professional_id?: string
+          reason?: string
+          referral_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "point_transactions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_transactions_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professionals: {
         Row: {
           address: string | null
@@ -40,6 +112,7 @@ export type Database = {
           specialization_id: number
           state: string
           status: Database["public"]["Enums"]["professional_status"]
+          total_points: number
           updated_at: string
           user_id: string
           video_url: string | null
@@ -71,6 +144,7 @@ export type Database = {
           specialization_id: number
           state: string
           status?: Database["public"]["Enums"]["professional_status"]
+          total_points?: number
           updated_at?: string
           user_id: string
           video_url?: string | null
@@ -102,6 +176,7 @@ export type Database = {
           specialization_id?: number
           state?: string
           status?: Database["public"]["Enums"]["professional_status"]
+          total_points?: number
           updated_at?: string
           user_id?: string
           video_url?: string | null
