@@ -67,6 +67,72 @@ export type Database = {
           },
         ]
       }
+      meetings: {
+        Row: {
+          created_at: string | null
+          duration_minutes: number | null
+          id: string
+          location: string | null
+          meeting_date: string | null
+          meeting_link: string | null
+          meeting_type: string | null
+          notes: string | null
+          recipient_id: string
+          recipient_notes: string | null
+          requester_id: string
+          requester_notes: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          meeting_date?: string | null
+          meeting_link?: string | null
+          meeting_type?: string | null
+          notes?: string | null
+          recipient_id: string
+          recipient_notes?: string | null
+          requester_id: string
+          requester_notes?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          meeting_date?: string | null
+          meeting_link?: string | null
+          meeting_type?: string | null
+          notes?: string | null
+          recipient_id?: string
+          recipient_notes?: string | null
+          requester_id?: string
+          requester_notes?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetings_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetings_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       point_levels: {
         Row: {
           badge_color: string
@@ -374,6 +440,10 @@ export type Database = {
     }
     Functions: {
       generate_referral_code: { Args: never; Returns: string }
+      get_completed_meetings_count: {
+        Args: { professional_uuid: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
