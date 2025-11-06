@@ -16,17 +16,24 @@ export type Database = {
     Tables: {
       professionals: {
         Row: {
+          address: string | null
+          bio: string | null
           business_description: string | null
           business_name: string
           city: string
+          company_name: string | null
+          country: string | null
           created_at: string
           email: string
           full_name: string
           id: string
           linkedin: string | null
+          linkedin_url: string | null
           logo_url: string | null
           phone: string | null
           photo_url: string | null
+          position: string | null
+          postal_code: string | null
           referral_code: string | null
           referred_by_code: string | null
           sector_id: number
@@ -40,17 +47,24 @@ export type Database = {
           years_experience: number | null
         }
         Insert: {
+          address?: string | null
+          bio?: string | null
           business_description?: string | null
           business_name: string
           city: string
+          company_name?: string | null
+          country?: string | null
           created_at?: string
           email: string
           full_name: string
           id?: string
           linkedin?: string | null
+          linkedin_url?: string | null
           logo_url?: string | null
           phone?: string | null
           photo_url?: string | null
+          position?: string | null
+          postal_code?: string | null
           referral_code?: string | null
           referred_by_code?: string | null
           sector_id: number
@@ -64,17 +78,24 @@ export type Database = {
           years_experience?: number | null
         }
         Update: {
+          address?: string | null
+          bio?: string | null
           business_description?: string | null
           business_name?: string
           city?: string
+          company_name?: string | null
+          country?: string | null
           created_at?: string
           email?: string
           full_name?: string
           id?: string
           linkedin?: string | null
+          linkedin_url?: string | null
           logo_url?: string | null
           phone?: string | null
           photo_url?: string | null
+          position?: string | null
+          postal_code?: string | null
           referral_code?: string | null
           referred_by_code?: string | null
           sector_id?: number
