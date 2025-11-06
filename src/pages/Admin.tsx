@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface Professional {
   id: string;
@@ -48,6 +49,7 @@ const Admin = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [stats, setStats] = useState({
     totalProfessionals: 0,
     pendingApproval: 0,
@@ -144,6 +146,11 @@ const Admin = () => {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
+  const filteredProfessionals = professionals.filter((prof) => {
+    if (statusFilter === "all") return true;
+    return prof.status === statusFilter;
+  });
+
   if (adminLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -212,12 +219,37 @@ const Admin = () => {
         <TabsContent value="professionals" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Gestión de Profesionales</CardTitle>
-              <CardDescription>Aprobar o rechazar solicitudes de registro</CardDescription>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <CardTitle>Gestión de Profesionales</CardTitle>
+                  <CardDescription>Aprobar o rechazar solicitudes de registro</CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-muted-foreground" />
+                  <ToggleGroup 
+                    type="single" 
+                    value={statusFilter} 
+                    onValueChange={(value) => setStatusFilter(value || "all")}
+                  >
+                    <ToggleGroupItem value="all" aria-label="Todos">
+                      Todos ({professionals.length})
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="waiting_approval" aria-label="Pendientes">
+                      Pendientes ({stats.pendingApproval})
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="approved" aria-label="Aprobados">
+                      Aprobados ({stats.approved})
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="rejected" aria-label="Rechazados">
+                      Rechazados
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {professionals.map((prof) => (
+                {filteredProfessionals.map((prof) => (
                   <Card key={prof.id} className="overflow-hidden">
                     <CardContent className="p-6">
                       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -337,9 +369,11 @@ const Admin = () => {
                     </CardContent>
                   </Card>
                 ))}
-                {professionals.length === 0 && (
+                {filteredProfessionals.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
-                    No hay profesionales registrados
+                    {statusFilter === "all" 
+                      ? "No hay profesionales registrados" 
+                      : `No hay profesionales con estado: ${getStatusBadge(statusFilter).props.children}`}
                   </div>
                 )}
               </div>
