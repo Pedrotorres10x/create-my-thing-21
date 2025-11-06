@@ -91,12 +91,12 @@ export function ProfileForm() {
 
   const loadSectors = async () => {
     const { data } = await (supabase as any).from("sector_catalog").select("*").order("name");
-    if (data) setSectors(data);
+    if (data) setSectors(data.map((s: any) => ({ ...s, id: String(s.id) })));
   };
 
   const loadSpecializations = async () => {
     const { data } = await (supabase as any).from("specializations").select("*").order("name");
-    if (data) setSpecializations(data);
+    if (data) setSpecializations(data.map((s: any) => ({ ...s, id: String(s.id), sector_id: String(s.sector_id) })));
   };
 
   const loadProfile = async () => {
@@ -114,8 +114,8 @@ export function ProfileForm() {
         phone: data.phone || "",
         company_name: data.company_name || "",
         position: data.position || "",
-        sector_id: data.sector_id || "",
-        specialization_id: data.specialization_id || "",
+        sector_id: data.sector_id ? String(data.sector_id) : "",
+        specialization_id: data.specialization_id ? String(data.specialization_id) : "",
         bio: data.bio || "",
         linkedin_url: data.linkedin_url || "",
         website: data.website || "",
@@ -205,8 +205,8 @@ export function ProfileForm() {
           phone: validated.phone,
           company_name: validated.company_name,
           position: validated.position,
-          sector_id: formData.sector_id,
-          specialization_id: formData.specialization_id,
+          sector_id: formData.sector_id ? parseInt(formData.sector_id) : null,
+          specialization_id: formData.specialization_id ? parseInt(formData.specialization_id) : null,
           bio: validated.bio,
           linkedin_url: validated.linkedin_url,
           website: validated.website,
