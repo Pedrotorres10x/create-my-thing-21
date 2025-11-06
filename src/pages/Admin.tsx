@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search } from "lucide-react";
+import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
@@ -69,6 +69,8 @@ const Admin = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [sortField, setSortField] = useState<"created_at" | "full_name" | "email" | "status">("created_at");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [stats, setStats] = useState({
     totalProfessionals: 0,
     pendingApproval: 0,
@@ -165,6 +167,24 @@ const Admin = () => {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
+  const handleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortIcon = (field: typeof sortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="w-4 h-4 ml-1 text-muted-foreground" />;
+    }
+    return sortDirection === "asc" 
+      ? <ArrowUp className="w-4 h-4 ml-1" />
+      : <ArrowDown className="w-4 h-4 ml-1" />;
+  };
+
   const filteredProfessionals = professionals.filter((prof) => {
     // Filter by status
     if (statusFilter !== "all" && prof.status !== statusFilter) {
@@ -184,11 +204,33 @@ const Admin = () => {
     return true;
   });
 
+  // Sort professionals
+  const sortedProfessionals = [...filteredProfessionals].sort((a, b) => {
+    let comparison = 0;
+    
+    switch (sortField) {
+      case "full_name":
+        comparison = a.full_name.localeCompare(b.full_name);
+        break;
+      case "email":
+        comparison = a.email.localeCompare(b.email);
+        break;
+      case "status":
+        comparison = a.status.localeCompare(b.status);
+        break;
+      case "created_at":
+        comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        break;
+    }
+    
+    return sortDirection === "asc" ? comparison : -comparison;
+  });
+
   // Pagination calculations
-  const totalPages = Math.ceil(filteredProfessionals.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedProfessionals.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedProfessionals = filteredProfessionals.slice(startIndex, endIndex);
+  const paginatedProfessionals = sortedProfessionals.slice(startIndex, endIndex);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -300,6 +342,46 @@ const Admin = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
                   />
+                </div>
+
+                <div className="flex gap-2 flex-wrap">
+                  <span className="text-sm text-muted-foreground self-center">Ordenar por:</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSort("created_at")}
+                    className="gap-1"
+                  >
+                    Fecha registro
+                    {getSortIcon("created_at")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSort("full_name")}
+                    className="gap-1"
+                  >
+                    Nombre
+                    {getSortIcon("full_name")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSort("email")}
+                    className="gap-1"
+                  >
+                    Email
+                    {getSortIcon("email")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSort("status")}
+                    className="gap-1"
+                  >
+                    Estado
+                    {getSortIcon("status")}
+                  </Button>
                 </div>
               </div>
             </CardHeader>
@@ -440,7 +522,7 @@ const Admin = () => {
                 <div className="mt-6 flex flex-col items-center gap-3">
                   <div className="flex items-center justify-between w-full">
                     <div className="text-sm text-muted-foreground">
-                      Mostrando {startIndex + 1}-{Math.min(endIndex, filteredProfessionals.length)} de {filteredProfessionals.length} profesionales
+                      Mostrando {startIndex + 1}-{Math.min(endIndex, sortedProfessionals.length)} de {sortedProfessionals.length} profesionales
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">Items por página:</span>
