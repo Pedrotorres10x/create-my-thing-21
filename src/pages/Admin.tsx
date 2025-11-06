@@ -13,9 +13,23 @@ interface Professional {
   id: string;
   full_name: string;
   email: string;
+  phone: string | null;
+  company_name: string | null;
   business_name: string;
+  position: string | null;
+  bio: string | null;
+  city: string;
+  state: string;
+  country: string | null;
+  website: string | null;
+  linkedin_url: string | null;
+  sector_id: number;
+  specialization_id: number;
+  years_experience: number | null;
   status: string;
   created_at: string;
+  sector_catalog?: { name: string };
+  specializations?: { name: string };
 }
 
 interface Referral {
@@ -60,7 +74,11 @@ const Admin = () => {
   const loadProfessionals = async () => {
     const { data, error } = await (supabase as any)
       .from('professionals')
-      .select('*')
+      .select(`
+        *,
+        sector_catalog(name),
+        specializations(name)
+      `)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -200,42 +218,130 @@ const Admin = () => {
             <CardContent>
               <div className="space-y-4">
                 {professionals.map((prof) => (
-                  <div
-                    key={prof.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
-                    <div className="space-y-1">
-                      <p className="font-medium">{prof.full_name}</p>
-                      <p className="text-sm text-muted-foreground">{prof.business_name}</p>
-                      <p className="text-sm text-muted-foreground">{prof.email}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Registrado: {new Date(prof.created_at).toLocaleDateString('es-ES')}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {getStatusBadge(prof.status)}
-                      {prof.status === 'waiting_approval' && (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => updateProfessionalStatus(prof.id, 'approved')}
-                          >
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            Aprobar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => updateProfessionalStatus(prof.id, 'rejected')}
-                          >
-                            <XCircle className="w-4 h-4 mr-1" />
-                            Rechazar
-                          </Button>
+                  <Card key={prof.id} className="overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                        <div className="flex-1 space-y-3">
+                          <div className="flex items-center gap-3">
+                            <div>
+                              <h3 className="font-semibold text-lg">{prof.full_name}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {prof.company_name || prof.business_name}
+                              </p>
+                            </div>
+                            {getStatusBadge(prof.status)}
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                            <div>
+                              <span className="font-medium">Email:</span> {prof.email}
+                            </div>
+                            {prof.phone && (
+                              <div>
+                                <span className="font-medium">Teléfono:</span> {prof.phone}
+                              </div>
+                            )}
+                            {prof.position && (
+                              <div>
+                                <span className="font-medium">Posición:</span> {prof.position}
+                              </div>
+                            )}
+                            <div>
+                              <span className="font-medium">Ubicación:</span> {prof.city}, {prof.state}
+                              {prof.country && `, ${prof.country}`}
+                            </div>
+                            {prof.sector_catalog && (
+                              <div>
+                                <span className="font-medium">Sector:</span> {prof.sector_catalog.name}
+                              </div>
+                            )}
+                            {prof.specializations && (
+                              <div>
+                                <span className="font-medium">Especialización:</span> {prof.specializations.name}
+                              </div>
+                            )}
+                            {prof.years_experience && (
+                              <div>
+                                <span className="font-medium">Experiencia:</span> {prof.years_experience} años
+                              </div>
+                            )}
+                            {prof.website && (
+                              <div>
+                                <span className="font-medium">Web:</span>{' '}
+                                <a 
+                                  href={prof.website} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline"
+                                >
+                                  {prof.website}
+                                </a>
+                              </div>
+                            )}
+                            {prof.linkedin_url && (
+                              <div>
+                                <span className="font-medium">LinkedIn:</span>{' '}
+                                <a 
+                                  href={prof.linkedin_url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline"
+                                >
+                                  Ver perfil
+                                </a>
+                              </div>
+                            )}
+                          </div>
+
+                          {prof.bio && (
+                            <div className="pt-2 border-t">
+                              <p className="text-sm">
+                                <span className="font-medium">Bio:</span> {prof.bio}
+                              </p>
+                            </div>
+                          )}
+
+                          <p className="text-xs text-muted-foreground pt-2">
+                            Registrado: {new Date(prof.created_at).toLocaleDateString('es-ES', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
                         </div>
-                      )}
-                    </div>
-                  </div>
+
+                        {prof.status === 'waiting_approval' && (
+                          <div className="flex flex-col gap-2 md:min-w-[140px]">
+                            <Button
+                              size="sm"
+                              onClick={() => updateProfessionalStatus(prof.id, 'approved')}
+                              className="w-full"
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Aprobar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => updateProfessionalStatus(prof.id, 'rejected')}
+                              className="w-full"
+                            >
+                              <XCircle className="w-4 h-4 mr-2" />
+                              Rechazar
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
+                {professionals.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No hay profesionales registrados
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
