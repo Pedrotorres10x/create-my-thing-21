@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye } from "lucide-react";
+import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
@@ -198,6 +198,80 @@ const Admin = () => {
     setModalOpen(true);
   };
 
+  const exportToCSV = () => {
+    // CSV headers
+    const headers = [
+      "Nombre Completo",
+      "Email",
+      "Teléfono",
+      "Empresa",
+      "Nombre de Negocio",
+      "Posición",
+      "Ciudad",
+      "Estado",
+      "País",
+      "Dirección",
+      "Código Postal",
+      "Sector",
+      "Especialización",
+      "Años de Experiencia",
+      "Estado",
+      "Sitio Web",
+      "LinkedIn",
+      "Bio",
+      "Fecha de Registro",
+    ];
+
+    // Convert professionals to CSV rows
+    const rows = sortedProfessionals.map((prof) => [
+      prof.full_name,
+      prof.email,
+      prof.phone || "",
+      prof.company_name || "",
+      prof.business_name || "",
+      prof.position || "",
+      prof.city,
+      prof.state,
+      prof.country || "",
+      prof.address || "",
+      prof.postal_code || "",
+      prof.sector_catalog?.name || "",
+      prof.specializations?.name || "",
+      prof.years_experience || "",
+      prof.status,
+      prof.website || "",
+      prof.linkedin_url || "",
+      prof.bio || "",
+      new Date(prof.created_at).toLocaleString("es-MX"),
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => 
+        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+      ),
+    ].join("\n");
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", `profesionales_${new Date().toISOString().split("T")[0]}.csv`);
+    link.style.visibility = "hidden";
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Exportación exitosa",
+      description: `Se exportaron ${sortedProfessionals.length} profesionales a CSV`,
+    });
+  };
+
   const filteredProfessionals = professionals.filter((prof) => {
     // Filter by status
     if (statusFilter !== "all" && prof.status !== statusFilter) {
@@ -324,26 +398,38 @@ const Admin = () => {
                     <CardTitle>Gestión de Profesionales</CardTitle>
                     <CardDescription>Aprobar o rechazar solicitudes de registro</CardDescription>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-muted-foreground" />
-                    <ToggleGroup 
-                      type="single" 
-                      value={statusFilter} 
-                      onValueChange={(value) => setStatusFilter(value || "all")}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <Button
+                      onClick={exportToCSV}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      disabled={sortedProfessionals.length === 0}
                     >
-                      <ToggleGroupItem value="all" aria-label="Todos">
-                        Todos ({professionals.length})
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="waiting_approval" aria-label="Pendientes">
-                        Pendientes ({stats.pendingApproval})
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="approved" aria-label="Aprobados">
-                        Aprobados ({stats.approved})
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="rejected" aria-label="Rechazados">
-                        Rechazados
-                      </ToggleGroupItem>
-                    </ToggleGroup>
+                      <Download className="w-4 h-4" />
+                      Exportar CSV ({sortedProfessionals.length})
+                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Filter className="w-4 h-4 text-muted-foreground" />
+                      <ToggleGroup 
+                        type="single" 
+                        value={statusFilter} 
+                        onValueChange={(value) => setStatusFilter(value || "all")}
+                      >
+                        <ToggleGroupItem value="all" aria-label="Todos">
+                          Todos ({professionals.length})
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="waiting_approval" aria-label="Pendientes">
+                          Pendientes ({stats.pendingApproval})
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="approved" aria-label="Aprobados">
+                          Aprobados ({stats.approved})
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="rejected" aria-label="Rechazados">
+                          Rechazados
+                        </ToggleGroupItem>
+                      </ToggleGroup>
+                    </div>
                   </div>
                 </div>
                 
