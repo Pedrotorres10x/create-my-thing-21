@@ -19,7 +19,7 @@ export type Database = {
           address: string | null
           bio: string | null
           business_description: string | null
-          business_name: string
+          business_name: string | null
           city: string
           company_name: string | null
           country: string | null
@@ -50,7 +50,7 @@ export type Database = {
           address?: string | null
           bio?: string | null
           business_description?: string | null
-          business_name: string
+          business_name?: string | null
           city: string
           company_name?: string | null
           country?: string | null
@@ -81,7 +81,7 @@ export type Database = {
           address?: string | null
           bio?: string | null
           business_description?: string | null
-          business_name?: string
+          business_name?: string | null
           city?: string
           company_name?: string | null
           country?: string | null
