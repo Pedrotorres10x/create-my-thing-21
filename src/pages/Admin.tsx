@@ -160,7 +160,7 @@ const Admin = () => {
       return;
     }
 
-    // Send email notification
+    // Send email notification to the professional
     try {
       const { error: emailError } = await supabase.functions.invoke('send-professional-status-email', {
         body: { 
@@ -171,25 +171,51 @@ const Admin = () => {
 
       if (emailError) {
         console.error("Error sending email:", emailError);
-        toast({
-          title: "Advertencia",
-          description: "Estado actualizado pero el email no se pudo enviar",
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Éxito",
-          description: `Profesional ${status === 'approved' ? 'aprobado' : 'rechazado'} y notificado por email`,
-        });
       }
     } catch (emailError) {
       console.error("Error sending email notification:", emailError);
-      toast({
-        title: "Advertencia",
-        description: "Estado actualizado pero el email no se pudo enviar",
-        variant: "default",
-      });
     }
+
+    // If approved, check if there's a referral and notify the referrer
+    if (status === 'approved') {
+      try {
+        // Get the approved professional's email
+        const { data: professional } = await supabase
+          .from('professionals')
+          .select('email')
+          .eq('id', id)
+          .single();
+
+        if (professional) {
+          // Check if this professional was referred
+          const { data: referralData } = await supabase
+            .from('referrals')
+            .select('referrer_id, reward_points, referred_email')
+            .eq('referred_email', professional.email)
+            .eq('status', 'completed')
+            .maybeSingle();
+
+          // If there's a referral, send notification to the referrer
+          if (referralData) {
+            await supabase.functions.invoke('send-referral-notification', {
+              body: {
+                referrerId: referralData.referrer_id,
+                referredEmail: referralData.referred_email,
+                pointsEarned: referralData.reward_points || 100,
+              }
+            });
+          }
+        }
+      } catch (referralError) {
+        console.error("Error processing referral notification:", referralError);
+        // Don't show error to admin, just log it
+      }
+    }
+
+    toast({
+      title: "Éxito",
+      description: `Profesional ${status === 'approved' ? 'aprobado' : 'rechazado'} correctamente`,
+    });
 
     loadData();
   };
