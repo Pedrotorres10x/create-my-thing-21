@@ -1,6 +1,7 @@
-import { Home, User, Users, Handshake, Calendar, Store, MessageSquare, Trophy, UserCircle } from "lucide-react";
+import { Home, User, Users, Handshake, Calendar, Store, MessageSquare, Trophy, UserCircle, Shield } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useAdmin } from "@/hooks/useAdmin";
 
 import {
   Sidebar,
@@ -33,6 +34,7 @@ export function AppSidebar() {
   const { open } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
+  const { isAdmin } = useAdmin();
 
   const isActive = (path: string) => currentPath === path;
 
@@ -86,6 +88,29 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administración</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/admin"
+                      end
+                      className="hover:bg-muted/50"
+                      activeClassName="bg-muted text-primary font-medium"
+                    >
+                      <Shield className="h-4 w-4" />
+                      {open && <span>Admin</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );
