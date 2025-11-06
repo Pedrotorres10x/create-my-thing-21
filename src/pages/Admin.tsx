@@ -29,6 +29,7 @@ import { ProfessionalDetailsModal } from "@/components/ProfessionalDetailsModal"
 import { StatusDistributionChart } from "@/components/admin/StatusDistributionChart";
 import { SectorDistributionChart } from "@/components/admin/SectorDistributionChart";
 import { RegistrationTrendChart } from "@/components/admin/RegistrationTrendChart";
+import { ChapterManagement } from "@/components/admin/ChapterManagement";
 import { BarChart3 } from "lucide-react";
 
 interface Professional {
@@ -446,6 +447,7 @@ const Admin = () => {
             Dashboard
           </TabsTrigger>
           <TabsTrigger value="professionals">Profesionales</TabsTrigger>
+          <TabsTrigger value="chapters">Capítulos</TabsTrigger>
           <TabsTrigger value="referrals">Referidos</TabsTrigger>
         </TabsList>
 
@@ -775,6 +777,10 @@ const Admin = () => {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="chapters" className="space-y-4">
+          <ChapterManagement />
         </TabsContent>
 
         <TabsContent value="referrals" className="space-y-4">

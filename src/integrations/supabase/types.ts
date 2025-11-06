@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      chapters: {
+        Row: {
+          city: string
+          country: string
+          created_at: string | null
+          description: string | null
+          id: string
+          leader_id: string | null
+          location_details: string | null
+          meeting_schedule: string | null
+          member_count: number | null
+          name: string
+          state: string
+          updated_at: string | null
+        }
+        Insert: {
+          city: string
+          country?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          leader_id?: string | null
+          location_details?: string | null
+          meeting_schedule?: string | null
+          member_count?: number | null
+          name: string
+          state: string
+          updated_at?: string | null
+        }
+        Update: {
+          city?: string
+          country?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          leader_id?: string | null
+          location_details?: string | null
+          meeting_schedule?: string | null
+          member_count?: number | null
+          name?: string
+          state?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapters_leader_id_fkey"
+            columns: ["leader_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       point_levels: {
         Row: {
           badge_color: string
@@ -92,6 +145,7 @@ export type Database = {
           bio: string | null
           business_description: string | null
           business_name: string | null
+          chapter_id: string | null
           city: string
           company_name: string | null
           country: string | null
@@ -124,6 +178,7 @@ export type Database = {
           bio?: string | null
           business_description?: string | null
           business_name?: string | null
+          chapter_id?: string | null
           city: string
           company_name?: string | null
           country?: string | null
@@ -156,6 +211,7 @@ export type Database = {
           bio?: string | null
           business_description?: string | null
           business_name?: string | null
+          chapter_id?: string | null
           city?: string
           company_name?: string | null
           country?: string | null
@@ -183,7 +239,15 @@ export type Database = {
           website?: string | null
           years_experience?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "professionals_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       referrals: {
         Row: {
