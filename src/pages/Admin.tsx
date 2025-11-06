@@ -18,6 +18,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Professional {
   id: string;
@@ -61,7 +68,7 @@ const Admin = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [stats, setStats] = useState({
     totalProfessionals: 0,
     pendingApproval: 0,
@@ -186,7 +193,7 @@ const Admin = () => {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, searchTerm]);
+  }, [statusFilter, searchTerm, itemsPerPage]);
 
   if (adminLoading || loading) {
     return (
@@ -431,8 +438,27 @@ const Admin = () => {
 
               {totalPages > 1 && (
                 <div className="mt-6 flex flex-col items-center gap-3">
-                  <div className="text-sm text-muted-foreground">
-                    Mostrando {startIndex + 1}-{Math.min(endIndex, filteredProfessionals.length)} de {filteredProfessionals.length} profesionales
+                  <div className="flex items-center justify-between w-full">
+                    <div className="text-sm text-muted-foreground">
+                      Mostrando {startIndex + 1}-{Math.min(endIndex, filteredProfessionals.length)} de {filteredProfessionals.length} profesionales
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Items por página:</span>
+                      <Select 
+                        value={itemsPerPage.toString()} 
+                        onValueChange={(value) => setItemsPerPage(Number(value))}
+                      >
+                        <SelectTrigger className="w-[80px] bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border shadow-lg z-50">
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="25">25</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                          <SelectItem value="100">100</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <Pagination>
                     <PaginationContent>
