@@ -133,6 +133,132 @@ export type Database = {
           },
         ]
       }
+      offer_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: never
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: never
+          name?: string
+        }
+        Relationships: []
+      }
+      offer_contacts: {
+        Row: {
+          created_at: string
+          id: string
+          interested_professional_id: string
+          message: string | null
+          offer_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interested_professional_id: string
+          message?: string | null
+          offer_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interested_professional_id?: string
+          message?: string | null
+          offer_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_contacts_interested_professional_id_fkey"
+            columns: ["interested_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_contacts_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offers: {
+        Row: {
+          category_id: number
+          contact_preference: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          price_amount: number | null
+          price_type: string
+          professional_id: string
+          title: string
+          updated_at: string
+          views_count: number
+        }
+        Insert: {
+          category_id: number
+          contact_preference: string
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          price_amount?: number | null
+          price_type: string
+          professional_id: string
+          title: string
+          updated_at?: string
+          views_count?: number
+        }
+        Update: {
+          category_id?: number
+          contact_preference?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          price_amount?: number | null
+          price_type?: string
+          professional_id?: string
+          title?: string
+          updated_at?: string
+          views_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "offer_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       point_levels: {
         Row: {
           badge_color: string
