@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Award, TrendingUp, Users, Trophy, Calendar, Activity, BarChart3, Target } from "lucide-react";
+import { Award, TrendingUp, Users, Trophy, Calendar, Store, MessageSquare, Handshake, ArrowRight, UserCircle } from "lucide-react";
 import { LevelBadge } from "@/components/LevelBadge";
+import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -39,9 +40,9 @@ interface UpcomingMeeting {
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [upcomingMeetings, setUpcomingMeetings] = useState<UpcomingMeeting[]>([]);
   const [professional, setProfessional] = useState<any>(null);
 
@@ -110,26 +111,6 @@ const Dashboard = () => {
           recipient: m.professionals
         })) as any);
 
-        // Build recent activity
-        const activities: RecentActivity[] = [];
-
-        // Add recent referrals
-        referrals?.slice(0, 3).forEach(ref => {
-          activities.push({
-            id: crypto.randomUUID(),
-            type: 'referral',
-            description: `Enviaste un referido`,
-            created_at: ref.created_at
-          });
-        });
-
-        // Sort by date
-        activities.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-
-        setRecentActivity(activities.slice(0, 5));
-
         setStats({
           referralsSent,
           referralsCompleted,
@@ -190,23 +171,68 @@ const Dashboard = () => {
     ? stats.level.maxPoints + 1 - stats.totalPoints 
     : null;
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'referral': return Users;
-      case 'meeting': return Calendar;
-      case 'post': return Activity;
-      case 'offer': return TrendingUp;
-      default: return Activity;
+  const quickActions = [
+    {
+      title: "Mi Perfil",
+      description: "Gestiona tu información profesional",
+      icon: UserCircle,
+      action: () => navigate("/profile"),
+      color: "from-blue-500 to-blue-600"
+    },
+    {
+      title: "Referidos",
+      description: "Invita profesionales y gana puntos",
+      icon: Handshake,
+      action: () => navigate("/referrals"),
+      color: "from-green-500 to-green-600"
+    },
+    {
+      title: "Mi Capítulo",
+      description: "Conecta con tu capítulo local",
+      icon: Users,
+      action: () => navigate("/chapter"),
+      color: "from-purple-500 to-purple-600"
+    },
+    {
+      title: "One-to-Ones",
+      description: "Agenda reuniones con miembros",
+      icon: Calendar,
+      action: () => navigate("/meetings"),
+      color: "from-orange-500 to-orange-600"
+    },
+    {
+      title: "Marketplace",
+      description: "Ofrece o encuentra servicios",
+      icon: Store,
+      action: () => navigate("/marketplace"),
+      color: "from-pink-500 to-pink-600"
+    },
+    {
+      title: "Comunidad",
+      description: "Comparte y conecta con la red",
+      icon: MessageSquare,
+      action: () => navigate("/feed"),
+      color: "from-indigo-500 to-indigo-600"
+    },
+    {
+      title: "Rankings",
+      description: "Ve tu posición en la comunidad",
+      icon: Trophy,
+      action: () => navigate("/rankings"),
+      color: "from-yellow-500 to-yellow-600"
     }
-  };
+  ];
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Bienvenido de vuelta, {professional?.full_name}
+          <h1 className="text-3xl font-bold">
+            👋 Hola, {professional?.full_name?.split(' ')[0]}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            ¿Qué quieres hacer hoy?
           </p>
         </div>
         <LevelBadge 
@@ -216,238 +242,153 @@ const Dashboard = () => {
         />
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview" className="gap-2">
-            <Target className="h-4 w-4" />
-            Resumen
-          </TabsTrigger>
-          <TabsTrigger value="activity" className="gap-2">
-            <Activity className="h-4 w-4" />
-            Actividad
-          </TabsTrigger>
-          <TabsTrigger value="stats" className="gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Estadísticas
-          </TabsTrigger>
-        </TabsList>
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/referrals")}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Referidos</CardTitle>
+            <Handshake className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.referralsSent}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.referralsCompleted} completados
+            </p>
+          </CardContent>
+        </Card>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Referidos Enviados</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.referralsSent}</div>
-                <p className="text-xs text-muted-foreground">Total enviados</p>
-              </CardContent>
-            </Card>
+        <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/rankings")}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tu Ranking</CardTitle>
+            <Trophy className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">#{stats.ranking}</div>
+            <p className="text-xs text-muted-foreground">en la comunidad</p>
+          </CardContent>
+        </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Completados</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.referralsCompleted}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats.referralsSent > 0 
-                    ? `${Math.round((stats.referralsCompleted / stats.referralsSent) * 100)}% conversión`
-                    : "0% conversión"
-                  }
-                </p>
-              </CardContent>
-            </Card>
+        <Card className="hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Puntos</CardTitle>
+            <Award className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalPoints}</div>
+            <p className="text-xs text-muted-foreground">
+              {nextLevelPoints !== null ? `${nextLevelPoints} al siguiente` : "Nivel máximo"}
+            </p>
+          </CardContent>
+        </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Puntos Totales</CardTitle>
-                <Award className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.totalPoints}</div>
-                <p className="text-xs text-muted-foreground">
-                  {nextLevelPoints !== null 
-                    ? `${nextLevelPoints} al siguiente nivel`
-                    : "Nivel máximo"
-                  }
-                </p>
-              </CardContent>
-            </Card>
+        <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/meetings")}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Reuniones</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{upcomingMeetings.length}</div>
+            <p className="text-xs text-muted-foreground">próximas</p>
+          </CardContent>
+        </Card>
+      </div>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Ranking</CardTitle>
-                <Trophy className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">#{stats.ranking}</div>
-                <p className="text-xs text-muted-foreground">Posición general</p>
-              </CardContent>
-            </Card>
-          </div>
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Acciones Rápidas</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {quickActions.map((action, index) => {
+            const Icon = action.icon;
+            return (
+              <Card 
+                key={index} 
+                className="group cursor-pointer hover:shadow-lg transition-all hover:scale-105"
+                onClick={action.action}
+              >
+                <CardHeader className="space-y-0">
+                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${action.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                    <Icon className="h-6 w-6 text-white" />
+                  </div>
+                  <CardTitle className="text-base">{action.title}</CardTitle>
+                  <CardDescription className="text-sm">
+                    {action.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <Button variant="ghost" size="sm" className="w-full group-hover:bg-muted">
+                    Ir ahora
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
 
-          {/* Upcoming Meetings */}
-          {upcomingMeetings.length > 0 && (
-            <Card>
-              <CardHeader>
+      {/* Upcoming Meetings */}
+      {upcomingMeetings.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5" />
                   Próximas Reuniones
                 </CardTitle>
                 <CardDescription>Tus one-to-ones confirmados</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {upcomingMeetings.map((meeting) => (
-                    <div key={meeting.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                      <div>
-                        <p className="font-medium">{meeting.recipient.full_name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatDistanceToNow(new Date(meeting.meeting_date), {
-                            addSuffix: true,
-                            locale: es
-                          })}
-                        </p>
-                      </div>
-                      <Badge variant="secondary">{meeting.meeting_type}</Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Progress bar */}
-          {stats.level.maxPoints && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Progreso hacia {stats.level.maxPoints < 1000 ? "el Siguiente Nivel" : "Nivel Diamante"}</CardTitle>
-                <CardDescription>
-                  {stats.totalPoints} / {stats.level.maxPoints + 1} puntos
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="w-full bg-secondary rounded-full h-4">
-                  <div
-                    className="h-4 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${Math.min((stats.totalPoints / (stats.level.maxPoints + 1)) * 100, 100)}%`,
-                      backgroundColor: stats.level.color,
-                    }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        {/* Activity Tab */}
-        <TabsContent value="activity" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Actividad Reciente</CardTitle>
-              <CardDescription>Tus últimas acciones en la plataforma</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {recentActivity.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  No hay actividad reciente
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {recentActivity.map((activity) => {
-                    const Icon = getActivityIcon(activity.type);
-                    return (
-                      <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <Icon className="h-4 w-4 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">{activity.description}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(activity.created_at), {
-                              addSuffix: true,
-                              locale: es
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Stats Tab */}
-        <TabsContent value="stats" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Referidos</CardTitle>
-                <CardDescription>Desglose de tus referidos</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Total Enviados</span>
-                  <Badge variant="secondary">{stats.referralsSent}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Completados</span>
-                  <Badge>{stats.referralsCompleted}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Pendientes</span>
-                  <Badge variant="outline">{stats.referralsSent - stats.referralsCompleted}</Badge>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <span className="text-sm font-medium">Tasa de Conversión</span>
-                  <span className="text-lg font-bold">
-                    {stats.referralsSent > 0 
-                      ? `${Math.round((stats.referralsCompleted / stats.referralsSent) * 100)}%`
-                      : "0%"
-                    }
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Puntos y Nivel</CardTitle>
-                <CardDescription>Tu progresión en CONECTOR</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Nivel Actual</span>
-                  <Badge style={{ backgroundColor: stats.level.color }}>
-                    {stats.level.name}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Puntos Totales</span>
-                  <span className="text-lg font-bold">{stats.totalPoints}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Ranking Global</span>
-                  <Badge variant="secondary">#{stats.ranking}</Badge>
-                </div>
-                {nextLevelPoints !== null && (
-                  <div className="flex items-center justify-between pt-2 border-t">
-                    <span className="text-sm font-medium">Próximo Nivel</span>
-                    <span className="text-lg font-bold">{nextLevelPoints} pts</span>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => navigate("/meetings")}>
+                Ver todas
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {upcomingMeetings.map((meeting) => (
+                <div key={meeting.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                  <div>
+                    <p className="font-medium">{meeting.recipient.full_name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDistanceToNow(new Date(meeting.meeting_date), {
+                        addSuffix: true,
+                        locale: es
+                      })}
+                    </p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+                  <Badge variant="secondary">{meeting.meeting_type}</Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Progress bar */}
+      {stats.level.maxPoints && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Tu Progreso</CardTitle>
+            <CardDescription>
+              {stats.totalPoints} / {stats.level.maxPoints + 1} puntos para {stats.level.maxPoints < 1000 ? "el siguiente nivel" : "Nivel Diamante"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="w-full bg-secondary rounded-full h-4">
+              <div
+                className="h-4 rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.min((stats.totalPoints / (stats.level.maxPoints + 1)) * 100, 100)}%`,
+                  backgroundColor: stats.level.color,
+                }}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground mt-2 text-center">
+              {nextLevelPoints !== null && `Faltan ${nextLevelPoints} puntos`}
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
