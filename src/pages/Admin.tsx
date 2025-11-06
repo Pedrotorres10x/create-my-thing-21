@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ProfessionalDetailsModal } from "@/components/ProfessionalDetailsModal";
 
 interface Professional {
   id: string;
@@ -38,8 +39,13 @@ interface Professional {
   city: string;
   state: string;
   country: string | null;
+  address: string | null;
+  postal_code: string | null;
   website: string | null;
   linkedin_url: string | null;
+  logo_url: string | null;
+  photo_url: string | null;
+  video_url: string | null;
   sector_id: number;
   specialization_id: number;
   years_experience: number | null;
@@ -71,6 +77,8 @@ const Admin = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortField, setSortField] = useState<"created_at" | "full_name" | "email" | "status">("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const [stats, setStats] = useState({
     totalProfessionals: 0,
     pendingApproval: 0,
@@ -183,6 +191,11 @@ const Admin = () => {
     return sortDirection === "asc" 
       ? <ArrowUp className="w-4 h-4 ml-1" />
       : <ArrowDown className="w-4 h-4 ml-1" />;
+  };
+
+  const handleViewDetails = (prof: Professional) => {
+    setSelectedProfessional(prof);
+    setModalOpen(true);
   };
 
   const filteredProfessionals = professionals.filter((prof) => {
@@ -482,27 +495,38 @@ const Admin = () => {
                           </p>
                         </div>
 
-                        {prof.status === 'waiting_approval' && (
-                          <div className="flex flex-col gap-2 md:min-w-[140px]">
-                            <Button
-                              size="sm"
-                              onClick={() => updateProfessionalStatus(prof.id, 'approved')}
-                              className="w-full"
-                            >
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Aprobar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => updateProfessionalStatus(prof.id, 'rejected')}
-                              className="w-full"
-                            >
-                              <XCircle className="w-4 h-4 mr-2" />
-                              Rechazar
-                            </Button>
-                          </div>
-                        )}
+                        <div className="flex flex-col gap-2 md:min-w-[140px]">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewDetails(prof)}
+                            className="w-full"
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Ver detalles
+                          </Button>
+                          {prof.status === 'waiting_approval' && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => updateProfessionalStatus(prof.id, 'approved')}
+                                className="w-full"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                Aprobar
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => updateProfessionalStatus(prof.id, 'rejected')}
+                                className="w-full"
+                              >
+                                <XCircle className="w-4 h-4 mr-2" />
+                                Rechazar
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -633,6 +657,12 @@ const Admin = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ProfessionalDetailsModal
+        professional={selectedProfessional}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </div>
   );
 };
