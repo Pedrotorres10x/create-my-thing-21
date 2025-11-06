@@ -156,10 +156,36 @@ const Admin = () => {
       return;
     }
 
-    toast({
-      title: "Éxito",
-      description: `Profesional ${status === 'approved' ? 'aprobado' : 'rechazado'}`,
-    });
+    // Send email notification
+    try {
+      const { error: emailError } = await supabase.functions.invoke('send-professional-status-email', {
+        body: { 
+          professionalId: id, 
+          status: status as "approved" | "rejected"
+        }
+      });
+
+      if (emailError) {
+        console.error("Error sending email:", emailError);
+        toast({
+          title: "Advertencia",
+          description: "Estado actualizado pero el email no se pudo enviar",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Éxito",
+          description: `Profesional ${status === 'approved' ? 'aprobado' : 'rechazado'} y notificado por email`,
+        });
+      }
+    } catch (emailError) {
+      console.error("Error sending email notification:", emailError);
+      toast({
+        title: "Advertencia",
+        description: "Estado actualizado pero el email no se pudo enviar",
+        variant: "default",
+      });
+    }
 
     loadData();
   };
