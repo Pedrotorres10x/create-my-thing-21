@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      behavioral_risk_scores: {
+        Row: {
+          alert_threshold_reached: boolean | null
+          id: string
+          last_alert_sent: string | null
+          last_updated: string
+          overall_risk_score: number | null
+          professional_id: string
+          risk_factors: Json | null
+        }
+        Insert: {
+          alert_threshold_reached?: boolean | null
+          id?: string
+          last_alert_sent?: string | null
+          last_updated?: string
+          overall_risk_score?: number | null
+          professional_id: string
+          risk_factors?: Json | null
+        }
+        Update: {
+          alert_threshold_reached?: boolean | null
+          id?: string
+          last_alert_sent?: string | null
+          last_updated?: string
+          overall_risk_score?: number | null
+          professional_id?: string
+          risk_factors?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "behavioral_risk_scores_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chapters: {
         Row: {
           city: string
@@ -899,6 +937,44 @@ export type Database = {
             foreignKeyName: "user_ai_context_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: true
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_behavior_events: {
+        Row: {
+          context_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          professional_id: string
+          risk_score: number | null
+        }
+        Insert: {
+          context_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          professional_id: string
+          risk_score?: number | null
+        }
+        Update: {
+          context_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          professional_id?: string
+          risk_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_behavior_events_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
