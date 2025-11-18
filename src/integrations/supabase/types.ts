@@ -199,10 +199,12 @@ export type Database = {
       }
       moderation_violations: {
         Row: {
+          auto_detected: boolean | null
           blocked: boolean | null
           categories: string[] | null
           content_context: string | null
           created_at: string
+          detection_confidence: number | null
           id: string
           professional_id: string | null
           reason: string
@@ -211,10 +213,12 @@ export type Database = {
           violation_type: string
         }
         Insert: {
+          auto_detected?: boolean | null
           blocked?: boolean | null
           categories?: string[] | null
           content_context?: string | null
           created_at?: string
+          detection_confidence?: number | null
           id?: string
           professional_id?: string | null
           reason: string
@@ -223,10 +227,12 @@ export type Database = {
           violation_type: string
         }
         Update: {
+          auto_detected?: boolean | null
           blocked?: boolean | null
           categories?: string[] | null
           content_context?: string | null
           created_at?: string
+          detection_confidence?: number | null
           id?: string
           professional_id?: string | null
           reason?: string
@@ -1019,6 +1025,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      deduct_points: {
+        Args: { points: number; prof_id: string }
+        Returns: undefined
+      }
       generate_referral_code: { Args: never; Returns: string }
       get_completed_meetings_count: {
         Args: { professional_uuid: string }

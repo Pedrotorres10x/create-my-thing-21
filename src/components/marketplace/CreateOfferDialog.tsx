@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { usePaymentEvasionDetection } from "@/hooks/usePaymentEvasionDetection";
+import { PaymentEvasionWarning } from "@/components/PaymentEvasionWarning";
 
 interface CreateOfferDialogProps {
   open: boolean;
@@ -25,6 +27,7 @@ export function CreateOfferDialog({
   onSuccess,
 }: CreateOfferDialogProps) {
   const [loading, setLoading] = useState(false);
+  const { analyzing, analyzeContent } = usePaymentEvasionDetection();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -43,6 +46,22 @@ export function CreateOfferDialog({
 
     setLoading(true);
     try {
+      // Analizar descripción antes de publicar
+      const descriptionAnalysis = await analyzeContent(
+        formData.description,
+        'offer_description',
+        professionalId
+      );
+
+      // Si es muy alto riesgo (>80), bloquear la publicación
+      if (descriptionAnalysis && descriptionAnalysis.riskScore > 80) {
+        toast.error(
+          "⚠️ Oferta bloqueada: La descripción contiene contenido sospechoso. Los pagos externos están prohibidos."
+        );
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.from("offers").insert({
         professional_id: professionalId,
         title: formData.title.trim(),
@@ -82,6 +101,8 @@ export function CreateOfferDialog({
             Comparte tus servicios con la comunidad CONECTOR
           </DialogDescription>
         </DialogHeader>
+
+        <PaymentEvasionWarning />
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -190,9 +211,9 @@ export function CreateOfferDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Publicar Oferta
+            <Button type="submit" disabled={loading || analyzing}>
+              {(loading || analyzing) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {analyzing ? "Analizando..." : "Publicar Oferta"}
             </Button>
           </div>
         </form>
