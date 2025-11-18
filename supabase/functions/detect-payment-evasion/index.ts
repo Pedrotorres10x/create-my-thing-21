@@ -78,10 +78,14 @@ serve(async (req) => {
         }
 
         // Deducir puntos
-        await supabase.rpc('deduct_points', {
+        const { error: deductError } = await supabase.rpc('deduct_points', {
           prof_id: professionalId,
           points: 50,
-        }).catch(err => console.error('Error deducting points:', err));
+        });
+        
+        if (deductError) {
+          console.error('Error deducting points:', deductError);
+        }
       }
     }
 
@@ -95,8 +99,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in detect-payment-evasion:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,

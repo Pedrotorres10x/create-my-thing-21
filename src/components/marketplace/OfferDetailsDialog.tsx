@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Mail, Phone, MessageCircle, ExternalLink, Building, MapPin } from "lucide-react";
+import { usePaymentEvasionDetection } from "@/hooks/usePaymentEvasionDetection";
+import { PaymentEvasionWarning } from "@/components/PaymentEvasionWarning";
 
 interface Offer {
   id: string;
@@ -49,6 +51,7 @@ export function OfferDetailsDialog({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [contacted, setContacted] = useState(false);
+  const { analyzing, analyzeContent } = usePaymentEvasionDetection();
 
   if (!offer) return null;
 
@@ -76,6 +79,25 @@ export function OfferDetailsDialog({
 
     setLoading(true);
     try {
+      // Analizar contenido antes de enviar
+      if (message.trim()) {
+        const analysis = await analyzeContent(
+          message,
+          'contact_message',
+          currentProfessionalId,
+          offer.id
+        );
+
+        // Si es muy alto riesgo (>80), bloquear el envío
+        if (analysis && analysis.riskScore > 80) {
+          toast.error(
+            "⚠️ Mensaje bloqueado: Contenido sospechoso detectado. Los pagos externos están prohibidos."
+          );
+          setLoading(false);
+          return;
+        }
+      }
+
       const { error } = await supabase.from("offer_contacts").insert({
         offer_id: offer.id,
         interested_professional_id: currentProfessionalId,
@@ -160,6 +182,8 @@ export function OfferDetailsDialog({
           {/* Contact Section */}
           {!isOwnOffer && currentProfessionalId && (
             <div className="space-y-4 pt-4 border-t">
+              <PaymentEvasionWarning />
+              
               <Label>Contactar con el Proveedor</Label>
 
               {!contacted ? (
@@ -210,9 +234,9 @@ export function OfferDetailsDialog({
                       )}
                   </div>
 
-                  <Button onClick={handleContact} disabled={loading} className="w-full">
-                    {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    Enviar Solicitud de Contacto
+                  <Button onClick={handleContact} disabled={loading || analyzing} className="w-full">
+                    {(loading || analyzing) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    {analyzing ? "Analizando contenido..." : "Enviar Solicitud de Contacto"}
                   </Button>
                 </>
               ) : (
