@@ -516,7 +516,12 @@ export type Database = {
           business_name: string | null
           chapter_id: string | null
           city: string
+          company_address: string | null
+          company_cif: string | null
           company_name: string | null
+          contact_person_name: string | null
+          contact_person_phone: string | null
+          contact_person_position: string | null
           country: string | null
           created_at: string
           email: string
@@ -525,12 +530,14 @@ export type Database = {
           linkedin: string | null
           linkedin_url: string | null
           logo_url: string | null
-          phone: string | null
+          nif_cif: string | null
+          phone: string
           photo_url: string | null
           position: string | null
           postal_code: string | null
           referral_code: string | null
           referred_by_code: string | null
+          registration_type: string | null
           sector_id: number
           specialization_id: number
           state: string
@@ -549,7 +556,12 @@ export type Database = {
           business_name?: string | null
           chapter_id?: string | null
           city: string
+          company_address?: string | null
+          company_cif?: string | null
           company_name?: string | null
+          contact_person_name?: string | null
+          contact_person_phone?: string | null
+          contact_person_position?: string | null
           country?: string | null
           created_at?: string
           email: string
@@ -558,12 +570,14 @@ export type Database = {
           linkedin?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
-          phone?: string | null
+          nif_cif?: string | null
+          phone: string
           photo_url?: string | null
           position?: string | null
           postal_code?: string | null
           referral_code?: string | null
           referred_by_code?: string | null
+          registration_type?: string | null
           sector_id: number
           specialization_id: number
           state: string
@@ -582,7 +596,12 @@ export type Database = {
           business_name?: string | null
           chapter_id?: string | null
           city?: string
+          company_address?: string | null
+          company_cif?: string | null
           company_name?: string | null
+          contact_person_name?: string | null
+          contact_person_phone?: string | null
+          contact_person_position?: string | null
           country?: string | null
           created_at?: string
           email?: string
@@ -591,12 +610,14 @@ export type Database = {
           linkedin?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
-          phone?: string | null
+          nif_cif?: string | null
+          phone?: string
           photo_url?: string | null
           position?: string | null
           postal_code?: string | null
           referral_code?: string | null
           referred_by_code?: string | null
+          registration_type?: string | null
           sector_id?: number
           specialization_id?: number
           state?: string
@@ -783,6 +804,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_spanish_nif_cif: { Args: { nif_cif: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"
