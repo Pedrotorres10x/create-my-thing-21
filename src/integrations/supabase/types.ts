@@ -376,6 +376,70 @@ export type Database = {
           },
         ]
       }
+      penalty_appeals: {
+        Row: {
+          additional_context: string | null
+          admin_response: string | null
+          appeal_reason: string
+          created_at: string
+          id: string
+          penalty_id: string
+          professional_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          additional_context?: string | null
+          admin_response?: string | null
+          appeal_reason: string
+          created_at?: string
+          id?: string
+          penalty_id: string
+          professional_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          additional_context?: string | null
+          admin_response?: string | null
+          appeal_reason?: string
+          created_at?: string
+          id?: string
+          penalty_id?: string
+          professional_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "penalty_appeals_penalty_id_fkey"
+            columns: ["penalty_id"]
+            isOneToOne: false
+            referencedRelation: "user_penalties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "penalty_appeals_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "penalty_appeals_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       point_levels: {
         Row: {
           badge_color: string

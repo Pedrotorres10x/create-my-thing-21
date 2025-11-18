@@ -3,6 +3,8 @@ import { ProfileForm } from "@/components/ProfileForm";
 import { ProfileProgress } from "@/components/ProfileProgress";
 import { LevelBenefitsCard } from "@/components/LevelBenefitsCard";
 import { UserPenaltiesAlert } from "@/components/UserPenaltiesAlert";
+import { AppealsList } from "@/components/appeals/AppealsList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,30 +39,57 @@ const Profile = () => {
         <UserPenaltiesAlert professionalId={professional.id} />
       )}
 
-      <ProfileProgress />
+      <Tabs defaultValue="profile" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="profile">Perfil</TabsTrigger>
+          <TabsTrigger value="appeals">Apelaciones</TabsTrigger>
+        </TabsList>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <TabsContent value="profile" className="space-y-6">
+          <ProfileProgress />
+
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Perfil Profesional</CardTitle>
+                  <CardDescription>Completa todos los campos para enviar tu solicitud</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ProfileForm />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              {professional && (
+                <LevelBenefitsCard 
+                  currentLevel={Math.floor(professional.total_points / 100) + 1}
+                  currentPoints={professional.total_points}
+                />
+              )}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="appeals">
           <Card>
             <CardHeader>
-              <CardTitle>Perfil Profesional</CardTitle>
-              <CardDescription>Completa todos los campos para enviar tu solicitud</CardDescription>
+              <CardTitle>Mis Apelaciones</CardTitle>
+              <CardDescription>
+                Revisa el estado de tus apelaciones de sanciones
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <ProfileForm />
+              {professional ? (
+                <AppealsList professionalId={professional.id} />
+              ) : (
+                <p className="text-muted-foreground">Cargando...</p>
+              )}
             </CardContent>
           </Card>
-        </div>
-
-        <div className="space-y-6">
-          {professional && (
-            <LevelBenefitsCard 
-              currentLevel={Math.floor(professional.total_points / 100) + 1}
-              currentPoints={professional.total_points}
-            />
-          )}
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

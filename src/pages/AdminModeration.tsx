@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
-import { AlertCircle, CheckCircle, XCircle, Eye, Flag, Shield } from "lucide-react";
+import { AlertCircle, CheckCircle, XCircle, Eye, Flag, Shield, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
@@ -20,6 +20,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AppealsManagement } from "@/components/admin/AppealsManagement";
 
 interface UserReport {
   id: string;
@@ -257,6 +258,10 @@ export default function AdminModeration() {
             <AlertCircle className="h-4 w-4 mr-2" />
             Violaciones de IA ({violations.length})
           </TabsTrigger>
+          <TabsTrigger value="appeals">
+            <FileText className="h-4 w-4 mr-2" />
+            Apelaciones
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="reports" className="space-y-4">
@@ -398,6 +403,10 @@ export default function AdminModeration() {
               </CardContent>
             </Card>
           ))}
+        </TabsContent>
+
+        <TabsContent value="appeals" className="space-y-4">
+          <AppealsManagement />
         </TabsContent>
       </Tabs>
 
