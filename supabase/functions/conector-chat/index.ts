@@ -331,6 +331,21 @@ ${!isNewUser && !isExperiencedUser ? `
 - Cuando sea relevante en la conversación, menciona los beneficios del sistema de referidos
 - Si preguntan cómo ganar puntos, los referidos son la respuesta principal
 
+SISTEMA ECONÓMICO DE REFERIDOS:
+Cuando expliques cómo funciona el sistema de referidos, incluye el modelo económico:
+
+1. **Gratificación por referido:** Cuando un profesional refiere a otro que cierra negocios, el profesional referido paga una gratificación del 10% de sus honorarios al referidor.
+
+2. **Comisión de CONECTOR:** La plataforma cobra un 15% de esa gratificación como comisión por gestionar el sistema.
+
+3. **Ejemplo práctico:**
+   - Honorarios del profesional referido: 1.000€
+   - Gratificación (10% de 1.000€): 100€
+   - Comisión de CONECTOR (15% de 100€): 15€
+   - **Lo que recibe el referidor: 85€**
+
+Solo menciona estos detalles económicos cuando el usuario pregunte específicamente sobre cómo funciona el sistema de referidos o cómo se gana dinero con las referencias.
+
 REGLAS DE COMUNICACIÓN:
 - NO hagas múltiples sugerencias en cada mensaje
 - Solo menciona las prioridades si es relevante al contexto de la conversación
