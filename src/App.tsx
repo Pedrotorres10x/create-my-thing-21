@@ -17,6 +17,7 @@ import Marketplace from "./pages/Marketplace";
 import Feed from "./pages/Feed";
 import Rankings from "./pages/Rankings";
 import Tutorials from "./pages/Tutorials";
+import Subscriptions from "./pages/Subscriptions";
 import Admin from "./pages/Admin";
 import AdminModeration from "./pages/AdminModeration";
 import NotFound from "./pages/NotFound";
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/feed" element={<ProtectedRoute><Layout><Feed /></Layout></ProtectedRoute>} />
             <Route path="/rankings" element={<ProtectedRoute><Layout><Rankings /></Layout></ProtectedRoute>} />
             <Route path="/tutorials" element={<ProtectedRoute><Layout><Tutorials /></Layout></ProtectedRoute>} />
+            <Route path="/subscriptions" element={<ProtectedRoute><Layout><Subscriptions /></Layout></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Layout><Admin /></Layout></ProtectedRoute>} />
             <Route path="/admin/moderation" element={<ProtectedRoute><Layout><AdminModeration /></Layout></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
