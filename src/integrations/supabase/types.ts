@@ -211,6 +211,59 @@ export type Database = {
           },
         ]
       }
+      marketplace_waitlist: {
+        Row: {
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          contacted_at: string | null
+          id: string
+          is_current_user: boolean | null
+          notes: string | null
+          position_in_queue: number | null
+          professional_id: string | null
+          requested_at: string | null
+          status: string
+        }
+        Insert: {
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          contacted_at?: string | null
+          id?: string
+          is_current_user?: boolean | null
+          notes?: string | null
+          position_in_queue?: number | null
+          professional_id?: string | null
+          requested_at?: string | null
+          status?: string
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string
+          contacted_at?: string | null
+          id?: string
+          is_current_user?: boolean | null
+          notes?: string | null
+          position_in_queue?: number | null
+          professional_id?: string | null
+          requested_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_waitlist_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meetings: {
         Row: {
           created_at: string | null
@@ -699,6 +752,132 @@ export type Database = {
           {
             foreignKeyName: "posts_professional_id_fkey"
             columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      premium_marketplace_slots: {
+        Row: {
+          category_id: number | null
+          company_logo_url: string | null
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          contract_end_date: string
+          contract_reference: string | null
+          contract_start_date: string
+          created_at: string | null
+          created_by_admin: string | null
+          description: string
+          display_order: number | null
+          id: string
+          is_external_company: boolean
+          is_featured: boolean | null
+          professional_id: string | null
+          slot_number: number
+          status: string
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          category_id?: number | null
+          company_logo_url?: string | null
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          contract_end_date: string
+          contract_reference?: string | null
+          contract_start_date: string
+          created_at?: string | null
+          created_by_admin?: string | null
+          description: string
+          display_order?: number | null
+          id?: string
+          is_external_company?: boolean
+          is_featured?: boolean | null
+          professional_id?: string | null
+          slot_number: number
+          status?: string
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          category_id?: number | null
+          company_logo_url?: string | null
+          company_name?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string
+          contract_end_date?: string
+          contract_reference?: string | null
+          contract_start_date?: string
+          created_at?: string | null
+          created_by_admin?: string | null
+          description?: string
+          display_order?: number | null
+          id?: string
+          is_external_company?: boolean
+          is_featured?: boolean | null
+          professional_id?: string | null
+          slot_number?: number
+          status?: string
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "premium_marketplace_slots_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "offer_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "premium_marketplace_slots_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      premium_slot_views: {
+        Row: {
+          id: string
+          ip_address: string | null
+          slot_id: string | null
+          viewed_at: string | null
+          viewed_by_professional_id: string | null
+        }
+        Insert: {
+          id?: string
+          ip_address?: string | null
+          slot_id?: string | null
+          viewed_at?: string | null
+          viewed_by_professional_id?: string | null
+        }
+        Update: {
+          id?: string
+          ip_address?: string | null
+          slot_id?: string | null
+          viewed_at?: string | null
+          viewed_by_professional_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "premium_slot_views_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "premium_marketplace_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "premium_slot_views_viewed_by_professional_id_fkey"
+            columns: ["viewed_by_professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"
             referencedColumns: ["id"]
@@ -1378,6 +1557,7 @@ export type Database = {
         Returns: string
       }
       generate_referral_code: { Args: never; Returns: string }
+      get_available_slots_count: { Args: never; Returns: number }
       get_completed_meetings_count: {
         Args: { professional_uuid: string }
         Returns: number
@@ -1411,6 +1591,7 @@ export type Database = {
         Args: { _professional_id: string }
         Returns: boolean
       }
+      update_waitlist_positions: { Args: never; Returns: undefined }
       validate_spanish_nif_cif: { Args: { nif_cif: string }; Returns: boolean }
     }
     Enums: {

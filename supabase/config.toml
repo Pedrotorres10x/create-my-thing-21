@@ -26,3 +26,9 @@ verify_jwt = false
 
 [functions.reward-reactivated-users]
 verify_jwt = false
+
+[functions.notify-waitlist-slot-available]
+verify_jwt = false
+
+[functions.track-slot-expiration]
+verify_jwt = false

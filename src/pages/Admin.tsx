@@ -31,6 +31,7 @@ import { SectorDistributionChart } from "@/components/admin/SectorDistributionCh
 import { RegistrationTrendChart } from "@/components/admin/RegistrationTrendChart";
 import { ChapterManagement } from "@/components/admin/ChapterManagement";
 import { EngagementAnalytics } from "@/components/admin/EngagementAnalytics";
+import PremiumSlotsManagement from "@/components/admin/PremiumSlotsManagement";
 import { BarChart3 } from "lucide-react";
 
 interface Professional {
@@ -485,6 +486,7 @@ const Admin = () => {
           </TabsTrigger>
           <TabsTrigger value="professionals">Profesionales</TabsTrigger>
           <TabsTrigger value="chapters">Capítulos</TabsTrigger>
+          <TabsTrigger value="premium-slots">Marketplace Premium</TabsTrigger>
           <TabsTrigger value="referrals">Referidos</TabsTrigger>
         </TabsList>
 
@@ -822,6 +824,10 @@ const Admin = () => {
 
         <TabsContent value="chapters" className="space-y-4">
           <ChapterManagement />
+        </TabsContent>
+
+        <TabsContent value="premium-slots" className="space-y-4">
+          <PremiumSlotsManagement />
         </TabsContent>
 
         <TabsContent value="referrals" className="space-y-4">
