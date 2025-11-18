@@ -1028,6 +1028,65 @@ export type Database = {
         }
         Relationships: []
       }
+      user_activity_tracking: {
+        Row: {
+          activity_score: number | null
+          created_at: string | null
+          id: string
+          inactivity_days: number | null
+          last_comment: string | null
+          last_like: string | null
+          last_login: string | null
+          last_meeting_request: string | null
+          last_notification_sent: string | null
+          last_offer_contact: string | null
+          last_post_created: string | null
+          professional_id: string
+          reengagement_stage: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          activity_score?: number | null
+          created_at?: string | null
+          id?: string
+          inactivity_days?: number | null
+          last_comment?: string | null
+          last_like?: string | null
+          last_login?: string | null
+          last_meeting_request?: string | null
+          last_notification_sent?: string | null
+          last_offer_contact?: string | null
+          last_post_created?: string | null
+          professional_id: string
+          reengagement_stage?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          activity_score?: number | null
+          created_at?: string | null
+          id?: string
+          inactivity_days?: number | null
+          last_comment?: string | null
+          last_like?: string | null
+          last_login?: string | null
+          last_meeting_request?: string | null
+          last_notification_sent?: string | null
+          last_offer_contact?: string | null
+          last_post_created?: string | null
+          professional_id?: string
+          reengagement_stage?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_activity_tracking_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_ai_context: {
         Row: {
           context_data: Json | null
@@ -1302,6 +1361,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_activity_score: {
+        Args: { _professional_id: string }
+        Returns: number
+      }
       can_send_ai_message: {
         Args: { _professional_id: string }
         Returns: boolean
@@ -1309,6 +1372,10 @@ export type Database = {
       deduct_points: {
         Args: { points: number; prof_id: string }
         Returns: undefined
+      }
+      determine_reengagement_stage: {
+        Args: { _activity_score: number; _inactivity_days: number }
+        Returns: string
       }
       generate_referral_code: { Args: never; Returns: string }
       get_completed_meetings_count: {
