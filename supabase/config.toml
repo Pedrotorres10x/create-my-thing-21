@@ -1,1 +1,13 @@
 project_id = "wpyjsqtvntdziarfipxv"
+
+[functions.conector-chat]
+verify_jwt = false
+
+[functions.moderate-content]
+verify_jwt = false
+
+[functions.send-professional-status-email]
+verify_jwt = false
+
+[functions.send-referral-notification]
+verify_jwt = false

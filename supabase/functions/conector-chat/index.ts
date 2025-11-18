@@ -253,6 +253,17 @@ REGLAS ESTRICTAS:
 - Para vídeo, ENFATIZAR límite de 30 segundos
 - Sé amigable pero firme con validaciones
 - Si algo no es válido, explica por qué y pide corrección
+
+⚠️ ADVERTENCIAS IMPORTANTES AL INICIO:
+- Menciona que CONECTOR es una plataforma profesional seria
+- Advierte que hay sistema automático de moderación de contenido
+- Explica que contenido inapropiado será rechazado automáticamente:
+  * Nombres falsos, de broma o groseros
+  * Imágenes o logos inapropiados o sexuales
+  * Vídeos con contenido inapropiado
+  * Lenguaje vulgar u obsceno
+- Indica que intentos de "bromear" resultarán en bloqueo de registro
+- Mantén tono serio pero amigable sobre estas reglas
 ` : ''}
 
 FUNCIONALIDADES DE CONECTOR:
@@ -301,7 +312,51 @@ IMPORTANTE:
 - Basa tus sugerencias en el contexto real del usuario
 - Actualiza tu comprensión del usuario con cada interacción${userContextStr}`;
 
-    // Update user context after interaction to remember this conversation
+    // Moderate user input before processing (for new users providing registration data)
+    if (professionalId && messages.length > 0 && isNewUser) {
+      const lastUserMessage = messages[messages.length - 1];
+      const userContent = lastUserMessage.content;
+      
+      // Check if message contains potential registration data that needs moderation
+      if (userContent.length > 20) { // Only moderate substantial messages
+        try {
+          const moderationResponse = await fetch(`${supabaseUrl}/functions/v1/moderate-content`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type: 'text',
+              content: userContent,
+              context: 'user_registration_input'
+            })
+          });
+
+          if (moderationResponse.ok) {
+            const moderationResult = await moderationResponse.json();
+            
+            if (!moderationResult.isAppropriate) {
+              console.warn('Inappropriate content detected:', moderationResult);
+              
+              // Return warning message to user
+              return new Response(JSON.stringify({ 
+                error: `⚠️ Contenido inapropiado detectado: ${moderationResult.reason}. Por favor, mantén un tono profesional.`,
+                moderation: moderationResult 
+              }), {
+                status: 400,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              });
+            }
+          }
+        } catch (moderationError) {
+          console.error('Moderation check failed:', moderationError);
+          // Continue without moderation if service fails
+        }
+      }
+    }
+
+    // Update user context after interaction
     if (professionalId && messages.length > 0) {
       const lastUserMessage = messages[messages.length - 1];
       const updatedContext = {
