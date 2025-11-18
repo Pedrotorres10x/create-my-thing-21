@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Loader2, Mail, Phone, MessageCircle, ExternalLink, Building, MapPin } from "lucide-react";
 import { usePaymentEvasionDetection } from "@/hooks/usePaymentEvasionDetection";
 import { PaymentEvasionWarning } from "@/components/PaymentEvasionWarning";
+import { useBehaviorTracking } from "@/hooks/useBehaviorTracking";
 
 interface Offer {
   id: string;
@@ -52,6 +53,18 @@ export function OfferDetailsDialog({
   const [message, setMessage] = useState("");
   const [contacted, setContacted] = useState(false);
   const { analyzing, analyzeContent } = usePaymentEvasionDetection();
+  const { trackEvent } = useBehaviorTracking();
+
+  // Track offer view
+  useEffect(() => {
+    if (open && offer && currentProfessionalId && !isOwnOffer) {
+      trackEvent({
+        professionalId: currentProfessionalId,
+        eventType: 'offer_view',
+        contextId: offer.id,
+      });
+    }
+  }, [open, offer?.id]);
 
   if (!offer) return null;
 
@@ -79,6 +92,19 @@ export function OfferDetailsDialog({
 
     setLoading(true);
     try {
+      // Detectar si se discute precio en el mensaje
+      const pricePatterns = /precio|costo|pago|€|euro|cantidad|presupuesto/i;
+      const discussesPrice = pricePatterns.test(message);
+
+      if (discussesPrice) {
+        await trackEvent({
+          professionalId: currentProfessionalId,
+          eventType: 'price_discussed',
+          contextId: offer.id,
+          metadata: { messageLength: message.length },
+        });
+      }
+
       // Analizar contenido antes de enviar
       if (message.trim()) {
         const analysis = await analyzeContent(
@@ -105,6 +131,14 @@ export function OfferDetailsDialog({
       });
 
       if (error) throw error;
+
+      // Track successful contact
+      await trackEvent({
+        professionalId: currentProfessionalId,
+        eventType: 'offer_contact',
+        contextId: offer.id,
+        metadata: { hasMessage: !!message.trim() },
+      });
 
       toast.success("Solicitud de contacto enviada");
       setMessage("");
