@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.send-reengagement-notifications]
 verify_jwt = false
+
+[functions.reward-reactivated-users]
+verify_jwt = false
