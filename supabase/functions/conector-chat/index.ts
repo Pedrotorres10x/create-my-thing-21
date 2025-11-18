@@ -22,16 +22,63 @@ serve(async (req) => {
     // Load user context and profile info
     let userContextStr = '';
     let profileInfo: any = null;
+    let isNewUser = false;
+    let chaptersInArea: any[] = [];
+    let professionsInChapter: any[] = [];
     
     if (professionalId) {
-      // Get professional profile
+      // Get professional profile with chapter and specialization info
       const { data: profile } = await supabase
         .from('professionals')
-        .select('full_name, sector_id, specialization_id, total_points, status, city, state')
+        .select(`
+          full_name, 
+          sector_id, 
+          specialization_id, 
+          total_points, 
+          status, 
+          city, 
+          state,
+          chapter_id,
+          specializations(name),
+          sector_catalog(name)
+        `)
         .eq('id', professionalId)
         .single();
       
       profileInfo = profile;
+      
+      // Determine if user is new (no specialization or no chapter)
+      isNewUser = !profile?.specialization_id || !profile?.chapter_id;
+
+      // If new user, get chapters in their area
+      if (isNewUser && profile?.city && profile?.state) {
+        const { data: chapters } = await supabase
+          .from('chapters')
+          .select('id, name, city, state, member_count')
+          .eq('city', profile.city)
+          .eq('state', profile.state);
+        
+        if (chapters) {
+          chaptersInArea = chapters;
+        }
+      }
+
+      // If user has a chapter, get professions already in that chapter
+      if (profile?.chapter_id) {
+        const { data: professionals } = await supabase
+          .from('professionals')
+          .select(`
+            specialization_id,
+            specializations(name)
+          `)
+          .eq('chapter_id', profile.chapter_id)
+          .eq('status', 'approved')
+          .neq('id', professionalId);
+        
+        if (professionals) {
+          professionsInChapter = professionals;
+        }
+      }
 
       // Get or create user AI context
       const { data: contextData } = await supabase
@@ -51,7 +98,7 @@ serve(async (req) => {
           .select('role, content')
           .eq('conversation_id', conversationId)
           .order('created_at', { ascending: true })
-          .limit(10); // Last 10 messages
+          .limit(10);
         
         if (historyData && historyData.length > 0) {
           userContextStr += `\n\nHISTORIAL RECIENTE DE CONVERSACIÓN:\n`;
@@ -68,6 +115,34 @@ serve(async (req) => {
         userContextStr += `- Puntos totales: ${profileInfo.total_points}\n`;
         userContextStr += `- Estado: ${profileInfo.status}\n`;
         userContextStr += `- Ubicación: ${profileInfo.city}, ${profileInfo.state}\n`;
+        
+        if (isNewUser) {
+          userContextStr += `- USUARIO NUEVO: Necesita completar registro\n`;
+          userContextStr += `- Tiene especialización: ${!!profileInfo.specialization_id}\n`;
+          userContextStr += `- Tiene capítulo: ${!!profileInfo.chapter_id}\n`;
+        }
+        
+        if (profileInfo.specialization_id) {
+          userContextStr += `- Profesión: ${profileInfo.specializations?.name || 'No especificada'}\n`;
+        }
+        
+        if (profileInfo.chapter_id) {
+          userContextStr += `- Capítulo asignado: Sí\n`;
+        }
+
+        if (chaptersInArea.length > 0) {
+          userContextStr += `\nCAPÍTULOS DISPONIBLES EN ${profileInfo.city}, ${profileInfo.state}:\n`;
+          chaptersInArea.forEach((ch: any) => {
+            userContextStr += `- ${ch.name} (${ch.member_count} miembros)\n`;
+          });
+        }
+
+        if (professionsInChapter.length > 0) {
+          userContextStr += `\nPROFESIONES YA OCUPADAS EN SU CAPÍTULO:\n`;
+          professionsInChapter.forEach((prof: any) => {
+            userContextStr += `- ${prof.specializations?.name}\n`;
+          });
+        }
       }
     }
 
@@ -77,8 +152,65 @@ TU ROL:
 - Eres un guía proactivo y amigable que ayuda a los usuarios a sacar el máximo provecho de CONECTOR
 - Recuerdas conversaciones anteriores y el contexto del usuario para personalizar la experiencia
 - Sugieres acciones relevantes basadas en su perfil y actividad
+- Guías a nuevos usuarios paso a paso en su proceso de registro
 - Anticipas necesidades y ofreces ayuda antes de que pregunten
 - Haces preguntas para entender mejor sus objetivos profesionales
+
+${isNewUser ? `
+⚠️ ESTE ES UN USUARIO NUEVO - PRIORIDAD MÁXIMA: COMPLETAR REGISTRO
+
+FLUJO OBLIGATORIO PARA NUEVOS USUARIOS:
+1. **Dar la bienvenida cálida** y explicar brevemente qué es CONECTOR y sus beneficios
+
+2. **Preguntar sobre el capítulo** (primer paso crítico):
+   ${chaptersInArea.length > 0 ? `
+   - Hay ${chaptersInArea.length} capítulo(s) disponible(s) en ${profileInfo?.city}, ${profileInfo?.state}:
+     ${chaptersInArea.map((ch: any) => `${ch.name} (${ch.member_count} miembros)`).join(', ')}
+   - Pregunta si quiere unirse a uno existente (menciona el nombre) o crear uno nuevo
+   - Explica qué es un capítulo: comunidad local de profesionales que se reúnen regularmente
+   ` : `
+   - No hay capítulos en ${profileInfo?.city}, ${profileInfo?.state}
+   - Sugiere crear un nuevo capítulo para su área
+   - Explica que un capítulo es una comunidad local de profesionales que se reúnen regularmente
+   - Menciona que ser fundador de un capítulo tiene beneficios especiales
+   `}
+   
+3. **Preguntar datos profesionales** (solo DESPUÉS de definir capítulo):
+   - Sector/industria en la que trabaja
+   - Profesión/especialización específica (ser muy específico aquí)
+   - Años de experiencia
+   - CRÍTICO: Explicar que cada profesión es exclusiva por capítulo (no puede haber dos del mismo oficio)
+
+4. **Validar profesión NO duplicada**:
+   ${professionsInChapter.length > 0 ? `
+   ⚠️ PROFESIONES YA OCUPADAS en el capítulo seleccionado:
+   ${professionsInChapter.map((p: any) => `- ${p.specializations?.name}`).join('\n   ')}
+   
+   - Si el usuario menciona una profesión de esta lista, RECHAZAR amablemente
+   - Explicar que esa profesión ya está ocupada para proteger la exclusividad
+   - Sugerir profesiones relacionadas pero diferentes que estén disponibles
+   - Ejemplo: Si "Contador" está ocupado, sugerir "Asesor Fiscal" o "Auditor"
+   ` : `
+   - Aún no hay profesiones ocupadas en el capítulo
+   - El usuario puede registrar su profesión sin restricciones
+   - Igual enfatiza la importancia de ser específico en su profesión
+   `}
+
+5. **Confirmar datos y explicar próximos pasos**:
+   - Resumen de: Capítulo seleccionado + Profesión elegida
+   - Informar que los datos serán enviados para aprobación del administrador
+   - Explicar que recibirán notificación por email cuando sean aprobados
+   - Mencionar que pueden explorar la plataforma mientras esperan
+   - Sugerir completar su perfil (foto, bio, experiencia)
+
+REGLAS ESTRICTAS PARA NUEVOS USUARIOS:
+- NUNCA permitas avanzar a paso 3 sin completar paso 2 (capítulo)
+- NUNCA permitas profesiones duplicadas en el mismo capítulo
+- Si el usuario intenta saltarse pasos, redirígelo gentilmente pero firmemente
+- Haz UNA pregunta a la vez, no abrumes con todo junto
+- Sé amigable pero firme con las reglas de exclusividad
+- Si no estás seguro si una profesión es igual o diferente, pide más detalles
+` : ''}
 
 FUNCIONALIDADES DE CONECTOR:
 1. **Dashboard**: Vista general con estadísticas, próximas reuniones y acciones rápidas
