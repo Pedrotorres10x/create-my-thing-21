@@ -13,7 +13,6 @@ import Profile from "./pages/Profile";
 import Referrals from "./pages/Referrals";
 import Chapter from "./pages/Chapter";
 import Meetings from "./pages/Meetings";
-import Marketplace from "./pages/Marketplace";
 import PremiumMarketplace from "./pages/PremiumMarketplace";
 import Feed from "./pages/Feed";
 import Rankings from "./pages/Rankings";
@@ -41,7 +40,6 @@ const App = () => (
             <Route path="/referrals" element={<ProtectedRoute><Layout><Referrals /></Layout></ProtectedRoute>} />
             <Route path="/chapter" element={<ProtectedRoute><Layout><Chapter /></Layout></ProtectedRoute>} />
             <Route path="/meetings" element={<ProtectedRoute><Layout><Meetings /></Layout></ProtectedRoute>} />
-            <Route path="/marketplace" element={<ProtectedRoute><Layout><Marketplace /></Layout></ProtectedRoute>} />
             <Route path="/premium-marketplace" element={<ProtectedRoute><Layout><PremiumMarketplace /></Layout></ProtectedRoute>} />
             <Route path="/feed" element={<ProtectedRoute><Layout><Feed /></Layout></ProtectedRoute>} />
             <Route path="/rankings" element={<ProtectedRoute><Layout><Rankings /></Layout></ProtectedRoute>} />
