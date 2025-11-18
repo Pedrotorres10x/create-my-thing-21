@@ -29,7 +29,6 @@ const mainItems = [
 const communityItems = [
   { title: "One-to-Ones", url: "/meetings", icon: Calendar },
   { title: "Marketplace Premium", url: "/premium-marketplace", icon: Sparkles, badge: "PREMIUM" },
-  { title: "Ofertas de la Comunidad", url: "/marketplace", icon: Store },
   { title: "Comunidad", url: "/feed", icon: MessageSquare },
   { title: "Rankings", url: "/rankings", icon: Trophy },
 ];
