@@ -12,11 +12,11 @@ const features = [
     ]
   },
   {
-    category: "Networking",
+    category: "Networking de Alto Valor",
     items: [
       { name: "One-to-Ones semanales", free: "1/mes", provincial: "1/semana", regional: "2/semana", national: "Ilimitados" },
-      { name: "Referidos mensuales", free: "1", provincial: "4", regional: "4", national: "Ilimitados" },
-      { name: "Invitados al mes", free: "0", provincial: "1", regional: "1", national: "Ilimitados" },
+      { name: "Leads cualificados/mes (contactos trabajados)", free: "1", provincial: "4", regional: "4", national: "Ilimitados" },
+      { name: "Invitados eventos/mes", free: "0", provincial: "1", regional: "1", national: "Ilimitados" },
       { name: "Eventos nacionales prioritarios", free: false, provincial: false, regional: false, national: true },
       { name: "Badge especial Nacional", free: false, provincial: false, regional: false, national: true },
     ]
