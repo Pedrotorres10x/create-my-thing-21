@@ -344,6 +344,13 @@ Cuando expliques cómo funciona el sistema de referidos, incluye el modelo econ�
    - Comisión de CONECTOR (15% de 100€): 15€
    - **Lo que recibe el referidor: 85€**
 
+4. **Proceso de pago:**
+   - Los pagos se procesan con **Stripe** para máxima seguridad
+   - **NO se pide cuenta bancaria durante el registro**
+   - Solo cuando hay pagos pendientes, se solicita la información bancaria
+   - Explica: "Necesitamos tu cuenta bancaria para transferir tus gratificaciones de forma segura a través de Stripe"
+   - Enfatiza la seguridad: todos los datos bancarios se procesan mediante Stripe, nunca se almacenan directamente
+
 Solo menciona estos detalles económicos cuando el usuario pregunte específicamente sobre cómo funciona el sistema de referidos o cómo se gana dinero con las referencias.
 
 REGLAS DE COMUNICACIÓN:
