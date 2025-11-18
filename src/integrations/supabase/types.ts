@@ -197,6 +197,53 @@ export type Database = {
           },
         ]
       }
+      moderation_violations: {
+        Row: {
+          blocked: boolean | null
+          categories: string[] | null
+          content_context: string | null
+          created_at: string
+          id: string
+          professional_id: string | null
+          reason: string
+          severity: string
+          user_id: string | null
+          violation_type: string
+        }
+        Insert: {
+          blocked?: boolean | null
+          categories?: string[] | null
+          content_context?: string | null
+          created_at?: string
+          id?: string
+          professional_id?: string | null
+          reason: string
+          severity: string
+          user_id?: string | null
+          violation_type: string
+        }
+        Update: {
+          blocked?: boolean | null
+          categories?: string[] | null
+          content_context?: string | null
+          created_at?: string
+          id?: string
+          professional_id?: string | null
+          reason?: string
+          severity?: string
+          user_id?: string | null
+          violation_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_violations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offer_categories: {
         Row: {
           created_at: string
@@ -530,6 +577,8 @@ export type Database = {
           linkedin: string | null
           linkedin_url: string | null
           logo_url: string | null
+          moderation_block_reason: string | null
+          moderation_blocked: boolean | null
           nif_cif: string | null
           phone: string
           photo_url: string | null
@@ -570,6 +619,8 @@ export type Database = {
           linkedin?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
+          moderation_block_reason?: string | null
+          moderation_blocked?: boolean | null
           nif_cif?: string | null
           phone: string
           photo_url?: string | null
@@ -610,6 +661,8 @@ export type Database = {
           linkedin?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
+          moderation_block_reason?: string | null
+          moderation_blocked?: boolean | null
           nif_cif?: string | null
           phone?: string
           photo_url?: string | null

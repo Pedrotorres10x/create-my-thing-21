@@ -11,18 +11,24 @@ export interface ModerationResult {
  * Modera contenido de texto usando IA
  * @param text - Texto a moderar
  * @param context - Contexto del campo (ej: "nombre", "descripción")
+ * @param userId - ID del usuario (opcional, para tracking)
+ * @param professionalId - ID del profesional (opcional, para tracking)
  * @returns Resultado de moderación
  */
 export async function moderateText(
   text: string,
-  context?: string
+  context?: string,
+  userId?: string,
+  professionalId?: string
 ): Promise<ModerationResult> {
   try {
     const { data, error } = await supabase.functions.invoke('moderate-content', {
       body: {
         type: 'text',
         content: text,
-        context: context
+        context: context,
+        userId: userId,
+        professionalId: professionalId
       }
     });
 
@@ -49,18 +55,24 @@ export async function moderateText(
  * Modera una imagen usando IA
  * @param imageData - Data URL o URL de la imagen
  * @param context - Contexto del campo (ej: "logo", "foto perfil")
+ * @param userId - ID del usuario (opcional, para tracking)
+ * @param professionalId - ID del profesional (opcional, para tracking)
  * @returns Resultado de moderación
  */
 export async function moderateImage(
   imageData: string,
-  context?: string
+  context?: string,
+  userId?: string,
+  professionalId?: string
 ): Promise<ModerationResult> {
   try {
     const { data, error } = await supabase.functions.invoke('moderate-content', {
       body: {
         type: 'image',
         content: imageData,
-        context: context
+        context: context,
+        userId: userId,
+        professionalId: professionalId
       }
     });
 
