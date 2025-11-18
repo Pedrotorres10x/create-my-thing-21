@@ -1,4 +1,4 @@
-import { Home, User, Users, Handshake, Calendar, Store, MessageSquare, Trophy, UserCircle, Shield, BookOpen } from "lucide-react";
+import { Home, User, Users, Handshake, Calendar, Store, MessageSquare, Trophy, UserCircle, Shield, BookOpen, AlertTriangle } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -103,6 +103,18 @@ export function AppSidebar() {
                     >
                       <Shield className="h-4 w-4" />
                       {open && <span>Admin</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/admin/moderation"
+                      className="hover:bg-muted/50"
+                      activeClassName="bg-muted text-primary font-medium"
+                    >
+                      <AlertTriangle className="h-4 w-4" />
+                      {open && <span>Moderación</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

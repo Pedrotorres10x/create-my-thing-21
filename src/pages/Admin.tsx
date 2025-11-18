@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download } from "lucide-react";
+import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
@@ -89,6 +89,7 @@ const Admin = () => {
     pendingApproval: 0,
     approved: 0,
     totalReferrals: 0,
+    pendingReports: 0,
   });
 
   useEffect(() => {
@@ -103,7 +104,7 @@ const Admin = () => {
 
   const loadData = async () => {
     setLoading(true);
-    await Promise.all([loadProfessionals(), loadReferrals()]);
+    await Promise.all([loadProfessionals(), loadReferrals(), loadReportsStats()]);
     setLoading(false);
   };
 
@@ -144,6 +145,20 @@ const Admin = () => {
 
     setReferrals(data || []);
     setStats(prev => ({ ...prev, totalReferrals: data?.length || 0 }));
+  };
+
+  const loadReportsStats = async () => {
+    const { data, error } = await supabase
+      .from('user_reports')
+      .select('id, status')
+      .eq('status', 'pending');
+
+    if (error) {
+      console.error('Error loading reports stats:', error);
+      return;
+    }
+
+    setStats(prev => ({ ...prev, pendingReports: data?.length || 0 }));
   };
 
   const updateProfessionalStatus = async (id: string, status: string) => {
@@ -401,7 +416,7 @@ const Admin = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-3">
             <CardDescription className="flex items-center gap-2">
@@ -437,6 +452,23 @@ const Admin = () => {
             </CardDescription>
             <CardTitle className="text-3xl">{stats.totalReferrals}</CardTitle>
           </CardHeader>
+        </Card>
+        <Card 
+          className="cursor-pointer hover:shadow-md transition-shadow border-primary/20"
+          onClick={() => navigate('/admin/moderation')}
+        >
+          <CardHeader className="pb-3">
+            <CardDescription className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-orange-500" />
+              Reportes Pendientes
+            </CardDescription>
+            <CardTitle className="text-3xl text-orange-500">{stats.pendingReports}</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <Button variant="ghost" size="sm" className="w-full">
+              Ir a Moderación →
+            </Button>
+          </CardContent>
         </Card>
       </div>
 

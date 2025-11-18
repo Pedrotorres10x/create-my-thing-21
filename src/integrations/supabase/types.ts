@@ -561,6 +561,7 @@ export type Database = {
           bio: string | null
           business_description: string | null
           business_name: string | null
+          business_verified: boolean | null
           chapter_id: string | null
           city: string
           company_address: string | null
@@ -572,6 +573,7 @@ export type Database = {
           country: string | null
           created_at: string
           email: string
+          email_verified: boolean | null
           full_name: string
           id: string
           linkedin: string | null
@@ -580,6 +582,7 @@ export type Database = {
           moderation_block_reason: string | null
           moderation_blocked: boolean | null
           nif_cif: string | null
+          nif_verified: boolean | null
           phone: string
           photo_url: string | null
           position: string | null
@@ -594,6 +597,8 @@ export type Database = {
           total_points: number
           updated_at: string
           user_id: string
+          verification_documents_url: string[] | null
+          verification_requested_at: string | null
           video_url: string | null
           website: string | null
           years_experience: number | null
@@ -603,6 +608,7 @@ export type Database = {
           bio?: string | null
           business_description?: string | null
           business_name?: string | null
+          business_verified?: boolean | null
           chapter_id?: string | null
           city: string
           company_address?: string | null
@@ -614,6 +620,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           email: string
+          email_verified?: boolean | null
           full_name: string
           id?: string
           linkedin?: string | null
@@ -622,6 +629,7 @@ export type Database = {
           moderation_block_reason?: string | null
           moderation_blocked?: boolean | null
           nif_cif?: string | null
+          nif_verified?: boolean | null
           phone: string
           photo_url?: string | null
           position?: string | null
@@ -636,6 +644,8 @@ export type Database = {
           total_points?: number
           updated_at?: string
           user_id: string
+          verification_documents_url?: string[] | null
+          verification_requested_at?: string | null
           video_url?: string | null
           website?: string | null
           years_experience?: number | null
@@ -645,6 +655,7 @@ export type Database = {
           bio?: string | null
           business_description?: string | null
           business_name?: string | null
+          business_verified?: boolean | null
           chapter_id?: string | null
           city?: string
           company_address?: string | null
@@ -656,6 +667,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           email?: string
+          email_verified?: boolean | null
           full_name?: string
           id?: string
           linkedin?: string | null
@@ -664,6 +676,7 @@ export type Database = {
           moderation_block_reason?: string | null
           moderation_blocked?: boolean | null
           nif_cif?: string | null
+          nif_verified?: boolean | null
           phone?: string
           photo_url?: string | null
           position?: string | null
@@ -678,6 +691,8 @@ export type Database = {
           total_points?: number
           updated_at?: string
           user_id?: string
+          verification_documents_url?: string[] | null
+          verification_requested_at?: string | null
           video_url?: string | null
           website?: string | null
           years_experience?: number | null
@@ -931,13 +946,6 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_reports_reviewed_by_fkey"
-            columns: ["reviewed_by"]
-            isOneToOne: false
-            referencedRelation: "professionals"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_roles: {
@@ -960,6 +968,51 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      verification_logs: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          professional_id: string
+          status: string
+          verification_type: string
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          professional_id: string
+          status: string
+          verification_type: string
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          professional_id?: string
+          status?: string
+          verification_type?: string
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_logs_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_logs_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
