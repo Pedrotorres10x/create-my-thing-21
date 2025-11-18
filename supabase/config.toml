@@ -11,6 +11,3 @@ verify_jwt = false
 
 [functions.send-referral-notification]
 verify_jwt = false
-
-[functions.send-daily-motivation]
-verify_jwt = false
