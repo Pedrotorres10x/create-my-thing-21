@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.analyze-behavior]
 verify_jwt = false
+
+[functions.analyze-user-activity]
+verify_jwt = false
+
+[functions.send-reengagement-notifications]
+verify_jwt = false
