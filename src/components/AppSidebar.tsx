@@ -1,7 +1,8 @@
-import { Home, User, Users, Handshake, Calendar, Store, MessageSquare, Trophy, UserCircle, Shield, BookOpen, AlertTriangle, CreditCard } from "lucide-react";
+import { Home, Users, Handshake, Calendar, Store, MessageSquare, Trophy, UserCircle, Shield, BookOpen, AlertTriangle, CreditCard, Scale } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
+import { useEthicsCommittee } from "@/hooks/useEthicsCommittee";
 
 import {
   Sidebar,
@@ -37,6 +38,7 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const { isAdmin } = useAdmin();
+  const { isCommitteeMember } = useEthicsCommittee();
 
   const isActive = (path: string) => currentPath === path;
 
@@ -88,6 +90,29 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isCommitteeMember && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Comité de Ética</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/ethics-committee"
+                      end
+                      className="hover:bg-muted/50"
+                      activeClassName="bg-muted text-primary font-medium"
+                    >
+                      <Scale className="h-4 w-4" />
+                      {open && <span>Comité Ética</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {isAdmin && (
           <SidebarGroup>
