@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.79.0';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,8 @@ interface ModerationRequest {
   type: 'text' | 'image';
   content: string; // For text: the text to check. For image: base64 or URL
   context?: string; // Additional context like field name
+  userId?: string; // User ID for violation tracking
+  professionalId?: string; // Professional ID for violation tracking
 }
 
 interface ModerationResult {
@@ -24,12 +27,17 @@ serve(async (req) => {
   }
 
   try {
-    const { type, content, context }: ModerationRequest = await req.json();
+    const { type, content, context, userId, professionalId }: ModerationRequest = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
+
+    // Initialize Supabase client for logging violations
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     let moderationResult: ModerationResult;
 
@@ -39,6 +47,32 @@ serve(async (req) => {
       moderationResult = await moderateImage(content, context, LOVABLE_API_KEY);
     } else {
       throw new Error('Invalid moderation type');
+    }
+
+    // Log violation if content is inappropriate
+    if (!moderationResult.isAppropriate && (userId || professionalId)) {
+      try {
+        await supabase
+          .from('moderation_violations')
+          .insert({
+            user_id: userId,
+            professional_id: professionalId,
+            violation_type: type,
+            content_context: context,
+            severity: moderationResult.severity || 'medium',
+            reason: moderationResult.reason || 'Contenido inapropiado detectado',
+            categories: moderationResult.categories || []
+          });
+        
+        console.log('Violation logged:', {
+          type,
+          context,
+          severity: moderationResult.severity
+        });
+      } catch (logError) {
+        console.error('Error logging violation:', logError);
+        // Continue even if logging fails
+      }
     }
 
     return new Response(JSON.stringify(moderationResult), {
