@@ -169,6 +169,48 @@ export type Database = {
           },
         ]
       }
+      ethics_committee_decisions: {
+        Row: {
+          created_at: string | null
+          decision: string
+          id: string
+          report_id: string
+          resolution_notes: string | null
+          reviewed_by: string
+        }
+        Insert: {
+          created_at?: string | null
+          decision: string
+          id?: string
+          report_id: string
+          resolution_notes?: string | null
+          reviewed_by: string
+        }
+        Update: {
+          created_at?: string | null
+          decision?: string
+          id?: string
+          report_id?: string
+          resolution_notes?: string | null
+          reviewed_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ethics_committee_decisions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "user_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ethics_committee_decisions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meetings: {
         Row: {
           created_at: string | null
@@ -1114,6 +1156,11 @@ export type Database = {
           context_id: string | null
           created_at: string
           description: string
+          escalated_to_admin: boolean | null
+          escalation_reason: string | null
+          ethics_committee_resolution: string | null
+          ethics_committee_reviewed_at: string | null
+          ethics_committee_reviewed_by: string | null
           id: string
           report_type: string
           reported_id: string
@@ -1128,6 +1175,11 @@ export type Database = {
           context_id?: string | null
           created_at?: string
           description: string
+          escalated_to_admin?: boolean | null
+          escalation_reason?: string | null
+          ethics_committee_resolution?: string | null
+          ethics_committee_reviewed_at?: string | null
+          ethics_committee_reviewed_by?: string | null
           id?: string
           report_type: string
           reported_id: string
@@ -1142,6 +1194,11 @@ export type Database = {
           context_id?: string | null
           created_at?: string
           description?: string
+          escalated_to_admin?: boolean | null
+          escalation_reason?: string | null
+          ethics_committee_resolution?: string | null
+          ethics_committee_reviewed_at?: string | null
+          ethics_committee_reviewed_by?: string | null
           id?: string
           report_type?: string
           reported_id?: string
@@ -1151,6 +1208,13 @@ export type Database = {
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_reports_ethics_committee_reviewed_by_fkey"
+            columns: ["ethics_committee_reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_reports_reported_id_fkey"
             columns: ["reported_id"]
@@ -1251,6 +1315,16 @@ export type Database = {
         Args: { professional_uuid: string }
         Returns: number
       }
+      get_ethics_committee_members: {
+        Args: never
+        Returns: {
+          email: string
+          full_name: string
+          id: string
+          photo_url: string
+          total_points: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1265,6 +1339,10 @@ export type Database = {
       increment_ai_messages: {
         Args: { _professional_id: string }
         Returns: undefined
+      }
+      is_ethics_committee_member: {
+        Args: { _professional_id: string }
+        Returns: boolean
       }
       validate_spanish_nif_cif: { Args: { nif_cif: string }; Returns: boolean }
     }
