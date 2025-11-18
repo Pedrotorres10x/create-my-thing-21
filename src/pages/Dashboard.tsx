@@ -12,6 +12,7 @@ import { AchievementModal } from "@/components/gamification/AchievementModal";
 import { RankingCard } from "@/components/gamification/RankingCard";
 import { useAchievements } from "@/hooks/useAchievements";
 import { ReengagementWelcomeBack } from "@/components/reengagement/ReengagementWelcomeBack";
+import { PremiumBanner } from "@/components/advertising/PremiumBanner";
 
 interface DashboardStats {
   referralsSent: number;
@@ -174,6 +175,9 @@ const Dashboard = () => {
 
           {/* AI Chat Interface */}
           <AIChat />
+
+          {/* Premium Banner Advertising */}
+          <PremiumBanner location="dashboard" size="horizontal_large" />
 
           {/* Gamification Section */}
           <div className="grid gap-6 md:grid-cols-3 mt-6">

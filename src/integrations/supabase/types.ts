@@ -14,6 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
+      banner_clicks: {
+        Row: {
+          banner_id: string
+          clicked_at: string
+          id: string
+          page_location: string
+          professional_id: string | null
+          session_id: string | null
+        }
+        Insert: {
+          banner_id: string
+          clicked_at?: string
+          id?: string
+          page_location: string
+          professional_id?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          banner_id?: string
+          clicked_at?: string
+          id?: string
+          page_location?: string
+          professional_id?: string | null
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banner_clicks_banner_id_fkey"
+            columns: ["banner_id"]
+            isOneToOne: false
+            referencedRelation: "premium_ad_banners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "banner_clicks_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      banner_impressions: {
+        Row: {
+          banner_id: string
+          id: string
+          page_location: string
+          professional_id: string | null
+          session_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          banner_id: string
+          id?: string
+          page_location: string
+          professional_id?: string | null
+          session_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          banner_id?: string
+          id?: string
+          page_location?: string
+          professional_id?: string | null
+          session_id?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banner_impressions_banner_id_fkey"
+            columns: ["banner_id"]
+            isOneToOne: false
+            referencedRelation: "premium_ad_banners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "banner_impressions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       behavioral_risk_scores: {
         Row: {
           alert_threshold_reached: boolean | null
@@ -757,6 +841,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      premium_ad_banners: {
+        Row: {
+          banner_image_url: string
+          banner_size: string
+          campaign_name: string
+          click_url: string
+          company_logo_url: string | null
+          company_name: string
+          contract_reference: string | null
+          created_at: string
+          created_by_admin: string | null
+          daily_impression_limit: number | null
+          display_priority: number
+          end_date: string
+          id: string
+          is_active: boolean
+          monthly_price: number | null
+          notes: string | null
+          start_date: string
+          target_location: string
+          total_impression_limit: number | null
+          updated_at: string
+        }
+        Insert: {
+          banner_image_url: string
+          banner_size: string
+          campaign_name: string
+          click_url: string
+          company_logo_url?: string | null
+          company_name: string
+          contract_reference?: string | null
+          created_at?: string
+          created_by_admin?: string | null
+          daily_impression_limit?: number | null
+          display_priority?: number
+          end_date: string
+          id?: string
+          is_active?: boolean
+          monthly_price?: number | null
+          notes?: string | null
+          start_date: string
+          target_location?: string
+          total_impression_limit?: number | null
+          updated_at?: string
+        }
+        Update: {
+          banner_image_url?: string
+          banner_size?: string
+          campaign_name?: string
+          click_url?: string
+          company_logo_url?: string | null
+          company_name?: string
+          contract_reference?: string | null
+          created_at?: string
+          created_by_admin?: string | null
+          daily_impression_limit?: number | null
+          display_priority?: number
+          end_date?: string
+          id?: string
+          is_active?: boolean
+          monthly_price?: number | null
+          notes?: string | null
+          start_date?: string
+          target_location?: string
+          total_impression_limit?: number | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       premium_marketplace_slots: {
         Row: {
@@ -1540,10 +1693,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      banner_has_reached_limits: {
+        Args: { _banner_id: string }
+        Returns: boolean
+      }
       calculate_activity_score: {
         Args: { _professional_id: string }
         Returns: number
       }
+      calculate_banner_ctr: { Args: { _banner_id: string }; Returns: number }
       can_send_ai_message: {
         Args: { _professional_id: string }
         Returns: boolean
@@ -1571,6 +1729,10 @@ export type Database = {
           photo_url: string
           total_points: number
         }[]
+      }
+      get_next_banner_to_display: {
+        Args: { _location: string }
+        Returns: string
       }
       has_role: {
         Args: {
