@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Users, Calendar, Award } from "lucide-react";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
+import { PremiumBanner } from "@/components/advertising/PremiumBanner";
 
 interface Chapter {
   id: string;
@@ -146,6 +147,9 @@ const Chapter = () => {
           {chapter.city}, {chapter.state}
         </p>
       </div>
+
+      {/* Premium Banner */}
+      <PremiumBanner location="dashboard" size="horizontal_large" />
 
       {/* Chapter Info */}
       <div className="grid gap-6 md:grid-cols-2">

@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { PremiumBanner } from "@/components/advertising/PremiumBanner";
 
 export default function Subscriptions() {
   const { plans, plansLoading, currentSubscription, subscriptionLoading } = useSubscription();
@@ -66,6 +67,9 @@ export default function Subscriptions() {
           </CardContent>
         </Card>
       )}
+
+      {/* Premium Banner */}
+      <PremiumBanner location="dashboard" size="horizontal_large" />
 
       <Tabs defaultValue="monthly" className="w-full">
         <div className="flex justify-center mb-8">

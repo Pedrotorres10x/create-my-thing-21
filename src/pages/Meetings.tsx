@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RequestMeetingDialog } from "@/components/meetings/RequestMeetingDialog";
 import { format, isPast } from "date-fns";
 import { es } from "date-fns/locale";
+import { PremiumBanner } from "@/components/advertising/PremiumBanner";
 
 interface Meeting {
   id: string;
@@ -161,6 +162,9 @@ const Meetings = () => {
           Solicitar Reunión
         </Button>
       </div>
+
+      {/* Premium Banner */}
+      <PremiumBanner location="dashboard" size="horizontal_large" />
 
       <Tabs defaultValue="upcoming" className="space-y-4">
         <TabsList>

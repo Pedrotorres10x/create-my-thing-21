@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Medal, TrendingUp } from "lucide-react";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
 import { PodiumDisplay } from "@/components/gamification/PodiumDisplay";
+import { PremiumBanner } from "@/components/advertising/PremiumBanner";
 import {
   Select,
   SelectContent,
@@ -172,6 +173,9 @@ const Rankings = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Premium Banner */}
+      <PremiumBanner location="dashboard" size="horizontal_large" />
 
       {/* Filters */}
       <Card>
