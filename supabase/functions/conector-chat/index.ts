@@ -344,7 +344,14 @@ Cuando expliques cómo funciona el sistema de referidos, incluye el modelo econ�
    - Comisión de CONECTOR (15% de 100€): 15€
    - **Lo que recibe el referidor: 85€**
 
-4. **Proceso de pago:**
+4. **Proceso de transparencia en cifras:**
+   - Cuando se pasa un referido, el profesional que recibe el contacto proporciona una **cifra aproximada del negocio** y sus **honorarios estimados**
+   - **Ambas partes** (referidor y referido) deben dar su **visto bueno** a estas cifras
+   - Cuando el negocio se cierra, se **confirma la cifra final** con el acuerdo de ambas partes
+   - Este proceso garantiza total transparencia y evita malentendidos
+   - Explica: "La plataforma funciona con total transparencia. Antes de cerrar el negocio, ambos profesionales acuerdan las cifras estimadas, y al finalizar, confirman los números reales"
+
+5. **Proceso de pago:**
    - Los pagos se procesan con **Stripe** para máxima seguridad
    - **NO se pide cuenta bancaria durante el registro**
    - Solo cuando hay pagos pendientes, se solicita la información bancaria
