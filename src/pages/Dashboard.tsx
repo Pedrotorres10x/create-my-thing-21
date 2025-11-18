@@ -7,6 +7,7 @@ import { Users, Trophy, Calendar, Zap, Loader2, AlertCircle } from "lucide-react
 import { useNavigate } from "react-router-dom";
 import { AIChat } from "@/components/AIChat";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
+import { DailyMotivationModal } from "@/components/DailyMotivationModal";
 
 interface DashboardStats {
   referralsSent: number;
@@ -209,6 +210,8 @@ const Dashboard = () => {
           </div>
         </>
       )}
+      
+      <DailyMotivationModal />
     </div>
   );
 };
