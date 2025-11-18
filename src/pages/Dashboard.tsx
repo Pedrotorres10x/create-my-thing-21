@@ -8,6 +8,9 @@ import { useNavigate } from "react-router-dom";
 import { AIChat } from "@/components/AIChat";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
 import { DailyMotivationModal } from "@/components/DailyMotivationModal";
+import { AchievementModal } from "@/components/gamification/AchievementModal";
+import { RankingCard } from "@/components/gamification/RankingCard";
+import { useAchievements } from "@/hooks/useAchievements";
 
 interface DashboardStats {
   referralsSent: number;
@@ -36,6 +39,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [upcomingMeetings, setUpcomingMeetings] = useState<UpcomingMeeting[]>([]);
   const [professional, setProfessional] = useState<any>(null);
+  const { achievement, clearAchievement } = useAchievements();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -163,9 +167,18 @@ const Dashboard = () => {
           {/* AI Chat Interface */}
           <AIChat />
 
-          {/* Stats Overview - Compact */}
-          <div className="grid gap-4 md:grid-cols-4 mt-6">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/referrals')}>
+          {/* Gamification Section */}
+          <div className="grid gap-6 md:grid-cols-3 mt-6">
+            <RankingCard 
+              ranking={stats.ranking}
+              totalPoints={stats.totalPoints}
+              level={{
+                name: stats.level.name,
+                color: stats.level.color
+              }}
+            />
+            
+            <Card className="hover:shadow-md transition-shadow cursor-pointer hover-scale" onClick={() => navigate('/referrals')}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Referencias</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -178,33 +191,16 @@ const Dashboard = () => {
               </CardContent>
             </Card>
             
-            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/rankings')}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Ranking</CardTitle>
-                <Trophy className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">#{stats.ranking}</div>
-              </CardContent>
-            </Card>
-            
-            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/profile')}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Puntos</CardTitle>
-                <Zap className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.totalPoints}</div>
-              </CardContent>
-            </Card>
-            
-            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/meetings')}>
+            <Card className="hover:shadow-md transition-shadow cursor-pointer hover-scale" onClick={() => navigate('/meetings')}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Próximas Reuniones</CardTitle>
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{upcomingMeetings.length}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Reuniones confirmadas
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -212,6 +208,7 @@ const Dashboard = () => {
       )}
       
       <DailyMotivationModal />
+      <AchievementModal achievement={achievement} onClose={clearAchievement} />
     </div>
   );
 };

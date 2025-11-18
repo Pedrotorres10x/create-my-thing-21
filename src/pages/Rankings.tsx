@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Medal, TrendingUp } from "lucide-react";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
+import { PodiumDisplay } from "@/components/gamification/PodiumDisplay";
 import {
   Select,
   SelectContent,
@@ -230,62 +231,14 @@ const Rankings = () => {
         <TabsContent value="top" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Top 3 Performers</CardTitle>
-              <CardDescription>Los miembros con más puntos</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-6 w-6 text-yellow-500" />
+                Top 3 Performers
+              </CardTitle>
+              <CardDescription>Los mejores miembros de la comunidad</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {topPerformers.map((prof, index) => (
-                  <Card key={prof.id} className={index === 0 ? "border-yellow-500 border-2" : ""}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="flex-shrink-0">
-                          {getRankIcon(index + 1)}
-                        </div>
-                        <Avatar className="h-16 w-16">
-                          <AvatarImage src={prof.photo_url || undefined} />
-                          <AvatarFallback>
-                            {prof.full_name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-lg truncate">{prof.full_name}</h3>
-                            {prof.id === myProfessionalId && (
-                              <Badge variant="outline" className="text-xs">Tú</Badge>
-                            )}
-                          </div>
-                          {prof.position && (
-                            <p className="text-sm text-muted-foreground truncate">{prof.position}</p>
-                          )}
-                          {prof.company_name && (
-                            <p className="text-sm text-muted-foreground truncate">{prof.company_name}</p>
-                          )}
-                          <div className="flex gap-2 mt-2 flex-wrap">
-                            {prof.sector_catalog && (
-                              <Badge variant="secondary" className="text-xs">
-                                {prof.sector_catalog.name}
-                              </Badge>
-                            )}
-                            {prof.chapters && (
-                              <Badge variant="outline" className="text-xs">
-                                {prof.chapters.name}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-primary">{prof.total_points}</p>
-                          <p className="text-xs text-muted-foreground">puntos</p>
-                          <div className="mt-2">
-                            <PointsLevelBadge points={prof.total_points} size="sm" />
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <PodiumDisplay topThree={topPerformers} myProfessionalId={myProfessionalId} />
             </CardContent>
           </Card>
         </TabsContent>
