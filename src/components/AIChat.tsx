@@ -3,8 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, Loader2, Sparkles } from "lucide-react";
+import { Send, Loader2, Sparkles, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSubscription } from "@/hooks/useSubscription";
+import { AIUsageIndicator } from "./subscription/AIUsageIndicator";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface Message {
   role: "user" | "assistant";
@@ -12,6 +16,8 @@ interface Message {
 }
 
 export function AIChat() {
+  const navigate = useNavigate();
+  const { canSendAIMessage, incrementAIMessages } = useSubscription();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -33,6 +39,18 @@ export function AIChat() {
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
+
+    // Check AI message limit
+    if (!canSendAIMessage) {
+      toast.error("Has alcanzado el límite de mensajes de IA", {
+        description: "Actualiza tu plan para continuar usando el asistente de IA.",
+        action: {
+          label: "Ver planes",
+          onClick: () => navigate("/subscriptions"),
+        },
+      });
+      return;
+    }
 
     const userMessage: Message = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
@@ -112,25 +130,25 @@ export function AIChat() {
           if (raw.endsWith("\r")) raw = raw.slice(0, -1);
           if (raw.startsWith(":") || raw.trim() === "") continue;
           if (!raw.startsWith("data: ")) continue;
+
           const jsonStr = raw.slice(6).trim();
-          if (jsonStr === "[DONE]") continue;
+          if (jsonStr === "[DONE]") break;
+
           try {
             const parsed = JSON.parse(jsonStr);
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) updateAssistant(content);
-          } catch {
-            /* ignore */
-          }
+          } catch {}
         }
       }
-    } catch (error) {
-      console.error("Error:", error);
+
+      // Increment AI message count after successful response
+      await incrementAIMessages();
+    } catch (err: any) {
+      console.error("Chat error:", err);
       setMessages((prev) => [
         ...prev,
-        {
-          role: "assistant",
-          content: "Lo siento, hubo un error al procesar tu mensaje. Por favor, intenta de nuevo.",
-        },
+        { role: "assistant", content: "Lo siento, hubo un problema al procesar tu mensaje. Por favor intenta de nuevo." },
       ]);
     } finally {
       setIsLoading(false);
@@ -145,84 +163,115 @@ export function AIChat() {
   };
 
   return (
-    <Card className="flex flex-col h-[calc(100vh-12rem)] max-w-4xl mx-auto">
-      <div className="flex items-center gap-3 p-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
-        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-          <Sparkles className="w-5 h-5 text-primary" />
+    <Card className="flex flex-col h-[700px] border-border/40 shadow-lg">
+      {/* Chat Header */}
+      <div className="p-4 border-b border-border/40 space-y-3 bg-gradient-to-r from-primary/5 to-primary/10">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Avatar className="h-10 w-10 border-2 border-primary/20">
+              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70">
+                <Sparkles className="h-5 w-5 text-primary-foreground" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-2 border-background" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-lg">Asistente Conector</h3>
+            <p className="text-xs text-muted-foreground">Siempre aquí para ayudarte</p>
+          </div>
         </div>
-        <div>
-          <h2 className="font-semibold">Asistente CONECTOR</h2>
-          <p className="text-xs text-muted-foreground">
-            Tu guía personal en la plataforma
-          </p>
-        </div>
+        <AIUsageIndicator />
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/20">
         {messages.map((message, index) => (
           <div
             key={index}
             className={cn(
               "flex gap-3 animate-in fade-in slide-in-from-bottom-2",
-              message.role === "user" ? "justify-end" : "justify-start"
+              message.role === "user" ? "flex-row-reverse" : "flex-row"
             )}
           >
-            {message.role === "assistant" && (
-              <Avatar className="w-8 h-8 mt-1">
-                <AvatarFallback className="bg-primary/20 text-primary">
-                  <Sparkles className="w-4 h-4" />
-                </AvatarFallback>
-              </Avatar>
-            )}
+            <Avatar className={cn(
+              "h-8 w-8 shrink-0",
+              message.role === "assistant" && "border-2 border-primary/20"
+            )}>
+              <AvatarFallback className={cn(
+                message.role === "user" 
+                  ? "bg-gradient-to-br from-secondary to-secondary/70" 
+                  : "bg-gradient-to-br from-primary to-primary/70"
+              )}>
+                {message.role === "user" ? (
+                  <span className="text-secondary-foreground font-semibold">Tú</span>
+                ) : (
+                  <Sparkles className="h-4 w-4 text-primary-foreground" />
+                )}
+              </AvatarFallback>
+            </Avatar>
             <div
               className={cn(
-                "rounded-lg px-4 py-2 max-w-[80%]",
+                "rounded-2xl px-4 py-2.5 max-w-[80%] shadow-sm",
                 message.role === "user"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted"
+                  ? "bg-primary text-primary-foreground ml-auto"
+                  : "bg-card border border-border/40"
               )}
             >
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
             </div>
-            {message.role === "user" && (
-              <Avatar className="w-8 h-8 mt-1">
-                <AvatarFallback className="bg-secondary text-secondary-foreground">
-                  U
-                </AvatarFallback>
-              </Avatar>
-            )}
           </div>
         ))}
         {isLoading && (
-          <div className="flex gap-3 animate-in fade-in">
-            <Avatar className="w-8 h-8 mt-1">
-              <AvatarFallback className="bg-primary/20 text-primary">
-                <Sparkles className="w-4 h-4" />
+          <div className="flex gap-3 animate-in fade-in slide-in-from-bottom-2">
+            <Avatar className="h-8 w-8 border-2 border-primary/20">
+              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70">
+                <Sparkles className="h-4 w-4 text-primary-foreground" />
               </AvatarFallback>
             </Avatar>
-            <div className="rounded-lg px-4 py-2 bg-muted">
-              <Loader2 className="w-4 h-4 animate-spin" />
+            <div className="rounded-2xl px-4 py-2.5 bg-card border border-border/40">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4 border-t bg-background">
+      {/* Input Area */}
+      <div className="p-4 border-t border-border/40 bg-background">
+        {!canSendAIMessage && (
+          <div className="mb-2 p-2 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <p className="text-xs text-destructive">
+              Has alcanzado el límite de mensajes. 
+              <button 
+                onClick={() => navigate("/subscriptions")}
+                className="ml-1 underline font-medium hover:text-destructive/80"
+              >
+                Actualiza tu plan
+              </button>
+            </p>
+          </div>
+        )}
         <div className="flex gap-2">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Pregúntame sobre CONECTOR..."
-            disabled={isLoading}
+            onKeyDown={handleKeyPress}
+            placeholder={canSendAIMessage ? "Escribe tu mensaje..." : "Límite alcanzado"}
+            disabled={isLoading || !canSendAIMessage}
             className="flex-1"
           />
-          <Button onClick={sendMessage} disabled={isLoading || !input.trim()}>
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+          <Button
+            onClick={sendMessage}
+            disabled={isLoading || !input.trim() || !canSendAIMessage}
+            size="icon"
+            className="shrink-0"
+          >
+            {!canSendAIMessage ? (
+              <Lock className="h-4 w-4" />
+            ) : isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Send className="w-4 h-4" />
+              <Send className="h-4 w-4" />
             )}
           </Button>
         </div>

@@ -1,4 +1,4 @@
-import { Home, User, Users, Handshake, Calendar, Store, MessageSquare, Trophy, UserCircle, Shield, BookOpen, AlertTriangle } from "lucide-react";
+import { Home, User, Users, Handshake, Calendar, Store, MessageSquare, Trophy, UserCircle, Shield, BookOpen, AlertTriangle, CreditCard } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -20,6 +20,7 @@ const mainItems = [
   { title: "Inicio", url: "/dashboard", icon: Home },
   { title: "Tutoriales", url: "/tutorials", icon: BookOpen },
   { title: "Mi Perfil", url: "/profile", icon: UserCircle },
+  { title: "Suscripción", url: "/subscriptions", icon: CreditCard },
   { title: "Referidos", url: "/referrals", icon: Handshake },
   { title: "Mi Capítulo", url: "/chapter", icon: Users },
 ];

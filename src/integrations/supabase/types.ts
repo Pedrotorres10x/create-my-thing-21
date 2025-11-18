@@ -666,6 +666,8 @@ export type Database = {
       professionals: {
         Row: {
           address: string | null
+          ai_messages_count: number | null
+          ai_messages_reset_at: string | null
           bio: string | null
           business_description: string | null
           business_name: string | null
@@ -702,6 +704,10 @@ export type Database = {
           specialization_id: number
           state: string
           status: Database["public"]["Enums"]["professional_status"]
+          subscription_ends_at: string | null
+          subscription_plan_id: string | null
+          subscription_starts_at: string | null
+          subscription_status: string | null
           total_points: number
           updated_at: string
           user_id: string
@@ -713,6 +719,8 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          ai_messages_count?: number | null
+          ai_messages_reset_at?: string | null
           bio?: string | null
           business_description?: string | null
           business_name?: string | null
@@ -749,6 +757,10 @@ export type Database = {
           specialization_id: number
           state: string
           status?: Database["public"]["Enums"]["professional_status"]
+          subscription_ends_at?: string | null
+          subscription_plan_id?: string | null
+          subscription_starts_at?: string | null
+          subscription_status?: string | null
           total_points?: number
           updated_at?: string
           user_id: string
@@ -760,6 +772,8 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          ai_messages_count?: number | null
+          ai_messages_reset_at?: string | null
           bio?: string | null
           business_description?: string | null
           business_name?: string | null
@@ -796,6 +810,10 @@ export type Database = {
           specialization_id?: number
           state?: string
           status?: Database["public"]["Enums"]["professional_status"]
+          subscription_ends_at?: string | null
+          subscription_plan_id?: string | null
+          subscription_starts_at?: string | null
+          subscription_status?: string | null
           total_points?: number
           updated_at?: string
           user_id?: string
@@ -811,6 +829,13 @@ export type Database = {
             columns: ["chapter_id"]
             isOneToOne: false
             referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professionals_subscription_plan_id_fkey"
+            columns: ["subscription_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -912,6 +937,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscription_plans: {
+        Row: {
+          ai_messages_limit: number | null
+          chapter_access_level: string
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          name: string
+          price_monthly: number | null
+          price_yearly: number | null
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          ai_messages_limit?: number | null
+          chapter_access_level: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price_monthly?: number | null
+          price_yearly?: number | null
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          ai_messages_limit?: number | null
+          chapter_access_level?: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price_monthly?: number | null
+          price_yearly?: number | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       user_ai_context: {
         Row: {
@@ -1165,6 +1238,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_send_ai_message: {
+        Args: { _professional_id: string }
+        Returns: boolean
+      }
       deduct_points: {
         Args: { points: number; prof_id: string }
         Returns: undefined
@@ -1180,6 +1257,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      has_subscription_access: {
+        Args: { _professional_id: string; _required_level: string }
+        Returns: boolean
+      }
+      increment_ai_messages: {
+        Args: { _professional_id: string }
+        Returns: undefined
       }
       validate_spanish_nif_cif: { Args: { nif_cif: string }; Returns: boolean }
     }
