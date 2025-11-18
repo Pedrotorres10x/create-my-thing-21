@@ -14,7 +14,9 @@ const features = [
   {
     category: "Networking",
     items: [
-      { name: "One-to-Ones mensuales", free: "2", provincial: "5", regional: "10", national: "Ilimitados" },
+      { name: "One-to-Ones semanales", free: "1/mes", provincial: "1/semana", regional: "2/semana", national: "Ilimitados" },
+      { name: "Referidos mensuales", free: "1", provincial: "4", regional: "4", national: "Ilimitados" },
+      { name: "Invitados al mes", free: "0", provincial: "1", regional: "1", national: "Ilimitados" },
       { name: "Eventos nacionales prioritarios", free: false, provincial: false, regional: false, national: true },
       { name: "Badge especial Nacional", free: false, provincial: false, regional: false, national: true },
     ]
