@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Shield } from "lucide-react";
+import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Shield, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ import { StatusDistributionChart } from "@/components/admin/StatusDistributionCh
 import { SectorDistributionChart } from "@/components/admin/SectorDistributionChart";
 import { RegistrationTrendChart } from "@/components/admin/RegistrationTrendChart";
 import { ChapterManagement } from "@/components/admin/ChapterManagement";
+import { EngagementAnalytics } from "@/components/admin/EngagementAnalytics";
 import { BarChart3 } from "lucide-react";
 
 interface Professional {
@@ -478,6 +479,10 @@ const Admin = () => {
             <BarChart3 className="w-4 h-4 mr-2" />
             Dashboard
           </TabsTrigger>
+          <TabsTrigger value="engagement">
+            <Activity className="w-4 h-4 mr-2" />
+            Engagement
+          </TabsTrigger>
           <TabsTrigger value="professionals">Profesionales</TabsTrigger>
           <TabsTrigger value="chapters">Capítulos</TabsTrigger>
           <TabsTrigger value="referrals">Referidos</TabsTrigger>
@@ -491,6 +496,10 @@ const Admin = () => {
           <div className="grid grid-cols-1 gap-6">
             <RegistrationTrendChart professionals={professionals} />
           </div>
+        </TabsContent>
+
+        <TabsContent value="engagement" className="space-y-6">
+          <EngagementAnalytics />
         </TabsContent>
 
         <TabsContent value="professionals" className="space-y-4">

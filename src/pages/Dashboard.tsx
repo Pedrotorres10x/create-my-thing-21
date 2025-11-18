@@ -11,6 +11,7 @@ import { DailyMotivationModal } from "@/components/DailyMotivationModal";
 import { AchievementModal } from "@/components/gamification/AchievementModal";
 import { RankingCard } from "@/components/gamification/RankingCard";
 import { useAchievements } from "@/hooks/useAchievements";
+import { ReengagementWelcomeBack } from "@/components/reengagement/ReengagementWelcomeBack";
 
 interface DashboardStats {
   referralsSent: number;
@@ -130,6 +131,13 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
+      <DailyMotivationModal />
+      <ReengagementWelcomeBack />
+      <AchievementModal 
+        achievement={achievement}
+        onClose={clearAchievement}
+      />
+      
       {loading ? (
         <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -206,9 +214,6 @@ const Dashboard = () => {
           </div>
         </>
       )}
-      
-      <DailyMotivationModal />
-      <AchievementModal achievement={achievement} onClose={clearAchievement} />
     </div>
   );
 };
