@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import PremiumSlotCard from "@/components/marketplace/PremiumSlotCard";
 import WaitlistDialog from "@/components/marketplace/WaitlistDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { PremiumBanner } from "@/components/advertising/PremiumBanner";
 
 interface Category {
   id: number;
@@ -173,6 +174,9 @@ export default function PremiumMarketplace() {
           </Select>
         </div>
       </div>
+
+      {/* Premium Banner */}
+      <PremiumBanner location="marketplace" size="horizontal_large" />
 
       {/* Slots Grid */}
       {loading ? (

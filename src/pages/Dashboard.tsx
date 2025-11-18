@@ -216,6 +216,9 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Secondary Banner - Bottom */}
+          <PremiumBanner location="dashboard" size="horizontal_small" />
         </>
       )}
     </div>
