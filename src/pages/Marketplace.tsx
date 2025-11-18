@@ -8,9 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Plus, Search, Store, Eye, MapPin, Tag, Euro, Trash2 } from "lucide-react";
+import { Plus, Search, Store, Eye, MapPin, Tag, Euro, Trash2, Flag } from "lucide-react";
 import { CreateOfferDialog } from "@/components/marketplace/CreateOfferDialog";
 import { OfferDetailsDialog } from "@/components/marketplace/OfferDetailsDialog";
+import { ProfessionalContactWarning } from "@/components/ProfessionalContactWarning";
+import { UserPenaltiesAlert } from "@/components/UserPenaltiesAlert";
+import { ReportUserDialog } from "@/components/ReportUserDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,6 +69,10 @@ const Marketplace = () => {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [offerToDelete, setOfferToDelete] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportedUserId, setReportedUserId] = useState<string>("");
+  const [reportedUserName, setReportedUserName] = useState<string>("");
+  const [reportContext, setReportContext] = useState<{ context: string; contextId: string } | undefined>();
 
   useEffect(() => {
     if (user) {
@@ -194,7 +201,26 @@ const Marketplace = () => {
               {offer.description}
             </CardDescription>
           </div>
-          <Badge variant="secondary">{offer.offer_categories.name}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">{offer.offer_categories.name}</Badge>
+            {!showActions && currentProfessional?.id !== offer.professionals.id && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setReportedUserId(offer.professionals.id);
+                  setReportedUserName(offer.professionals.full_name);
+                  setReportContext({ context: 'marketplace_offer', contextId: offer.id });
+                  setReportDialogOpen(true);
+                }}
+                className="h-8 w-8 p-0"
+                title="Reportar usuario"
+              >
+                <Flag className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -261,6 +287,13 @@ const Marketplace = () => {
           </Button>
         )}
       </div>
+
+      {currentProfessional && (
+        <div className="space-y-4">
+          <UserPenaltiesAlert professionalId={currentProfessional.id} />
+          <ProfessionalContactWarning />
+        </div>
+      )}
 
       <Tabs defaultValue="all" className="w-full">
         <TabsList>
@@ -375,6 +408,18 @@ const Marketplace = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {currentProfessional && (
+        <ReportUserDialog
+          open={reportDialogOpen}
+          onOpenChange={setReportDialogOpen}
+          reportedId={reportedUserId}
+          reportedName={reportedUserName}
+          context={reportContext?.context}
+          contextId={reportContext?.contextId}
+          reporterId={currentProfessional.id}
+        />
+      )}
     </div>
   );
 };

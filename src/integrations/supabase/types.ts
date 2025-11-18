@@ -819,6 +819,127 @@ export type Database = {
           },
         ]
       }
+      user_penalties: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          penalty_type: string
+          points_deducted: number | null
+          professional_id: string
+          reason: string
+          restriction_until: string | null
+          severity: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          penalty_type: string
+          points_deducted?: number | null
+          professional_id: string
+          reason: string
+          restriction_until?: string | null
+          severity: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          penalty_type?: string
+          points_deducted?: number | null
+          professional_id?: string
+          reason?: string
+          restriction_until?: string | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_penalties_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_penalties_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_reports: {
+        Row: {
+          admin_notes: string | null
+          context: string | null
+          context_id: string | null
+          created_at: string
+          description: string
+          id: string
+          report_type: string
+          reported_id: string
+          reporter_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          context?: string | null
+          context_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          report_type: string
+          reported_id: string
+          reporter_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          context?: string | null
+          context_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          report_type?: string
+          reported_id?: string
+          reporter_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reports_reported_id_fkey"
+            columns: ["reported_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_reports_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
