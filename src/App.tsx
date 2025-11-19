@@ -21,6 +21,7 @@ import Subscriptions from "./pages/Subscriptions";
 import EthicsCommittee from "./pages/EthicsCommittee";
 import Admin from "./pages/Admin";
 import AdminModeration from "./pages/AdminModeration";
+import MyBusinessSphere from "./pages/MyBusinessSphere";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/tutorials" element={<ProtectedRoute><Layout><Tutorials /></Layout></ProtectedRoute>} />
             <Route path="/subscriptions" element={<ProtectedRoute><Layout><Subscriptions /></Layout></ProtectedRoute>} />
             <Route path="/ethics-committee" element={<ProtectedRoute><Layout><EthicsCommittee /></Layout></ProtectedRoute>} />
+            <Route path="/mi-esfera" element={<ProtectedRoute><Layout><MyBusinessSphere /></Layout></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Layout><Admin /></Layout></ProtectedRoute>} />
             <Route path="/admin/moderation" element={<ProtectedRoute><Layout><AdminModeration /></Layout></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -1,4 +1,4 @@
-import { Home, Users, Handshake, Calendar, Store, MessageSquare, Trophy, UserCircle, Shield, BookOpen, AlertTriangle, CreditCard, Scale, Sparkles } from "lucide-react";
+import { Home, Users, Handshake, Calendar, Store, MessageSquare, Trophy, UserCircle, Shield, BookOpen, AlertTriangle, CreditCard, Scale, Sparkles, Globe } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -27,6 +27,7 @@ const mainItems = [
 ];
 
 const communityItems = [
+  { title: "Mi Esfera", url: "/mi-esfera", icon: Globe },
   { title: "Cafés 1:1", url: "/meetings", icon: Calendar },
   { title: "Plaza Premium", url: "/premium-marketplace", icon: Sparkles, badge: "VIP" },
   { title: "El Feed", url: "/feed", icon: MessageSquare },
