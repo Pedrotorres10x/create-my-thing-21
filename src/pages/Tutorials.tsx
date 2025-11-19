@@ -196,7 +196,7 @@ const Tutorials = () => {
                   <div className="flex items-start gap-4">
                     <Gift className="h-8 w-8 text-primary flex-shrink-0" />
                     <div>
-                      <h3 className="font-semibold text-lg mb-2">El Poder del "Givers Gain"</h3>
+                      <h3 className="font-semibold text-lg mb-2">Dar para Crecer</h3>
                       <p className="text-muted-foreground">
                         Nuestra filosofía central: <strong className="text-foreground">"Quien da, recibe"</strong>. 
                         Cuando ayudas a otros a tener éxito, tú también creces. CONECTOR recompensa la generosidad, 
