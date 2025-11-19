@@ -21,7 +21,7 @@ export function AIChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "¡Hola! 👋 Soy tu asistente en CONECTOR. Puedo ayudarte a navegar por la plataforma, explicarte cómo funcionan las diferentes secciones y responder tus dudas. ¿En qué puedo ayudarte hoy?",
+      content: "¡Hola! 💜 Soy **Alic.ia**, tu mentora personal en CONECTOR. \n\nEstoy aquí para ayudarte a crear conexiones que se conviertan en negocios reales. Conozco tu perfil y puedo darte estrategias personalizadas para maximizar tus resultados. ✨\n\n¿Por dónde quieres empezar?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -165,19 +165,27 @@ export function AIChat() {
   return (
     <Card className="flex flex-col h-[700px] border-border/40 shadow-lg">
       {/* Chat Header */}
-      <div className="p-4 border-b border-border/40 space-y-3 bg-gradient-to-r from-primary/5 to-primary/10">
+      <div className="p-4 border-b border-border/40 space-y-3 bg-gradient-to-r from-purple-50 via-pink-50 to-purple-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-purple-950/20">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Avatar className="h-10 w-10 border-2 border-primary/20">
-              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70">
-                <Sparkles className="h-5 w-5 text-primary-foreground" />
+            <Avatar className="h-10 w-10 border-2 border-purple-500">
+              <AvatarFallback className="bg-gradient-to-br from-purple-500 via-purple-600 to-pink-500 text-white font-bold text-lg">
+                A
               </AvatarFallback>
             </Avatar>
-            <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-2 border-background" />
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background">
+              <div className="w-full h-full bg-green-400 rounded-full animate-pulse" />
+            </div>
           </div>
           <div>
-            <h3 className="font-semibold text-lg">Asistente Conector</h3>
-            <p className="text-xs text-muted-foreground">Siempre aquí para ayudarte</p>
+            <h3 className="font-semibold text-sm flex items-center gap-2">
+              Alic.ia 
+              <span className="text-purple-500">✨</span>
+            </h3>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              Conectada y lista para ayudarte
+            </p>
           </div>
         </div>
         <AIUsageIndicator />
@@ -195,17 +203,17 @@ export function AIChat() {
           >
             <Avatar className={cn(
               "h-8 w-8 shrink-0",
-              message.role === "assistant" && "border-2 border-primary/20"
+              message.role === "assistant" && "border border-purple-400"
             )}>
               <AvatarFallback className={cn(
                 message.role === "user" 
                   ? "bg-gradient-to-br from-secondary to-secondary/70" 
-                  : "bg-gradient-to-br from-primary to-primary/70"
+                  : "bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xs font-bold"
               )}>
                 {message.role === "user" ? (
                   <span className="text-secondary-foreground font-semibold">Tú</span>
                 ) : (
-                  <Sparkles className="h-4 w-4 text-primary-foreground" />
+                  "A"
                 )}
               </AvatarFallback>
             </Avatar>
@@ -214,7 +222,7 @@ export function AIChat() {
                 "rounded-2xl px-4 py-2.5 max-w-[80%] shadow-sm",
                 message.role === "user"
                   ? "bg-primary text-primary-foreground ml-auto"
-                  : "bg-card border border-border/40"
+                  : "bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border border-purple-200 dark:border-purple-800"
               )}
             >
               <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
@@ -223,13 +231,20 @@ export function AIChat() {
         ))}
         {isLoading && (
           <div className="flex gap-3 animate-in fade-in slide-in-from-bottom-2">
-            <Avatar className="h-8 w-8 border-2 border-primary/20">
-              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70">
-                <Sparkles className="h-4 w-4 text-primary-foreground" />
+            <Avatar className="h-8 w-8 border border-purple-400">
+              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xs font-bold">
+                A
               </AvatarFallback>
             </Avatar>
-            <div className="rounded-2xl px-4 py-2.5 bg-card border border-border/40">
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            <div className="rounded-2xl px-4 py-3 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border border-purple-200 dark:border-purple-800">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+                <span>Alic.ia está analizando...</span>
+              </div>
             </div>
           </div>
         )}
