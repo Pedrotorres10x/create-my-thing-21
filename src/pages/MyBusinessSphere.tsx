@@ -4,11 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { Users, Map, Newspaper, Briefcase } from "lucide-react";
+import { Users, Map, Newspaper, Briefcase, HandshakeIcon } from "lucide-react";
 import { SphereDirectory } from "@/components/sphere/SphereDirectory";
 import { SpecializationMap } from "@/components/sphere/SpecializationMap";
 import { SphereFeed } from "@/components/sphere/SphereFeed";
 import { CollaborationOpportunities } from "@/components/sphere/CollaborationOpportunities";
+import { SphereReferencesManager } from "@/components/sphere/SphereReferencesManager";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface SphereInfo {
@@ -24,6 +25,7 @@ export default function MyBusinessSphere() {
   const [loading, setLoading] = useState(true);
   const [sphereInfo, setSphereInfo] = useState<SphereInfo | null>(null);
   const [chapterId, setChapterId] = useState<string | null>(null);
+  const [professionalId, setProfessionalId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -38,6 +40,7 @@ export default function MyBusinessSphere() {
       const { data: professional } = await supabase
         .from("professionals")
         .select(`
+          id,
           business_sphere_id,
           chapter_id,
           business_spheres (
@@ -53,6 +56,7 @@ export default function MyBusinessSphere() {
       if (professional?.business_spheres) {
         setSphereInfo(professional.business_spheres as SphereInfo);
         setChapterId(professional.chapter_id);
+        setProfessionalId(professional.id);
       }
     } catch (error) {
       console.error("Error loading sphere info:", error);
@@ -107,7 +111,7 @@ export default function MyBusinessSphere() {
       </div>
 
       <Tabs defaultValue="directory" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="directory" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Directorio</span>
@@ -115,6 +119,10 @@ export default function MyBusinessSphere() {
           <TabsTrigger value="map" className="flex items-center gap-2">
             <Map className="h-4 w-4" />
             <span className="hidden sm:inline">Especialidades</span>
+          </TabsTrigger>
+          <TabsTrigger value="references" className="flex items-center gap-2">
+            <HandshakeIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">Referencias</span>
           </TabsTrigger>
           <TabsTrigger value="feed" className="flex items-center gap-2">
             <Newspaper className="h-4 w-4" />
@@ -132,6 +140,12 @@ export default function MyBusinessSphere() {
 
         <TabsContent value="map" className="mt-6">
           <SpecializationMap sphereId={sphereInfo.id} chapterId={chapterId} />
+        </TabsContent>
+
+        <TabsContent value="references" className="mt-6">
+          {professionalId && (
+            <SphereReferencesManager currentProfessionalId={professionalId} />
+          )}
         </TabsContent>
 
         <TabsContent value="feed" className="mt-6">
