@@ -26,11 +26,17 @@ interface Professional {
   total_points: number;
   chapter_id: string | null;
   sector_id: number;
+  business_sphere_id: number | null;
   sector_catalog: {
     name: string;
   } | null;
   chapters: {
     name: string;
+  } | null;
+  business_spheres: {
+    name: string;
+    icon: string | null;
+    color: string | null;
   } | null;
 }
 
@@ -44,14 +50,21 @@ interface Sector {
   name: string;
 }
 
+interface BusinessSphere {
+  id: number;
+  name: string;
+}
+
 const Rankings = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [sectors, setSectors] = useState<Sector[]>([]);
+  const [businessSpheres, setBusinessSpheres] = useState<BusinessSphere[]>([]);
   const [loading, setLoading] = useState(true);
   const [myProfessionalId, setMyProfessionalId] = useState<string | null>(null);
   const [chapterFilter, setChapterFilter] = useState<string>("all");
   const [sectorFilter, setSectorFilter] = useState<string>("all");
+  const [sphereFilter, setSphereFilter] = useState<string>("all");
 
   useEffect(() => {
     loadData();
@@ -74,7 +87,7 @@ const Rankings = () => {
         }
       }
 
-      const [profsRes, chaptersRes, sectorsRes] = await Promise.all([
+      const [profsRes, chaptersRes, sectorsRes, spheresRes] = await Promise.all([
         supabase
           .from('professionals')
           .select(`
@@ -86,22 +99,30 @@ const Rankings = () => {
             total_points,
             chapter_id,
             sector_id,
+            business_sphere_id,
             sector_catalog (
               name
             ),
             chapters (
               name
+            ),
+            business_spheres (
+              name,
+              icon,
+              color
             )
           `)
           .eq('status', 'approved')
           .order('total_points', { ascending: false }),
         supabase.from('chapters').select('id, name').order('name'),
-        supabase.from('sector_catalog').select('id, name').order('name')
+        supabase.from('sector_catalog').select('id, name').order('name'),
+        supabase.from('business_spheres').select('id, name').order('name')
       ]);
 
       if (profsRes.data) setProfessionals(profsRes.data as any);
       if (chaptersRes.data) setChapters(chaptersRes.data);
       if (sectorsRes.data) setSectors(sectorsRes.data);
+      if (spheresRes.data) setBusinessSpheres(spheresRes.data);
     } catch (error) {
       console.error('Error loading rankings:', error);
     } finally {
@@ -112,6 +133,7 @@ const Rankings = () => {
   const filteredProfessionals = professionals.filter(prof => {
     if (chapterFilter !== "all" && prof.chapter_id !== chapterFilter) return false;
     if (sectorFilter !== "all" && prof.sector_id.toString() !== sectorFilter) return false;
+    if (sphereFilter !== "all" && prof.business_sphere_id?.toString() !== sphereFilter) return false;
     return true;
   });
 
@@ -211,6 +233,22 @@ const Rankings = () => {
                   {sectors.map(sector => (
                     <SelectItem key={sector.id} value={sector.id.toString()}>
                       {sector.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Esfera de Negocio</label>
+              <Select value={sphereFilter} onValueChange={setSphereFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las esferas</SelectItem>
+                  {businessSpheres.map(sphere => (
+                    <SelectItem key={sphere.id} value={sphere.id.toString()}>
+                      {sphere.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

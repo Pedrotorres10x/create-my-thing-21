@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Upload, Loader2 } from "lucide-react";
+import { BusinessSphereSelector } from "@/components/BusinessSphereSelector";
 
 const profileSchema = z.object({
   full_name: z.string().min(2, "Nombre muy corto").max(100, "Nombre muy largo"),
@@ -55,6 +56,7 @@ export function ProfileForm() {
     position: "",
     sector_id: "",
     specialization_id: "",
+    business_sphere_id: 0,
     bio: "",
     linkedin_url: "",
     website: "",
@@ -116,6 +118,7 @@ export function ProfileForm() {
         position: data.position || "",
         sector_id: data.sector_id ? String(data.sector_id) : "",
         specialization_id: data.specialization_id ? String(data.specialization_id) : "",
+        business_sphere_id: data.business_sphere_id || 0,
         bio: data.bio || "",
         linkedin_url: data.linkedin_url || "",
         website: data.website || "",
@@ -207,6 +210,7 @@ export function ProfileForm() {
           position: validated.position,
           sector_id: formData.sector_id ? parseInt(formData.sector_id) : null,
           specialization_id: formData.specialization_id ? parseInt(formData.specialization_id) : null,
+          business_sphere_id: formData.business_sphere_id || null,
           bio: validated.bio,
           linkedin_url: validated.linkedin_url,
           website: validated.website,
@@ -348,6 +352,13 @@ export function ProfileForm() {
             </SelectContent>
           </Select>
         </div>
+
+        <BusinessSphereSelector
+          value={formData.business_sphere_id}
+          onChange={(value) => setFormData({ ...formData, business_sphere_id: value })}
+          specializationId={formData.specialization_id ? parseInt(formData.specialization_id) : undefined}
+          required
+        />
       </div>
 
       <div className="space-y-2">

@@ -136,6 +136,33 @@ export type Database = {
           },
         ]
       }
+      business_spheres: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
       chapters: {
         Row: {
           city: string
@@ -1046,6 +1073,7 @@ export type Database = {
           birth_date: string | null
           business_description: string | null
           business_name: string | null
+          business_sphere_id: number | null
           business_verified: boolean | null
           chapter_id: string | null
           city: string
@@ -1100,6 +1128,7 @@ export type Database = {
           birth_date?: string | null
           business_description?: string | null
           business_name?: string | null
+          business_sphere_id?: number | null
           business_verified?: boolean | null
           chapter_id?: string | null
           city: string
@@ -1154,6 +1183,7 @@ export type Database = {
           birth_date?: string | null
           business_description?: string | null
           business_name?: string | null
+          business_sphere_id?: number | null
           business_verified?: boolean | null
           chapter_id?: string | null
           city?: string
@@ -1201,6 +1231,13 @@ export type Database = {
           years_experience?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "professionals_business_sphere_id_fkey"
+            columns: ["business_sphere_id"]
+            isOneToOne: false
+            referencedRelation: "business_spheres"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "professionals_chapter_id_fkey"
             columns: ["chapter_id"]
@@ -1311,6 +1348,45 @@ export type Database = {
             columns: ["sector_id"]
             isOneToOne: false
             referencedRelation: "sector_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sphere_specializations: {
+        Row: {
+          business_sphere_id: number | null
+          created_at: string | null
+          id: number
+          is_core: boolean | null
+          specialization_id: number | null
+        }
+        Insert: {
+          business_sphere_id?: number | null
+          created_at?: string | null
+          id?: number
+          is_core?: boolean | null
+          specialization_id?: number | null
+        }
+        Update: {
+          business_sphere_id?: number | null
+          created_at?: string | null
+          id?: number
+          is_core?: boolean | null
+          specialization_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sphere_specializations_business_sphere_id_fkey"
+            columns: ["business_sphere_id"]
+            isOneToOne: false
+            referencedRelation: "business_spheres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sphere_specializations_specialization_id_fkey"
+            columns: ["specialization_id"]
+            isOneToOne: false
+            referencedRelation: "specializations"
             referencedColumns: ["id"]
           },
         ]
