@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, conversationId, professionalId } = await req.json();
+    const { messages = [], conversationId, professionalId } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -602,6 +602,8 @@ ${profileInfo?.full_name} está en pleno desarrollo. Como Alic.ia:
           professional_id: professionalId,
           context_data: updatedContext,
           last_interaction: new Date().toISOString()
+        }, {
+          onConflict: 'professional_id'
         });
       
       if (contextError) {
