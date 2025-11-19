@@ -1394,6 +1394,119 @@ export type Database = {
           },
         ]
       }
+      sphere_collaborative_projects: {
+        Row: {
+          business_sphere_id: number
+          chapter_id: string
+          created_at: string
+          creator_id: string
+          description: string
+          id: string
+          required_specializations: number[]
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          business_sphere_id: number
+          chapter_id: string
+          created_at?: string
+          creator_id: string
+          description: string
+          id?: string
+          required_specializations?: number[]
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          business_sphere_id?: number
+          chapter_id?: string
+          created_at?: string
+          creator_id?: string
+          description?: string
+          id?: string
+          required_specializations?: number[]
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sphere_collaborative_projects_business_sphere_id_fkey"
+            columns: ["business_sphere_id"]
+            isOneToOne: false
+            referencedRelation: "business_spheres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sphere_collaborative_projects_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sphere_collaborative_projects_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sphere_project_participants: {
+        Row: {
+          contribution_notes: string | null
+          created_at: string
+          id: string
+          profession_specialization_id: number | null
+          professional_id: string
+          project_id: string
+          status: string
+        }
+        Insert: {
+          contribution_notes?: string | null
+          created_at?: string
+          id?: string
+          profession_specialization_id?: number | null
+          professional_id: string
+          project_id: string
+          status?: string
+        }
+        Update: {
+          contribution_notes?: string | null
+          created_at?: string
+          id?: string
+          profession_specialization_id?: number | null
+          professional_id?: string
+          project_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sphere_project_participants_profession_specialization_id_fkey"
+            columns: ["profession_specialization_id"]
+            isOneToOne: false
+            referencedRelation: "profession_specializations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sphere_project_participants_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sphere_project_participants_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "sphere_collaborative_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sphere_specializations: {
         Row: {
           business_sphere_id: number | null
