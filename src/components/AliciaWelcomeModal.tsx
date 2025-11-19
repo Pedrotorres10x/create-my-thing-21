@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -118,6 +118,10 @@ export const AliciaWelcomeModal = ({
         <DialogTitle className="text-center text-2xl font-bold">
           ¡Hola {userName}! 👋
         </DialogTitle>
+
+        <DialogDescription className="sr-only">
+          Mensaje de bienvenida personalizado de Alic.ia
+        </DialogDescription>
 
         <div className="py-6 px-2 min-h-[100px]">
           {initializing ? (

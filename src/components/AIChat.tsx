@@ -25,16 +25,29 @@ export function AIChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/conector-chat`;
   const hasInitialized = useRef(false);
+  const isStreamingRef = useRef(false);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Scroll inteligente: solo si el usuario está cerca del final
+  const scrollToBottomIfNeeded = (force = false) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+    
+    if (force || isNearBottom || isStreamingRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
   };
 
+  // Solo scroll automático en mensajes completos nuevos
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (!isStreamingRef.current && messages.length > 0) {
+      scrollToBottomIfNeeded(true);
+    }
+  }, [messages.length]);
 
   // Generar mensaje inicial proactivo de Alicia cuando el usuario entra
   useEffect(() => {
@@ -61,6 +74,7 @@ export function AIChat() {
         }
 
         // Generar mensaje inicial proactivo basado en el estado del usuario
+        isStreamingRef.current = true;
         const resp = await fetch(CHAT_URL, {
           method: "POST",
           headers: {
@@ -75,11 +89,13 @@ export function AIChat() {
 
         if (!resp.ok) {
           setInitializing(false);
+          isStreamingRef.current = false;
           return;
         }
 
         if (!resp.body) {
           setInitializing(false);
+          isStreamingRef.current = false;
           return;
         }
 
@@ -119,9 +135,12 @@ export function AIChat() {
           }
         }
 
+        isStreamingRef.current = false;
         setInitializing(false);
+        scrollToBottomIfNeeded(true);
       } catch (error) {
         console.error("Error initializing chat:", error);
+        isStreamingRef.current = false;
         setInitializing(false);
       }
     };
@@ -149,6 +168,7 @@ export function AIChat() {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+    isStreamingRef.current = true;
 
     let assistantContent = "";
     const updateAssistant = (chunk: string) => {
@@ -264,6 +284,8 @@ export function AIChat() {
       ]);
     } finally {
       setIsLoading(false);
+      isStreamingRef.current = false;
+      scrollToBottomIfNeeded(true);
     }
   };
 
@@ -296,7 +318,7 @@ export function AIChat() {
       </div>
 
       {/* Área de mensajes limpia */}
-      <div className="h-[400px] overflow-y-auto p-6 space-y-4 bg-muted/10">
+      <div ref={scrollContainerRef} className="h-[400px] overflow-y-auto p-6 space-y-4 bg-muted/10">
         {initializing ? (
           <div className="space-y-3">
             <Skeleton className="h-4 w-3/4" />
