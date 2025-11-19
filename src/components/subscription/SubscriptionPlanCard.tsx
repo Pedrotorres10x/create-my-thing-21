@@ -25,7 +25,7 @@ export function SubscriptionPlanCard({
   onSelect,
 }: SubscriptionPlanCardProps) {
   const isFree = priceMonthly === 0;
-  const isNational = name === "Nacional";
+  const isNational = name === "Todoterreno";
   const yearlyDiscount = priceYearly && priceMonthly ? ((priceMonthly * 12 - priceYearly) / (priceMonthly * 12) * 100).toFixed(0) : 0;
   const monthlySavings = priceYearly && priceMonthly ? ((priceMonthly * 12 - priceYearly) / 12).toFixed(2) : 0;
 
