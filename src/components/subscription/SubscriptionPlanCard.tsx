@@ -30,7 +30,7 @@ export function SubscriptionPlanCard({
   const monthlySavings = priceYearly && priceMonthly ? ((priceMonthly * 12 - priceYearly) / 12).toFixed(2) : 0;
 
   return (
-    <Card className={`relative ${isRecommended ? 'border-primary shadow-lg scale-105 ring-2 ring-primary/20' : ''} ${isNational ? 'bg-gradient-to-br from-primary/5 to-primary/10' : ''} transition-all hover:shadow-xl`}>
+    <Card className={`relative ${isRecommended ? 'border-primary shadow-lg sm:scale-105 ring-2 ring-primary/20' : ''} ${isNational ? 'bg-gradient-to-br from-primary/5 to-primary/10' : ''} transition-all hover:shadow-xl flex flex-col`}>
       {isRecommended && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex gap-2">
           <Badge className="bg-primary text-primary-foreground shadow-md">
@@ -46,32 +46,32 @@ export function SubscriptionPlanCard({
         </Badge>
       )}
       
-      <CardHeader>
-        <CardTitle className="text-2xl">{name}</CardTitle>
+      <CardHeader className="pb-4">
+        <CardTitle className="text-xl sm:text-2xl">{name}</CardTitle>
         {description && (
-          <CardDescription className="text-sm">{description}</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">{description}</CardDescription>
         )}
       </CardHeader>
 
-      <CardContent className="space-y-6">
-        <div className="space-y-3">
+      <CardContent className="space-y-4 sm:space-y-6 flex-1">
+        <div className="space-y-2 sm:space-y-3">
           <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-bold">
+            <span className="text-3xl sm:text-4xl font-bold">
               {isFree ? "Gratis" : `${priceMonthly}€`}
             </span>
-            {!isFree && <span className="text-muted-foreground">/mes</span>}
+            {!isFree && <span className="text-sm sm:text-base text-muted-foreground">/mes</span>}
           </div>
           {!isFree && priceYearly && (
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant="secondary" className="text-xs font-semibold">
+                <Badge variant="secondary" className="text-[10px] sm:text-xs font-semibold">
                   Ahorra {yearlyDiscount}%
                 </Badge>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   pago anual • Solo {(priceYearly / 12).toFixed(2)}€/mes
                 </p>
               </div>
-              <p className="text-xs text-primary font-medium">
+              <p className="text-[10px] sm:text-xs text-primary font-medium">
                 ✨ Ahorras {monthlySavings}€/mes = {((priceMonthly! * 12 - priceYearly) / priceMonthly!).toFixed(1)} meses gratis
               </p>
             </div>
@@ -88,19 +88,19 @@ export function SubscriptionPlanCard({
           )}
         </div>
 
-        <ul className="space-y-3">
+        <ul className="space-y-2 sm:space-y-3">
           {features.map((feature, index) => (
-            <li key={index} className="flex items-start gap-3">
-              <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-              <span className="text-sm">{feature}</span>
+            <li key={index} className="flex items-start gap-2 sm:gap-3">
+              <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0 mt-0.5" />
+              <span className="text-xs sm:text-sm leading-relaxed">{feature}</span>
             </li>
           ))}
         </ul>
       </CardContent>
 
-      <CardFooter>
+      <CardFooter className="pt-4 sm:pt-6">
         <Button
-          className="w-full"
+          className="w-full text-sm sm:text-base"
           variant={isCurrentPlan ? "outline" : isRecommended ? "default" : "secondary"}
           disabled={isCurrentPlan}
           onClick={onSelect}
