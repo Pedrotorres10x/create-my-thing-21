@@ -3,10 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, Loader2, Sparkles, Lock } from "lucide-react";
+import { Send, Loader2, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/hooks/useSubscription";
 import { AIUsageIndicator } from "./subscription/AIUsageIndicator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -128,98 +129,6 @@ export function AIChat() {
     initializeChat();
   }, [CHAT_URL]);
 
-  // Generar mensaje inicial proactivo de Alicia cuando el usuario entra
-  useEffect(() => {
-    if (hasInitialized.current) return;
-    hasInitialized.current = true;
-    
-    const initializeChat = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setInitializing(false);
-          return;
-        }
-
-        const { data: professional } = await supabase
-          .from('professionals')
-          .select('id')
-          .eq('user_id', user.id)
-          .single();
-
-        if (!professional) {
-          setInitializing(false);
-          return;
-        }
-
-        // Generar mensaje inicial proactivo basado en el estado del usuario
-        const resp = await fetch(CHAT_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ 
-            messages: [{ role: "user", content: "[INICIO_SESION]" }],
-            professionalId: professional.id
-          }),
-        });
-
-        if (!resp.ok) {
-          setInitializing(false);
-          return;
-        }
-
-        if (!resp.body) {
-          setInitializing(false);
-          return;
-        }
-
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let textBuffer = "";
-        let assistantContent = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          textBuffer += decoder.decode(value, { stream: true });
-
-          let newlineIndex: number;
-          while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-            let line = textBuffer.slice(0, newlineIndex);
-            textBuffer = textBuffer.slice(newlineIndex + 1);
-
-            if (line.endsWith("\r")) line = line.slice(0, -1);
-            if (line.startsWith(":") || line.trim() === "") continue;
-            if (!line.startsWith("data: ")) continue;
-
-            const jsonStr = line.slice(6).trim();
-            if (jsonStr === "[DONE]") continue;
-
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-              if (content) {
-                assistantContent += content;
-                setMessages([{ role: "assistant", content: assistantContent }]);
-              }
-            } catch {
-              textBuffer = line + "\n" + textBuffer;
-              break;
-            }
-          }
-        }
-
-        setInitializing(false);
-      } catch (error) {
-        console.error("Error initializing chat:", error);
-        setInitializing(false);
-      }
-    };
-
-    initializeChat();
-  }, [CHAT_URL]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -366,87 +275,83 @@ export function AIChat() {
   };
 
   return (
-    <Card className="flex flex-col h-[500px] sm:h-[600px] lg:h-[700px] border-border/40 shadow-lg">
-      {/* Chat Header */}
-      <div className="p-3 sm:p-4 border-b border-border/40 space-y-2 sm:space-y-3 bg-gradient-to-r from-purple-50 via-pink-50 to-purple-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-purple-950/20">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="relative">
-            <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-purple-500">
-              <AvatarFallback className="bg-gradient-to-br from-purple-500 via-purple-600 to-pink-500 text-white font-bold text-lg">
-                A
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background">
-              <div className="w-full h-full bg-green-400 rounded-full animate-pulse" />
-            </div>
-          </div>
+    <Card className="w-full border-border/40 shadow-sm">
+      {/* Header minimalista */}
+      <div className="flex items-center justify-between p-4 border-b border-border/40">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 border-2 border-primary/20">
+            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-primary font-semibold">
+              A
+            </AvatarFallback>
+          </Avatar>
           <div>
-            <h3 className="font-semibold text-xs sm:text-sm flex items-center gap-1 sm:gap-2">
-              Alic.ia 
-              <span className="text-purple-500">✨</span>
-            </h3>
-            <p className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
-              <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              Conectada y lista para ayudarte
-            </p>
+            <h3 className="font-semibold text-base">Alic.ia</h3>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-green-500" />
+              <span className="text-xs text-muted-foreground">Conectada</span>
+            </div>
           </div>
         </div>
         <AIUsageIndicator />
       </div>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 sm:space-y-4 bg-muted/20">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={cn(
-              "flex gap-3 animate-in fade-in slide-in-from-bottom-2",
-              message.role === "user" ? "flex-row-reverse" : "flex-row"
-            )}
-          >
-            <Avatar className={cn(
-              "h-8 w-8 shrink-0",
-              message.role === "assistant" && "border border-purple-400"
-            )}>
-              <AvatarFallback className={cn(
-                message.role === "user" 
-                  ? "bg-gradient-to-br from-secondary to-secondary/70" 
-                  : "bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xs font-bold"
-              )}>
-                {message.role === "user" ? (
-                  <span className="text-secondary-foreground font-semibold">Tú</span>
-                ) : (
-                  "A"
-                )}
-              </AvatarFallback>
-            </Avatar>
+      {/* Área de mensajes limpia */}
+      <div className="h-[400px] overflow-y-auto p-6 space-y-4 bg-muted/10">
+        {initializing ? (
+          <div className="space-y-3">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-center">
+            <p className="text-muted-foreground text-sm">
+              ¡Hola! 👋 Soy Alic.ia, ¿en qué puedo ayudarte hoy?
+            </p>
+          </div>
+        ) : (
+          messages.map((message, idx) => (
             <div
+              key={idx}
               className={cn(
-                "rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 max-w-[85%] sm:max-w-[80%] shadow-sm",
-                message.role === "user"
-                  ? "bg-primary text-primary-foreground ml-auto"
-                  : "bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border border-purple-200 dark:border-purple-800"
+                "flex gap-3 animate-fade-in",
+                message.role === "user" ? "justify-end" : "justify-start"
               )}
             >
-              <p className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+              {message.role === "assistant" && (
+                <Avatar className="h-8 w-8 border border-primary/20 flex-shrink-0">
+                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-primary text-xs font-semibold">
+                    A
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              <div
+                className={cn(
+                  "px-4 py-3 rounded-2xl max-w-[80%]",
+                  message.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background border border-primary/10"
+                )}
+              >
+                <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
+                  {message.content}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
         {isLoading && (
-          <div className="flex gap-3 animate-in fade-in slide-in-from-bottom-2">
-            <Avatar className="h-8 w-8 border border-purple-400">
-              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xs font-bold">
+          <div className="flex gap-3 animate-fade-in">
+            <Avatar className="h-8 w-8 border border-primary/20">
+              <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-primary text-xs font-semibold">
                 A
               </AvatarFallback>
             </Avatar>
-            <div className="rounded-2xl px-4 py-3 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border border-purple-200 dark:border-purple-800">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-                <span>Alic.ia está analizando...</span>
+            <div className="bg-background border border-primary/10 px-4 py-3 rounded-2xl">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
@@ -454,45 +359,38 @@ export function AIChat() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="p-2 sm:p-4 border-t border-border/40 bg-background">
-        {!canSendAIMessage && (
-          <div className="mb-2 p-2 bg-destructive/10 border border-destructive/20 rounded-lg">
-            <p className="text-xs text-destructive">
-              Has alcanzado el límite de mensajes. 
-              <button 
-                onClick={() => navigate("/subscriptions")}
-                className="ml-1 underline font-medium hover:text-destructive/80"
-              >
-                Actualiza tu plan
-              </button>
-            </p>
+      {/* Footer simple */}
+      <div className="p-4 border-t border-border/40">
+        {!canSendAIMessage ? (
+          <div className="flex items-center justify-center gap-2 py-3 px-4 bg-muted/50 rounded-lg">
+            <Lock className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Límite alcanzado. <Button variant="link" className="p-0 h-auto" onClick={() => navigate('/subscriptions')}>Ver planes</Button>
+            </span>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Escribe tu mensaje..."
+              disabled={isLoading}
+              className="flex-1 border-border/40"
+            />
+            <Button
+              onClick={sendMessage}
+              disabled={isLoading || !input.trim()}
+              size="icon"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
           </div>
         )}
-        <div className="flex gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder={canSendAIMessage ? "Escribe tu mensaje..." : "Límite alcanzado"}
-            disabled={isLoading || !canSendAIMessage}
-            className="flex-1"
-          />
-          <Button
-            onClick={sendMessage}
-            disabled={isLoading || !input.trim() || !canSendAIMessage}
-            size="icon"
-            className="shrink-0"
-          >
-            {!canSendAIMessage ? (
-              <Lock className="h-4 w-4" />
-            ) : isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
       </div>
     </Card>
   );
