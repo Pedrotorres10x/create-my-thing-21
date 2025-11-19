@@ -9,11 +9,21 @@ interface ProgressTrackerProps {
 }
 
 export const ProgressTracker = ({ goals }: ProgressTrackerProps) => {
-  if (!goals) return null;
+  // Si no hay datos, mostrar objetivos iniciales
+  const defaultGoals: WeeklyGoals = {
+    referrals_this_week: 0,
+    meetings_this_month: 0,
+    chapter_member_count: 0,
+    days_until_week_end: 7,
+    days_until_month_end: 30,
+    posts_this_week: 0,
+    comments_this_week: 0
+  };
 
-  const referralComplete = goals.referrals_this_week >= 1;
-  const meetingComplete = goals.meetings_this_month >= 1;
-  const chapterComplete = goals.chapter_member_count >= 25;
+  const currentGoals = goals || defaultGoals;
+  const referralComplete = currentGoals.referrals_this_week >= 1;
+  const meetingComplete = currentGoals.meetings_this_month >= 1;
+  const chapterComplete = currentGoals.chapter_member_count >= 25;
 
   return (
     <Card className="border-l-4 border-l-primary">
@@ -32,11 +42,11 @@ export const ProgressTracker = ({ goals }: ProgressTrackerProps) => {
               "text-sm font-semibold",
               referralComplete ? "text-green-600" : "text-muted-foreground"
             )}>
-              {goals.referrals_this_week}/1
+              {currentGoals.referrals_this_week}/1
             </span>
           </div>
           <Progress 
-            value={Math.min(goals.referrals_this_week * 100, 100)} 
+            value={Math.min(currentGoals.referrals_this_week * 100, 100)} 
             className="h-2"
           />
           {referralComplete && (
@@ -45,9 +55,9 @@ export const ProgressTracker = ({ goals }: ProgressTrackerProps) => {
               ¡Objetivo cumplido!
             </p>
           )}
-          {!referralComplete && goals.days_until_week_end <= 2 && (
+          {!referralComplete && currentGoals.days_until_week_end <= 2 && (
             <p className="text-xs text-orange-600 mt-1">
-              Quedan {goals.days_until_week_end} {goals.days_until_week_end === 1 ? 'día' : 'días'}
+              Quedan {currentGoals.days_until_week_end} {currentGoals.days_until_week_end === 1 ? 'día' : 'días'}
             </p>
           )}
         </div>
@@ -60,11 +70,11 @@ export const ProgressTracker = ({ goals }: ProgressTrackerProps) => {
               "text-sm font-semibold",
               meetingComplete ? "text-green-600" : "text-muted-foreground"
             )}>
-              {goals.meetings_this_month}/1
+              {currentGoals.meetings_this_month}/1
             </span>
           </div>
           <Progress 
-            value={Math.min(goals.meetings_this_month * 100, 100)} 
+            value={Math.min(currentGoals.meetings_this_month * 100, 100)} 
             className="h-2"
           />
           {meetingComplete && (
@@ -73,9 +83,9 @@ export const ProgressTracker = ({ goals }: ProgressTrackerProps) => {
               ¡Objetivo cumplido!
             </p>
           )}
-          {!meetingComplete && goals.days_until_month_end <= 7 && (
+          {!meetingComplete && currentGoals.days_until_month_end <= 7 && (
             <p className="text-xs text-orange-600 mt-1">
-              Quedan {goals.days_until_month_end} días
+              Quedan {currentGoals.days_until_month_end} días
             </p>
           )}
         </div>
@@ -88,11 +98,11 @@ export const ProgressTracker = ({ goals }: ProgressTrackerProps) => {
               "text-sm font-semibold",
               chapterComplete ? "text-green-600" : "text-muted-foreground"
             )}>
-              {goals.chapter_member_count}/25
+              {currentGoals.chapter_member_count}/25
             </span>
           </div>
           <Progress 
-            value={(goals.chapter_member_count / 25) * 100} 
+            value={(currentGoals.chapter_member_count / 25) * 100} 
             className="h-2"
           />
           {chapterComplete && (
