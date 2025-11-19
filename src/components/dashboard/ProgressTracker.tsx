@@ -1,0 +1,108 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Target, CheckCircle2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { WeeklyGoals } from '@/hooks/useWeeklyGoals';
+
+interface ProgressTrackerProps {
+  goals: WeeklyGoals | null;
+}
+
+export const ProgressTracker = ({ goals }: ProgressTrackerProps) => {
+  if (!goals) return null;
+
+  const referralComplete = goals.referrals_this_week >= 1;
+  const meetingComplete = goals.meetings_this_month >= 1;
+  const chapterComplete = goals.chapter_member_count >= 25;
+
+  return (
+    <Card className="border-l-4 border-l-primary">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Target className="h-5 w-5" />
+          Tus Objetivos
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Referido semanal */}
+        <div>
+          <div className="flex justify-between mb-2">
+            <span className="text-sm font-medium">Referido esta semana</span>
+            <span className={cn(
+              "text-sm font-semibold",
+              referralComplete ? "text-green-600" : "text-muted-foreground"
+            )}>
+              {goals.referrals_this_week}/1
+            </span>
+          </div>
+          <Progress 
+            value={Math.min(goals.referrals_this_week * 100, 100)} 
+            className="h-2"
+          />
+          {referralComplete && (
+            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3" />
+              ¡Objetivo cumplido!
+            </p>
+          )}
+          {!referralComplete && goals.days_until_week_end <= 2 && (
+            <p className="text-xs text-orange-600 mt-1">
+              Quedan {goals.days_until_week_end} {goals.days_until_week_end === 1 ? 'día' : 'días'}
+            </p>
+          )}
+        </div>
+
+        {/* Reunión mensual */}
+        <div>
+          <div className="flex justify-between mb-2">
+            <span className="text-sm font-medium">Reunión este mes</span>
+            <span className={cn(
+              "text-sm font-semibold",
+              meetingComplete ? "text-green-600" : "text-muted-foreground"
+            )}>
+              {goals.meetings_this_month}/1
+            </span>
+          </div>
+          <Progress 
+            value={Math.min(goals.meetings_this_month * 100, 100)} 
+            className="h-2"
+          />
+          {meetingComplete && (
+            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3" />
+              ¡Objetivo cumplido!
+            </p>
+          )}
+          {!meetingComplete && goals.days_until_month_end <= 7 && (
+            <p className="text-xs text-orange-600 mt-1">
+              Quedan {goals.days_until_month_end} días
+            </p>
+          )}
+        </div>
+
+        {/* Capítulo */}
+        <div>
+          <div className="flex justify-between mb-2">
+            <span className="text-sm font-medium">Miembros en capítulo</span>
+            <span className={cn(
+              "text-sm font-semibold",
+              chapterComplete ? "text-green-600" : "text-muted-foreground"
+            )}>
+              {goals.chapter_member_count}/25
+            </span>
+          </div>
+          <Progress 
+            value={(goals.chapter_member_count / 25) * 100} 
+            className="h-2"
+          />
+          {chapterComplete && (
+            <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3" />
+              ¡Capítulo completo!
+            </p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

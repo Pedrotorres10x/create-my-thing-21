@@ -13,6 +13,10 @@ import { RankingCard } from "@/components/gamification/RankingCard";
 import { useAchievements } from "@/hooks/useAchievements";
 import { ReengagementWelcomeBack } from "@/components/reengagement/ReengagementWelcomeBack";
 import { PremiumBanner } from "@/components/advertising/PremiumBanner";
+import { DynamicGreeting } from "@/components/dashboard/DynamicGreeting";
+import { SmartSuggestions } from "@/components/dashboard/SmartSuggestions";
+import { ProgressTracker } from "@/components/dashboard/ProgressTracker";
+import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 
 interface DashboardStats {
   referralsSent: number;
@@ -42,6 +46,9 @@ const Dashboard = () => {
   const [upcomingMeetings, setUpcomingMeetings] = useState<UpcomingMeeting[]>([]);
   const [professional, setProfessional] = useState<any>(null);
   const { achievement, clearAchievement } = useAchievements();
+  
+  // Weekly goals for dynamic suggestions
+  const { goals } = useWeeklyGoals(professional?.id || null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -158,26 +165,28 @@ const Dashboard = () => {
         </Card>
       ) : (
         <>
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold">
-                ¡Hola, {professional?.full_name?.split(' ')[0] || 'Profesional'}! 👋
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                ¿En qué puedo ayudarte hoy?
-              </p>
-            </div>
-            <PointsLevelBadge 
-              points={stats.totalPoints}
-              size="lg"
-            />
-          </div>
-
-          {/* AI Chat Interface */}
-          <AIChat />
+          {/* Dynamic Greeting */}
+          <DynamicGreeting 
+            userName={professional?.full_name?.split(' ')[0] || 'Profesional'}
+            consecutiveDays={0}
+          />
+          
+          {/* Smart Suggestions */}
+          <SmartSuggestions goals={goals} />
 
           {/* Premium Banner Advertising */}
           <PremiumBanner location="dashboard" size="horizontal_large" />
+
+          {/* AI Chat + Progress Tracker */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <AIChat />
+            </div>
+            
+            <div className="lg:col-span-1">
+              <ProgressTracker goals={goals} />
+            </div>
+          </div>
 
           {/* Gamification Section */}
           <div className="grid gap-6 md:grid-cols-3 mt-6">
