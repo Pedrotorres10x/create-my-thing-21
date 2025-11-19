@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Users, Map, Newspaper, Briefcase, HandshakeIcon } from "lucide-react";
@@ -22,10 +22,12 @@ interface SphereInfo {
 export default function MyBusinessSphere() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [sphereInfo, setSphereInfo] = useState<SphereInfo | null>(null);
   const [chapterId, setChapterId] = useState<string | null>(null);
   const [professionalId, setProfessionalId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("directory");
 
   useEffect(() => {
     if (!user) {
@@ -33,7 +35,12 @@ export default function MyBusinessSphere() {
       return;
     }
     loadSphereInfo();
-  }, [user, navigate]);
+
+    // Check if coming from notification
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    }
+  }, [user, navigate, location]);
 
   const loadSphereInfo = async () => {
     try {
@@ -110,7 +117,7 @@ export default function MyBusinessSphere() {
         </div>
       </div>
 
-      <Tabs defaultValue="directory" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="directory" className="flex items-center gap-2">
             <Users className="h-4 w-4" />

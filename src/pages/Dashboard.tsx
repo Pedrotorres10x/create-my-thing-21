@@ -18,6 +18,7 @@ import { SmartSuggestions } from "@/components/dashboard/SmartSuggestions";
 import { ProgressTracker } from "@/components/dashboard/ProgressTracker";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { SphereStatsCard } from "@/components/SphereStatsCard";
+import { SphereStatsEnhanced } from "@/components/sphere/SphereStatsEnhanced";
 import { SphereSynergyCard } from "@/components/sphere/SphereSynergyCard";
 import { SphereActivityFeed } from "@/components/sphere/SphereActivityFeed";
 import { SphereReferenceDialog } from "@/components/sphere/SphereReferenceDialog";
@@ -193,12 +194,11 @@ const Dashboard = () => {
 
           {/* Sphere Stats */}
           {professional?.business_sphere_id && professional?.business_spheres && (
-            <SphereStatsCard
+            <SphereStatsEnhanced
               sphereId={professional.business_sphere_id}
               sphereName={professional.business_spheres.name}
-              sphereIcon={professional.business_spheres.icon || undefined}
-              sphereColor={professional.business_spheres.color || undefined}
               chapterId={professional.chapter_id || undefined}
+              professionalId={professional.id}
             />
           )}
 
