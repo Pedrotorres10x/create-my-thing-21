@@ -163,12 +163,12 @@ export function AIChat() {
   };
 
   return (
-    <Card className="flex flex-col h-[700px] border-border/40 shadow-lg">
+    <Card className="flex flex-col h-[500px] sm:h-[600px] lg:h-[700px] border-border/40 shadow-lg">
       {/* Chat Header */}
-      <div className="p-4 border-b border-border/40 space-y-3 bg-gradient-to-r from-purple-50 via-pink-50 to-purple-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-purple-950/20">
-        <div className="flex items-center gap-3">
+      <div className="p-3 sm:p-4 border-b border-border/40 space-y-2 sm:space-y-3 bg-gradient-to-r from-purple-50 via-pink-50 to-purple-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-purple-950/20">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="relative">
-            <Avatar className="h-10 w-10 border-2 border-purple-500">
+            <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-purple-500">
               <AvatarFallback className="bg-gradient-to-br from-purple-500 via-purple-600 to-pink-500 text-white font-bold text-lg">
                 A
               </AvatarFallback>
@@ -178,11 +178,11 @@ export function AIChat() {
             </div>
           </div>
           <div>
-            <h3 className="font-semibold text-sm flex items-center gap-2">
+            <h3 className="font-semibold text-xs sm:text-sm flex items-center gap-1 sm:gap-2">
               Alic.ia 
               <span className="text-purple-500">✨</span>
             </h3>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <p className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
               <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               Conectada y lista para ayudarte
             </p>
@@ -192,7 +192,7 @@ export function AIChat() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/20">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 sm:space-y-4 bg-muted/20">
         {messages.map((message, index) => (
           <div
             key={index}
@@ -219,13 +219,13 @@ export function AIChat() {
             </Avatar>
             <div
               className={cn(
-                "rounded-2xl px-4 py-2.5 max-w-[80%] shadow-sm",
+                "rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 max-w-[85%] sm:max-w-[80%] shadow-sm",
                 message.role === "user"
                   ? "bg-primary text-primary-foreground ml-auto"
                   : "bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border border-purple-200 dark:border-purple-800"
               )}
             >
-              <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+              <p className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
             </div>
           </div>
         ))}
@@ -252,7 +252,7 @@ export function AIChat() {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-border/40 bg-background">
+      <div className="p-2 sm:p-4 border-t border-border/40 bg-background">
         {!canSendAIMessage && (
           <div className="mb-2 p-2 bg-destructive/10 border border-destructive/20 rounded-lg">
             <p className="text-xs text-destructive">

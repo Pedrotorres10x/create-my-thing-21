@@ -178,18 +178,18 @@ const Dashboard = () => {
           <PremiumBanner location="dashboard" size="horizontal_large" />
 
           {/* AI Chat + Progress Tracker */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+            <div className="lg:col-span-2 order-2 lg:order-1">
               <AIChat />
             </div>
             
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 order-1 lg:order-2">
               <ProgressTracker goals={goals} />
             </div>
           </div>
 
           {/* Gamification Section */}
-          <div className="grid gap-6 md:grid-cols-3 mt-6">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-4 lg:mt-6">
             <RankingCard 
               ranking={stats.ranking}
               totalPoints={stats.totalPoints}

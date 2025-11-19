@@ -201,7 +201,7 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 sm:space-y-3">
       {suggestions.map((suggestion) => {
         const styles = getTypeStyles(suggestion.type);
         const Icon = suggestion.icon;
@@ -214,16 +214,16 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
               styles.border
             )}
           >
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-start gap-2 sm:gap-3">
                 <div className={cn(
-                  "p-2 rounded-lg",
+                  "p-1.5 sm:p-2 rounded-lg flex-shrink-0",
                   suggestion.type === 'urgent' && "bg-red-500/10",
                   suggestion.type === 'important' && "bg-orange-500/10",
                   suggestion.type === 'recommended' && "bg-blue-500/10"
                 )}>
                   <Icon className={cn(
-                    "h-5 w-5",
+                    "h-4 w-4 sm:h-5 sm:w-5",
                     suggestion.type === 'urgent' && "text-red-500",
                     suggestion.type === 'important' && "text-orange-500",
                     suggestion.type === 'recommended' && "text-blue-500"
@@ -232,23 +232,23 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <h3 className="font-semibold text-sm">{suggestion.title}</h3>
+                    <h3 className="font-semibold text-xs sm:text-sm">{suggestion.title}</h3>
                     {suggestion.deadline && (
-                      <Badge variant="outline" className="text-xs whitespace-nowrap">
+                      <Badge variant="outline" className="text-[10px] sm:text-xs whitespace-nowrap flex-shrink-0">
                         {suggestion.deadline}
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
                     {suggestion.description}
                   </p>
                   <Button
                     size="sm"
                     onClick={() => navigate(suggestion.actionRoute)}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto text-xs sm:text-sm"
                   >
                     {suggestion.action}
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                 </div>
               </div>
