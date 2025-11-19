@@ -40,7 +40,7 @@ export const AliciaWelcomeModal = ({
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
-            message: "[INICIO_SESION]",
+            messages: [{ role: "user", content: "[INICIO_SESION]" }],
             professionalId: professionalId,
           }),
         });
