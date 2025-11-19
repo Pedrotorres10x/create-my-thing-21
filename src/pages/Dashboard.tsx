@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,6 +22,7 @@ import { SphereStatsEnhanced } from "@/components/sphere/SphereStatsEnhanced";
 import { SphereSynergyCard } from "@/components/sphere/SphereSynergyCard";
 import { SphereActivityFeed } from "@/components/sphere/SphereActivityFeed";
 import { SphereReferenceDialog } from "@/components/sphere/SphereReferenceDialog";
+import { AliciaWelcomeModal } from "@/components/AliciaWelcomeModal";
 
 interface DashboardStats {
   referralsSent: number;
@@ -52,6 +53,7 @@ const Dashboard = () => {
   const [professional, setProfessional] = useState<any>(null);
   const [showReferenceDialog, setShowReferenceDialog] = useState(false);
   const { achievement, clearAchievement } = useAchievements();
+  const chatRef = useRef<HTMLDivElement>(null);
   
   // Weekly goals for dynamic suggestions
   const { goals } = useWeeklyGoals(professional?.id || null);
@@ -158,6 +160,17 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <DailyMotivationModal />
+      
+      {professional?.id && (
+        <AliciaWelcomeModal 
+          professionalId={professional.id}
+          userName={professional.full_name.split(' ')[0]}
+          onOpenFullChat={() => {
+            chatRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }}
+        />
+      )}
+      
       <ReengagementWelcomeBack />
       <AchievementModal 
         achievement={achievement}
@@ -190,7 +203,7 @@ const Dashboard = () => {
           />
 
           {/* Alic.ia Chat - MÁXIMA PROMINENCIA - FULL WIDTH */}
-          <div className="w-full">
+          <div ref={chatRef} className="w-full">
             <AIChat />
           </div>
           
