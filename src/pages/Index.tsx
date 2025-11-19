@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import { Users, Trophy, Handshake, Store, ArrowRight, Sparkles, Target, Rocket } from "lucide-react";
+import { BackgroundImage } from "@/components/ui/background-image";
+import heroBg from "@/assets/hero-background.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -48,9 +50,16 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 pt-20 pb-12">
+    <div className="min-h-screen">
+      {/* Hero Section with Background */}
+      <BackgroundImage
+        imageUrl={heroBg}
+        alt="Dynamic networking hero"
+        overlayOpacity={0.65}
+        overlayColor="hsl(222 47% 11%)"
+        className="relative"
+      >
+        <div className="container mx-auto px-4 pt-20 pb-12">
         <div className="text-center space-y-8 max-w-4xl mx-auto">
           <Badge className="text-sm px-4 py-2" variant="secondary">
             <Sparkles className="w-3 h-3 mr-2" />
@@ -88,9 +97,10 @@ const Index = () => {
           </div>
         </div>
       </div>
+      </BackgroundImage>
 
       {/* Features Grid */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-16 bg-gradient-to-b from-background to-muted/20">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             ¿Qué te espera aquí dentro?
