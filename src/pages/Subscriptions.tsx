@@ -38,8 +38,8 @@ export default function Subscriptions() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <div className="text-center space-y-4">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+      <div className="text-center space-y-3 sm:space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-2">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
@@ -47,9 +47,9 @@ export default function Subscriptions() {
           </span>
           +500 pros activos en la red
         </div>
-        <h1 className="text-4xl font-bold mb-2">Elige tu Plan 🚀</h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Cada contacto puede abrirte puertas de miles de euros. <br />
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">Elige tu Plan 🚀</h1>
+        <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
+          Cada contacto puede abrirte puertas de miles de euros. <br className="hidden sm:block" />
           <span className="text-primary font-medium">¿Hasta dónde quieres llegar? 💼</span>
         </p>
       </div>
@@ -82,8 +82,8 @@ export default function Subscriptions() {
           </TabsList>
         </div>
 
-        <TabsContent value="monthly" className="mt-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <TabsContent value="monthly" className="mt-6 sm:mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
             {plans?.map((plan) => (
               <SubscriptionPlanCard
                 key={plan.id}
@@ -100,8 +100,8 @@ export default function Subscriptions() {
           </div>
         </TabsContent>
 
-        <TabsContent value="yearly" className="mt-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <TabsContent value="yearly" className="mt-6 sm:mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
             {plans?.map((plan) => (
               <SubscriptionPlanCard
                 key={plan.id}
