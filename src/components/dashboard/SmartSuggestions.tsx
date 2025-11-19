@@ -34,9 +34,42 @@ interface SmartSuggestionsProps {
 export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
   const navigate = useNavigate();
 
-  if (!goals) return null;
-
   const calculateSuggestions = (): Suggestion[] => {
+    // Si no hay datos de goals, mostrar sugerencias generales de bienvenida
+    if (!goals) {
+      return [
+        {
+          id: 'welcome-referral',
+          type: 'important',
+          priority: 1,
+          title: '🎯 Comienza invitando a tu primer referido',
+          description: 'Cada referido que se une fortalece tu red profesional y te acerca a más oportunidades de negocio.',
+          action: 'Ver referidos',
+          actionRoute: '/referrals',
+          icon: UserPlus
+        },
+        {
+          id: 'welcome-chapter',
+          type: 'important',
+          priority: 2,
+          title: '👥 Únete a un capítulo local',
+          description: 'Los capítulos con 25+ miembros son los más activos. Encuentra el tuyo y conecta con profesionales de tu zona.',
+          action: 'Ver capítulos',
+          actionRoute: '/chapter',
+          icon: Users
+        },
+        {
+          id: 'welcome-meetings',
+          type: 'recommended',
+          priority: 3,
+          title: '📅 Agenda tu primera reunión',
+          description: 'Las reuniones uno a uno son la clave para generar confianza y oportunidades de negocio reales.',
+          action: 'Explorar profesionales',
+          actionRoute: '/meetings',
+          icon: Calendar
+        }
+      ];
+    }
     const suggestions: Suggestion[] = [];
 
     // 1. REFERIDO ESTA SEMANA (KPI crítico)
@@ -114,8 +147,6 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
   };
 
   const suggestions = calculateSuggestions();
-
-  if (suggestions.length === 0) return null;
 
   const getTypeStyles = (type: Suggestion['type']) => {
     switch (type) {
