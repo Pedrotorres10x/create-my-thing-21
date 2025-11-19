@@ -479,7 +479,7 @@ const Admin = () => {
         <TabsList>
           <TabsTrigger value="dashboard">
             <BarChart3 className="w-4 h-4 mr-2" />
-            Dashboard
+            Panel General
           </TabsTrigger>
           <TabsTrigger value="engagement">
             <Activity className="w-4 h-4 mr-2" />
@@ -487,7 +487,7 @@ const Admin = () => {
           </TabsTrigger>
           <TabsTrigger value="professionals">Profesionales</TabsTrigger>
           <TabsTrigger value="chapters">Capítulos</TabsTrigger>
-          <TabsTrigger value="premium-slots">Marketplace Premium</TabsTrigger>
+          <TabsTrigger value="premium-slots">Plaza Premium</TabsTrigger>
           <TabsTrigger value="banners">Publicidad Premium</TabsTrigger>
           <TabsTrigger value="referrals">Referidos</TabsTrigger>
         </TabsList>

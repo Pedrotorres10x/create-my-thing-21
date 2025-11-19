@@ -490,9 +490,9 @@ export const BannerManagement = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="dashboard">Dashboard</SelectItem>
+                        <SelectItem value="dashboard">Panel Principal</SelectItem>
                         <SelectItem value="feed">Feed</SelectItem>
-                        <SelectItem value="marketplace">Marketplace</SelectItem>
+                        <SelectItem value="marketplace">Plaza Premium</SelectItem>
                         <SelectItem value="all">Todas</SelectItem>
                       </SelectContent>
                     </Select>

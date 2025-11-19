@@ -36,7 +36,7 @@ const MOTIVATIONAL_MESSAGES = [
   },
   {
     title: "¡Las oportunidades te esperan!",
-    message: "El marketplace está lleno de posibilidades. Explora ofertas y comparte las tuyas con la comunidad."
+    message: "La plaza premium está llena de posibilidades. Explora ofertas y comparte las tuyas con la comunidad."
   }
 ];
 

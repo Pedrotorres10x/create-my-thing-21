@@ -210,7 +210,7 @@ export default function PremiumSlotsManagement() {
     <div className="container mx-auto p-6">
       <div className="flex items-center gap-2 mb-6">
         <Sparkles className="h-6 w-6 text-primary" />
-        <h1 className="text-3xl font-bold">Gestión de Marketplace Premium</h1>
+        <h1 className="text-3xl font-bold">Gestión de Plaza Premium</h1>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>

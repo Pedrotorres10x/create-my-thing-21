@@ -162,8 +162,8 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
       type: 'recommended',
       priority: 5,
       title: '🎯 Descubre oportunidades',
-      description: 'Explora el marketplace premium y encuentra servicios que pueden impulsar tu negocio.',
-      action: 'Ver marketplace',
+      description: 'Explora la plaza premium y encuentra servicios que pueden impulsar tu negocio.',
+      action: 'Ver plaza premium',
       actionRoute: '/premium-marketplace',
       icon: TrendingUp
     });

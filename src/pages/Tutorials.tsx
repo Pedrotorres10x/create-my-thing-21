@@ -64,7 +64,7 @@ const Tutorials = () => {
     },
     {
       icon: Store,
-      title: "Marketplace",
+      title: "Plaza Premium",
       description: "Ofrece y solicita servicios dentro de la comunidad",
       steps: ["Publica lo que ofreces", "Busca lo que necesitas", "Colabora con otros miembros"]
     },
@@ -367,7 +367,7 @@ const Tutorials = () => {
             className="gap-2 gradient-primary"
             onClick={() => window.location.href = "/dashboard"}
           >
-            Ir al Dashboard
+            Ir al inicio
             <ArrowRight className="h-5 w-5" />
           </Button>
         </CardContent>
