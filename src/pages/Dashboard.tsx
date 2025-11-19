@@ -17,6 +17,7 @@ import { DynamicGreeting } from "@/components/dashboard/DynamicGreeting";
 import { SmartSuggestions } from "@/components/dashboard/SmartSuggestions";
 import { ProgressTracker } from "@/components/dashboard/ProgressTracker";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
+import { SphereStatsCard } from "@/components/SphereStatsCard";
 
 interface DashboardStats {
   referralsSent: number;
@@ -58,7 +59,19 @@ const Dashboard = () => {
         // Get professional data
         const { data: professionalData } = await supabase
           .from("professionals")
-          .select("id, total_points, full_name, status")
+          .select(`
+            id, 
+            total_points, 
+            full_name, 
+            status,
+            chapter_id,
+            business_sphere_id,
+            business_spheres (
+              name,
+              icon,
+              color
+            )
+          `)
           .eq("user_id", user.id)
           .single();
 
@@ -173,6 +186,17 @@ const Dashboard = () => {
           
           {/* Smart Suggestions */}
           <SmartSuggestions goals={goals} />
+
+          {/* Sphere Stats */}
+          {professional?.business_sphere_id && professional?.business_spheres && (
+            <SphereStatsCard
+              sphereId={professional.business_sphere_id}
+              sphereName={professional.business_spheres.name}
+              sphereIcon={professional.business_spheres.icon || undefined}
+              sphereColor={professional.business_spheres.color || undefined}
+              chapterId={professional.chapter_id || undefined}
+            />
+          )}
 
           {/* Premium Banner Advertising */}
           <PremiumBanner location="dashboard" size="horizontal_large" />
