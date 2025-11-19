@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PremiumSlotCard from "@/components/marketplace/PremiumSlotCard";
-import WaitlistDialog from "@/components/marketplace/WaitlistDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { PremiumBanner } from "@/components/advertising/PremiumBanner";
 
@@ -42,7 +40,6 @@ export default function PremiumMarketplace() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [availableSlots, setAvailableSlots] = useState<number>(30);
   const [loading, setLoading] = useState(true);
-  const [waitlistDialogOpen, setWaitlistDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -124,16 +121,9 @@ export default function PremiumMarketplace() {
               Marketplace Premium
             </h1>
             <p className="text-muted-foreground mt-2">
-              Espacio publicitario exclusivo para empresas líderes
+              Empresas líderes que confían en nuestra red de profesionales
             </p>
           </div>
-          <Button
-            onClick={() => setWaitlistDialogOpen(true)}
-            disabled={!user || availableSlots === 0}
-            size="lg"
-          >
-            {availableSlots === 0 ? "Unirse a Lista de Espera" : "Solicitar Espacio"}
-          </Button>
         </div>
 
         {/* Slots Counter */}
@@ -199,12 +189,6 @@ export default function PremiumMarketplace() {
         </div>
       )}
 
-      {/* Waitlist Dialog */}
-      <WaitlistDialog
-        open={waitlistDialogOpen}
-        onOpenChange={setWaitlistDialogOpen}
-        onSuccess={fetchData}
-      />
     </div>
   );
 }
