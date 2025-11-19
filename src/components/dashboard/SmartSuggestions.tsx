@@ -76,32 +76,17 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
         return onboardingSuggestions.slice(0, 1); // Solo 1 sugerencia
       }
 
-      // Paso 2: Ya tiene 1+ referido, ahora sugerir capítulo
-      if (goals.chapter_member_count === 0) {
-        onboardingSuggestions.push({
-          id: 'onboarding-chapter',
-          type: 'important',
-          priority: 1,
-          title: '👥 Siguiente paso: Únete a un capítulo',
-          description: 'Encuentra profesionales de tu zona y empieza a generar oportunidades locales.',
-          action: 'Buscar capítulo',
-          actionRoute: '/chapter',
-          icon: Users
-        });
-        return onboardingSuggestions.slice(0, 1); // Solo 1 sugerencia
-      }
-
-      // Paso 3: Ya tiene capítulo, sugerir reunión
+      // Paso 2: Ya tiene 1+ referido, ahora sugerir conocer su capítulo
       if (goals.meetings_this_month === 0) {
         onboardingSuggestions.push({
-          id: 'onboarding-meeting',
+          id: 'onboarding-chapter-explore',
           type: 'important',
           priority: 1,
-          title: '📅 Último paso: Agenda tu primera reunión',
-          description: 'Las reuniones uno a uno son donde ocurre la magia. Agenda una esta semana.',
-          action: 'Ver profesionales',
-          actionRoute: '/meetings',
-          icon: Calendar
+          title: '👥 Siguiente paso: Conoce a tu capítulo',
+          description: 'Explora tu capítulo local y conecta con profesionales de tu zona.',
+          action: 'Ver mi capítulo',
+          actionRoute: '/chapter',
+          icon: Users
         });
         return onboardingSuggestions.slice(0, 1); // Solo 1 sugerencia
       }
