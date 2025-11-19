@@ -10,6 +10,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Loader2, Info } from "lucide-react";
+import { BackgroundImage } from "@/components/ui/background-image";
+import authBg from "@/assets/auth-background.jpg";
 
 const authSchema = z.object({
   email: z.string().email("Email inválido").max(255, "Email demasiado largo"),
@@ -169,8 +171,15 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted/20 p-4">
-      <Card className="w-full max-w-md shadow-lg">
+    <BackgroundImage 
+      imageUrl={authBg}
+      alt="Professional networking background"
+      overlayOpacity={0.75}
+      overlayColor="hsl(222 47% 11%)"
+      className="min-h-screen"
+    >
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-2xl backdrop-glass border-primary/20">
         <CardHeader className="text-center space-y-1">
           <CardTitle className="text-3xl font-bold">CONECTOR</CardTitle>
           <CardDescription>Inicia sesión o crea tu cuenta</CardDescription>
@@ -355,6 +364,7 @@ const Auth = () => {
         </CardContent>
       </Card>
     </div>
+    </BackgroundImage>
   );
 };
 
