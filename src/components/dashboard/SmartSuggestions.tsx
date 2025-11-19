@@ -35,41 +35,81 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
   const navigate = useNavigate();
 
   const calculateSuggestions = (): Suggestion[] => {
-    // Si no hay datos de goals, mostrar sugerencias generales de bienvenida
+    // Si no hay datos de goals, usuario nuevo - mostrar SOLO primera acción
     if (!goals) {
       return [
         {
           id: 'welcome-referral',
           type: 'important',
           priority: 1,
-          title: '🎯 Comienza invitando a tu primer referido',
-          description: 'Cada referido que se une fortalece tu red profesional y te acerca a más oportunidades de negocio.',
-          action: 'Ver referidos',
+          title: '👋 ¡Bienvenido! Empieza invitando a alguien',
+          description: 'El primer paso es invitar a un profesional que conozcas. Es rápido y sencillo.',
+          action: 'Invitar ahora',
           actionRoute: '/referrals',
           icon: UserPlus
-        },
-        {
-          id: 'welcome-chapter',
-          type: 'important',
-          priority: 2,
-          title: '👥 Únete a un capítulo local',
-          description: 'Los capítulos con 25+ miembros son los más activos. Encuentra el tuyo y conecta con profesionales de tu zona.',
-          action: 'Ver capítulos',
-          actionRoute: '/chapter',
-          icon: Users
-        },
-        {
-          id: 'welcome-meetings',
-          type: 'recommended',
-          priority: 3,
-          title: '📅 Agenda tu primera reunión',
-          description: 'Las reuniones uno a uno son la clave para generar confianza y oportunidades de negocio reales.',
-          action: 'Explorar profesionales',
-          actionRoute: '/meetings',
-          icon: Calendar
         }
       ];
     }
+
+    // Detectar si es usuario nuevo (sin actividad significativa)
+    const isNewUser = goals.referrals_this_week === 0 && 
+                      goals.meetings_this_month === 0 && 
+                      goals.posts_this_week === 0 && 
+                      goals.comments_this_week === 0;
+
+    // Para usuarios nuevos: onboarding paso a paso
+    if (isNewUser) {
+      const onboardingSuggestions: Suggestion[] = [];
+      
+      // Paso 1: Si no ha invitado a nadie, solo mostrar eso
+      if (goals.referrals_this_week === 0) {
+        onboardingSuggestions.push({
+          id: 'onboarding-referral',
+          type: 'important',
+          priority: 1,
+          title: '🎯 Tu primera misión: Invita a 1 persona',
+          description: '¿Conoces a algún profesional que debería estar aquí? Invítalo y empieza a construir tu red.',
+          action: 'Invitar ahora',
+          actionRoute: '/referrals',
+          icon: UserPlus
+        });
+        return onboardingSuggestions.slice(0, 1); // Solo 1 sugerencia
+      }
+
+      // Paso 2: Ya tiene 1+ referido, ahora sugerir capítulo
+      if (goals.chapter_member_count === 0) {
+        onboardingSuggestions.push({
+          id: 'onboarding-chapter',
+          type: 'important',
+          priority: 1,
+          title: '👥 Siguiente paso: Únete a un capítulo',
+          description: 'Encuentra profesionales de tu zona y empieza a generar oportunidades locales.',
+          action: 'Buscar capítulo',
+          actionRoute: '/chapter',
+          icon: Users
+        });
+        return onboardingSuggestions.slice(0, 1); // Solo 1 sugerencia
+      }
+
+      // Paso 3: Ya tiene capítulo, sugerir reunión
+      if (goals.meetings_this_month === 0) {
+        onboardingSuggestions.push({
+          id: 'onboarding-meeting',
+          type: 'important',
+          priority: 1,
+          title: '📅 Último paso: Agenda tu primera reunión',
+          description: 'Las reuniones uno a uno son donde ocurre la magia. Agenda una esta semana.',
+          action: 'Ver profesionales',
+          actionRoute: '/meetings',
+          icon: Calendar
+        });
+        return onboardingSuggestions.slice(0, 1); // Solo 1 sugerencia
+      }
+
+      // Si ya completó el onboarding básico, pasar a sugerencias normales
+    }
+
+    // SUGERENCIAS PARA USUARIOS ACTIVOS
     const suggestions: Suggestion[] = [];
 
     // 1. REFERIDO ESTA SEMANA (KPI crítico)
@@ -79,8 +119,8 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
         id: 'referral-weekly',
         type: urgency as 'urgent' | 'important',
         priority: 1,
-        title: goals.days_until_week_end <= 1 ? '🔴 ¡Invita a tu referido HOY!' : '🟠 Invita a tu referido semanal',
-        description: `Quedan ${goals.days_until_week_end} ${goals.days_until_week_end === 1 ? 'día' : 'días'} para cumplir tu objetivo. Cada referido fortalece la red.`,
+        title: goals.days_until_week_end <= 1 ? '⏰ ¡Solo quedan horas!' : '🟠 Invita a tu referido semanal',
+        description: `Quedan ${goals.days_until_week_end} ${goals.days_until_week_end === 1 ? 'día' : 'días'} para cumplir tu objetivo semanal.`,
         action: 'Invitar ahora',
         actionRoute: '/referrals',
         icon: UserPlus,
@@ -143,7 +183,11 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
       icon: TrendingUp
     });
 
-    return suggestions.sort((a, b) => a.priority - b.priority).slice(0, 3);
+    // Limitar sugerencias según urgencia
+    const urgentCount = suggestions.filter(s => s.type === 'urgent').length;
+    const maxSuggestions = urgentCount > 0 ? 2 : 3;
+    
+    return suggestions.sort((a, b) => a.priority - b.priority).slice(0, maxSuggestions);
   };
 
   const suggestions = calculateSuggestions();
