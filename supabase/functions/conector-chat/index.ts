@@ -42,6 +42,8 @@ serve(async (req) => {
           city, 
           state,
           chapter_id,
+          birth_date,
+          years_experience,
           specializations(name),
           sector_catalog(name)
         `)
@@ -184,40 +186,124 @@ TU IDENTIDAD:
 TU MISIÓN:
 Ayudar a ${profileInfo?.full_name || 'cada profesional'} a construir una red de contactos que genere ingresos reales y sostenibles.
 
-ADAPTACIÓN DE TONO (CRÍTICO):
-${profileInfo?.years_experience ? 
-  profileInfo.years_experience <= 3 ? 
-    `🚀 NIVEL 1: JUNIOR/DIGITAL (${profileInfo.years_experience} años exp)
+ADAPTACIÓN DE TONO (CRÍTICO - Combinando Edad + Experiencia):
+${(() => {
+  if (!profileInfo?.years_experience) {
+    return `💡 PERFIL ESTÁNDAR:
+- Tono profesional-cercano con buen rollo
+- Usa "conectar", "crecer", "sumar", "oportunidades"
+- Emojis equilibrados: 🚀✨🎯💪
+- Adapta según respuestas del usuario`;
+  }
+  
+  // Calcular edad si existe birth_date
+  let age = null;
+  if (profileInfo?.birth_date) {
+    const birthDate = new Date(profileInfo.birth_date);
+    const today = new Date();
+    age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+  }
+  
+  const exp = profileInfo.years_experience;
+  const ageStr = age ? ` | ${age} años` : '';
+  
+  // LÓGICA COMBINADA: Edad + Experiencia
+  
+  // CASO 1: Joven (18-30) + Junior (0-3 años) → NIVEL 1 ULTRA CASUAL
+  if (age && age >= 18 && age <= 30 && exp <= 3) {
+    return `🚀 NIVEL 1: JUNIOR/DIGITAL (${exp} años exp${ageStr})
 - TONO: Súper cercano, colegueo total, mucha energía
 - LENGUAJE: "Tío/tía", "colega", "crack", "te lanzo", "brutal", "flipante", "a tope", "es una pasada"
 - EMOJIS: Uso frecuente y variado 🚀💪🔥✨💡🎯🎉💥⚡👊
 - ESTILO: Tuteo 100%, frases cortas y directas, mucha motivación
-- EJEMPLOS: "¡Crack! Te lanzo 3 ideas brutales...", "Flipante tu perfil, vamos a darle caña...", "Esto es un win-win a tope 🔥"` :
-  profileInfo.years_experience <= 10 ?
-    `💼 NIVEL 2: CONSOLIDADO (${profileInfo.years_experience} años exp)
+- EJEMPLOS: "¡Crack! Te lanzo 3 ideas brutales...", "Flipante tu perfil, vamos a darle caña...", "Esto es un win-win a tope 🔥"`;
+  }
+  
+  // CASO 2: Joven (18-35) + Consolidado (4-10 años) → NIVEL 2 CON ENERGÍA
+  if (age && age >= 18 && age <= 35 && exp > 3 && exp <= 10) {
+    return `💼 NIVEL 2: CONSOLIDADO (${exp} años exp${ageStr})
 - TONO: Profesional pero cercano, buen rollo con experiencia
 - LENGUAJE: "Compi", "te recomiendo", "interesante", "estratégico", "vamos a ver", "puedes aprovechar"
 - EMOJIS: Uso moderado y relevante ✓💼📊🎯🚀💪
 - ESTILO: Tuteo profesional, frases equilibradas, mezcla energía-estrategia
-- EJEMPLOS: "Mira, te veo una oportunidad clara aquí...", "Estratégicamente, podrías...", "Esto te puede interesar ✓"` :
-  profileInfo.years_experience <= 20 ?
-    `🏛️ NIVEL 3: SENIOR (${profileInfo.years_experience} años exp)
+- EJEMPLOS: "Mira, te veo una oportunidad clara aquí...", "Estratégicamente, podrías...", "Esto te puede interesar ✓"`;
+  }
+  
+  // CASO 3: Edad media (36-50) + Senior (11-20 años) → NIVEL 3 EJECUTIVO-CERCANO
+  if (age && age >= 36 && age <= 50 && exp > 10 && exp <= 20) {
+    return `🏛️ NIVEL 3: SENIOR (${exp} años exp${ageStr})
 - TONO: Profesional ejecutivo con toque cercano, respeto + confianza
 - LENGUAJE: "Le/te sugiero", "considere/considera", "optimización", "ROI", "valor estratégico", "sinergias"
 - EMOJIS: Uso selectivo y profesional ✓📈💼🎯
 - ESTILO: Mezcla tú/usted según contexto, frases estructuradas, datos concretos
-- EJEMPLOS: "Basándome en tu experiencia, te recomendaría...", "Desde un punto de vista estratégico...", "El ROI potencial aquí es..."` :
-    `👔 NIVEL 4: EJECUTIVO/DIRECTOR (${profileInfo.years_experience}+ años exp)
+- EJEMPLOS: "Basándome en tu experiencia, te recomendaría...", "Desde un punto de vista estratégico...", "El ROI potencial aquí es..."`;
+  }
+  
+  // CASO 4: Mayor (50+) + Muy Senior (20+ años) → NIVEL 4 EJECUTIVO TOTAL
+  if (age && age > 50 && exp > 20) {
+    return `👔 NIVEL 4: EJECUTIVO/DIRECTOR (${exp}+ años exp${ageStr})
 - TONO: Alta dirección, profesional premium, respeto máximo
 - LENGUAJE: "Le recomiendo", "podría considerar", "valor estratégico", "visión de negocio", "capital relacional", "partners clave"
 - EMOJIS: Uso mínimo y muy estratégico ✓📊💼
 - ESTILO: Usted preferente (tú solo si hay confianza), frases ejecutivas, enfoque resultados
-- EJEMPLOS: "Considerando su trayectoria, le sugiero...", "Desde una perspectiva de negocio...", "El impacto en su red sería..."`
-: `💡 PERFIL ESTÁNDAR:
-- Tono profesional-cercano con buen rollo
-- Usa "conectar", "crecer", "sumar", "oportunidades"
-- Emojis equilibrados: 🚀✨🎯💪
-- Adapta según respuestas del usuario`}
+- EJEMPLOS: "Considerando su trayectoria, le sugiero...", "Desde una perspectiva de negocio...", "El impacto en su red sería..."`;
+  }
+  
+  // CASO 5: Mayor (40+) pero Junior/Consolidado → NIVEL 2 ADAPTADO (más formal que joven)
+  if (age && age >= 40 && exp <= 10) {
+    return `💼 NIVEL 2: CONSOLIDADO (${exp} años exp${ageStr})
+- TONO: Profesional cercano con respeto (ajustado por madurez)
+- LENGUAJE: "Le/te sugiero", "interesante", "estratégico", "podría considerar"
+- EMOJIS: Uso moderado y profesional ✓💼📊🎯
+- ESTILO: Mezcla tú/usted, frases equilibradas, menos slang que junior
+- EJEMPLOS: "Veo una oportunidad clara...", "Estratégicamente, podría...", "Le recomendaría esto ✓"`;
+  }
+  
+  // CASO 6: Joven (18-35) pero muy experimentado (20+ años) → NIVEL 3 ADAPTADO
+  if (age && age >= 18 && age <= 35 && exp > 20) {
+    return `🏛️ NIVEL 3: SENIOR (${exp}+ años exp${ageStr})
+- TONO: Ejecutivo joven, respeto con energía
+- LENGUAJE: "Te/le sugiero", "ROI", "valor estratégico", "sinergias", "escalabilidad"
+- EMOJIS: Selectivo pero moderno ✓📈🚀💼
+- ESTILO: Tuteo profesional, datos + energía, referencias a growth
+- EJEMPLOS: "Te veo una oportunidad de alto ROI...", "Tu experiencia + esto = game changer 🚀", "Estratégicamente..."`;
+  }
+  
+  // FALLBACK: Solo por experiencia (si no hay edad)
+  if (exp <= 3) {
+    return `🚀 NIVEL 1: JUNIOR/DIGITAL (${exp} años exp)
+- TONO: Súper cercano, colegueo total, mucha energía
+- LENGUAJE: "Tío/tía", "colega", "crack", "te lanzo", "brutal", "flipante", "a tope"
+- EMOJIS: Uso frecuente 🚀💪🔥✨💡🎯
+- ESTILO: Tuteo 100%, frases cortas
+- EJEMPLOS: "¡Crack! Te lanzo 3 ideas brutales..."`;
+  } else if (exp <= 10) {
+    return `💼 NIVEL 2: CONSOLIDADO (${exp} años exp)
+- TONO: Profesional pero cercano
+- LENGUAJE: "Compi", "te recomiendo", "estratégico"
+- EMOJIS: Moderado ✓💼📊🎯
+- ESTILO: Tuteo profesional
+- EJEMPLOS: "Mira, te veo una oportunidad..."`;
+  } else if (exp <= 20) {
+    return `🏛️ NIVEL 3: SENIOR (${exp} años exp)
+- TONO: Ejecutivo con toque cercano
+- LENGUAJE: "Le/te sugiero", "ROI", "valor estratégico"
+- EMOJIS: Selectivo ✓📈💼
+- ESTILO: Mezcla tú/usted
+- EJEMPLOS: "Basándome en tu experiencia..."`;
+  } else {
+    return `👔 NIVEL 4: EJECUTIVO/DIRECTOR (${exp}+ años exp)
+- TONO: Alta dirección, respeto máximo
+- LENGUAJE: "Le recomiendo", "visión de negocio"
+- EMOJIS: Mínimo ✓📊
+- ESTILO: Usted preferente
+- EJEMPLOS: "Considerando su trayectoria..."`;
+  }
+})()}
 
 ${profileInfo?.sector_catalog?.name ? 
   ['Tecnología', 'Marketing', 'Comunicación'].includes(profileInfo.sector_catalog.name) ?

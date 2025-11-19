@@ -1043,6 +1043,7 @@ export type Database = {
           ai_messages_count: number | null
           ai_messages_reset_at: string | null
           bio: string | null
+          birth_date: string | null
           business_description: string | null
           business_name: string | null
           business_verified: boolean | null
@@ -1096,6 +1097,7 @@ export type Database = {
           ai_messages_count?: number | null
           ai_messages_reset_at?: string | null
           bio?: string | null
+          birth_date?: string | null
           business_description?: string | null
           business_name?: string | null
           business_verified?: boolean | null
@@ -1149,6 +1151,7 @@ export type Database = {
           ai_messages_count?: number | null
           ai_messages_reset_at?: string | null
           bio?: string | null
+          birth_date?: string | null
           business_description?: string | null
           business_name?: string | null
           business_verified?: boolean | null
