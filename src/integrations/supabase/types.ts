@@ -1643,6 +1643,74 @@ export type Database = {
         }
         Relationships: []
       }
+      user_weekly_goals: {
+        Row: {
+          chapter_goal: number | null
+          chapter_member_count: number | null
+          comments_this_week: number | null
+          consecutive_months_with_meeting: number | null
+          consecutive_weeks_with_referral: number | null
+          created_at: string | null
+          id: string
+          last_suggestion_shown: string | null
+          meetings_goal_month: number | null
+          meetings_this_month: number | null
+          month_start: string
+          posts_this_week: number | null
+          professional_id: string
+          referrals_goal_week: number | null
+          referrals_this_week: number | null
+          updated_at: string | null
+          week_start: string
+        }
+        Insert: {
+          chapter_goal?: number | null
+          chapter_member_count?: number | null
+          comments_this_week?: number | null
+          consecutive_months_with_meeting?: number | null
+          consecutive_weeks_with_referral?: number | null
+          created_at?: string | null
+          id?: string
+          last_suggestion_shown?: string | null
+          meetings_goal_month?: number | null
+          meetings_this_month?: number | null
+          month_start: string
+          posts_this_week?: number | null
+          professional_id: string
+          referrals_goal_week?: number | null
+          referrals_this_week?: number | null
+          updated_at?: string | null
+          week_start: string
+        }
+        Update: {
+          chapter_goal?: number | null
+          chapter_member_count?: number | null
+          comments_this_week?: number | null
+          consecutive_months_with_meeting?: number | null
+          consecutive_weeks_with_referral?: number | null
+          created_at?: string | null
+          id?: string
+          last_suggestion_shown?: string | null
+          meetings_goal_month?: number | null
+          meetings_this_month?: number | null
+          month_start?: string
+          posts_this_week?: number | null
+          professional_id?: string
+          referrals_goal_week?: number | null
+          referrals_this_week?: number | null
+          updated_at?: string | null
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_weekly_goals_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       verification_logs: {
         Row: {
           created_at: string
@@ -1702,6 +1770,18 @@ export type Database = {
         Returns: number
       }
       calculate_banner_ctr: { Args: { _banner_id: string }; Returns: number }
+      calculate_user_weekly_goals: {
+        Args: { p_professional_id: string }
+        Returns: {
+          chapter_member_count: number
+          comments_this_week: number
+          days_until_month_end: number
+          days_until_week_end: number
+          meetings_this_month: number
+          posts_this_week: number
+          referrals_this_week: number
+        }[]
+      }
       can_send_ai_message: {
         Args: { _professional_id: string }
         Returns: boolean
@@ -1754,6 +1834,10 @@ export type Database = {
         Returns: boolean
       }
       update_waitlist_positions: { Args: never; Returns: undefined }
+      upsert_user_weekly_goals: {
+        Args: { p_professional_id: string }
+        Returns: undefined
+      }
       validate_spanish_nif_cif: { Args: { nif_cif: string }; Returns: boolean }
     }
     Enums: {
