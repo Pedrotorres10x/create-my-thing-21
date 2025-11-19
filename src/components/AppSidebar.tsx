@@ -19,7 +19,7 @@ import {
 
 const mainItems = [
   { title: "Tu Home", url: "/dashboard", icon: Home },
-  { title: "Aprende el Juego", url: "/tutorials", icon: BookOpen },
+  { title: "Guías", url: "/tutorials", icon: BookOpen },
   { title: "Tu Carta", url: "/profile", icon: UserCircle },
   { title: "Tu Plan", url: "/subscriptions", icon: CreditCard },
   { title: "Tus Aliados", url: "/referrals", icon: Handshake },

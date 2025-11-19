@@ -34,7 +34,7 @@ const Index = () => {
     },
     {
       icon: Trophy,
-      title: "Sube de Nivel Jugando",
+      title: "Gamificación que Funciona",
       description: "Consigue puntos, desbloquea logros y llega al top"
     },
     {
@@ -63,7 +63,7 @@ const Index = () => {
         <div className="text-center space-y-8 max-w-4xl mx-auto">
           <Badge className="text-sm px-4 py-2" variant="secondary">
             <Sparkles className="w-3 h-3 mr-2" />
-            Donde Networking es Divertido 🚀
+            Networking que Funciona 🚀
           </Badge>
           
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
@@ -74,7 +74,7 @@ const Index = () => {
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            La red donde <strong>conectar</strong> es divertido, <strong>crecer</strong> es el objetivo y <strong>ganar</strong> es la norma
+            La red donde <strong>conectar</strong> es estratégico, <strong>crecer</strong> es el objetivo y <strong>ganar</strong> es la norma
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
@@ -145,7 +145,7 @@ const Index = () => {
                 <div className="w-12 h-12 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
                   <Trophy className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold">Game On</h3>
+                <h3 className="text-2xl font-bold">Activa tu Red</h3>
                 <p className="text-muted-foreground">
                   Puntos, logros, premios reales. Networking gamificado
                 </p>
