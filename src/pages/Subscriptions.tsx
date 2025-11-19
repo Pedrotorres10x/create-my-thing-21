@@ -47,10 +47,10 @@ export default function Subscriptions() {
           </span>
           +500 pros activos en la red
         </div>
-        <h1 className="text-4xl font-bold mb-2">Elige Tu Nivel de Juego 🎮</h1>
+        <h1 className="text-4xl font-bold mb-2">Elige tu Plan 🚀</h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
           Cada contacto puede abrirte puertas de miles de euros. <br />
-          <span className="text-primary font-medium">¿Hasta dónde quieres llegar? 🚀</span>
+          <span className="text-primary font-medium">¿Hasta dónde quieres llegar? 💼</span>
         </p>
       </div>
 
