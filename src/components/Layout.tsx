@@ -16,6 +16,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { SphereNotifications } from "./sphere/SphereNotifications";
 
 interface LayoutProps {
   children: ReactNode;
@@ -35,7 +36,7 @@ export function Layout({ children }: LayoutProps) {
   const loadProfessional = async () => {
     const { data } = await supabase
       .from("professionals")
-      .select("full_name, photo_url")
+      .select("id, full_name, photo_url, business_sphere_id")
       .eq("user_id", user?.id)
       .maybeSingle();
     setProfessional(data);
@@ -52,7 +53,12 @@ export function Layout({ children }: LayoutProps) {
               <div className="text-lg font-semibold">CONECTOR</div>
             </div>
             
-            <DropdownMenu>
+            <div className="flex items-center gap-2">
+              {professional?.business_sphere_id && professional?.id && (
+                <SphereNotifications professionalId={professional.id} />
+              )}
+              
+              <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="gap-2 hover:bg-muted">
                   <Avatar className="h-8 w-8">
@@ -86,6 +92,7 @@ export function Layout({ children }: LayoutProps) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </div>
           </header>
           <main className="flex-1 p-4 md:p-6 bg-background overflow-auto">
             {children}
