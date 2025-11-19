@@ -128,6 +128,99 @@ export function AIChat() {
     initializeChat();
   }, [CHAT_URL]);
 
+  // Generar mensaje inicial proactivo de Alicia cuando el usuario entra
+  useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+    
+    const initializeChat = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setInitializing(false);
+          return;
+        }
+
+        const { data: professional } = await supabase
+          .from('professionals')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (!professional) {
+          setInitializing(false);
+          return;
+        }
+
+        // Generar mensaje inicial proactivo basado en el estado del usuario
+        const resp = await fetch(CHAT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ 
+            messages: [{ role: "user", content: "[INICIO_SESION]" }],
+            professionalId: professional.id
+          }),
+        });
+
+        if (!resp.ok) {
+          setInitializing(false);
+          return;
+        }
+
+        if (!resp.body) {
+          setInitializing(false);
+          return;
+        }
+
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let textBuffer = "";
+        let assistantContent = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          textBuffer += decoder.decode(value, { stream: true });
+
+          let newlineIndex: number;
+          while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+            let line = textBuffer.slice(0, newlineIndex);
+            textBuffer = textBuffer.slice(newlineIndex + 1);
+
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            if (line.startsWith(":") || line.trim() === "") continue;
+            if (!line.startsWith("data: ")) continue;
+
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === "[DONE]") continue;
+
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+              if (content) {
+                assistantContent += content;
+                setMessages([{ role: "assistant", content: assistantContent }]);
+              }
+            } catch {
+              textBuffer = line + "\n" + textBuffer;
+              break;
+            }
+          }
+        }
+
+        setInitializing(false);
+      } catch (error) {
+        console.error("Error initializing chat:", error);
+        setInitializing(false);
+      }
+    };
+
+    initializeChat();
+  }, [CHAT_URL]);
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
