@@ -18,6 +18,9 @@ import { SmartSuggestions } from "@/components/dashboard/SmartSuggestions";
 import { ProgressTracker } from "@/components/dashboard/ProgressTracker";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { SphereStatsCard } from "@/components/SphereStatsCard";
+import { SphereSynergyCard } from "@/components/sphere/SphereSynergyCard";
+import { SphereActivityFeed } from "@/components/sphere/SphereActivityFeed";
+import { SphereReferenceDialog } from "@/components/sphere/SphereReferenceDialog";
 
 interface DashboardStats {
   referralsSent: number;
@@ -46,6 +49,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [upcomingMeetings, setUpcomingMeetings] = useState<UpcomingMeeting[]>([]);
   const [professional, setProfessional] = useState<any>(null);
+  const [showReferenceDialog, setShowReferenceDialog] = useState(false);
   const { achievement, clearAchievement } = useAchievements();
   
   // Weekly goals for dynamic suggestions
@@ -198,6 +202,41 @@ const Dashboard = () => {
             />
           )}
 
+          {/* Sphere Activity & Synergy */}
+          {professional?.business_sphere_id && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+              <SphereActivityFeed
+                sphereId={professional.business_sphere_id}
+                chapterId={professional.chapter_id}
+                currentProfessionalId={professional.id}
+              />
+              <SphereSynergyCard professionalId={professional.id} />
+            </div>
+          )}
+
+          {/* Sphere Reference Button */}
+          {professional?.business_sphere_id && (
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <h3 className="font-semibold text-lg">¿Cliente que necesita otro servicio?</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Refiere dentro de tu esfera y gana <span className="font-bold text-primary">50 puntos</span> (vs 30 normales)
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => setShowReferenceDialog(true)}
+                    size="lg"
+                    className="gap-2"
+                  >
+                    🤝 Referir a mi Esfera
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Premium Banner Advertising */}
           <PremiumBanner location="dashboard" size="horizontal_large" />
 
@@ -253,6 +292,16 @@ const Dashboard = () => {
           {/* Secondary Banner - Bottom */}
           <PremiumBanner location="dashboard" size="horizontal_small" />
         </>
+      )}
+
+      {/* Sphere Reference Dialog */}
+      {professional?.business_sphere_id && (
+        <SphereReferenceDialog
+          open={showReferenceDialog}
+          onOpenChange={setShowReferenceDialog}
+          sphereId={professional.business_sphere_id}
+          currentProfessionalId={professional.id}
+        />
       )}
     </div>
   );

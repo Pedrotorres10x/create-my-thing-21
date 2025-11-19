@@ -1455,6 +1455,70 @@ export type Database = {
           },
         ]
       }
+      sphere_internal_references: {
+        Row: {
+          business_sphere_id: number
+          client_name: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          points_awarded: number | null
+          referred_to_id: string
+          referrer_id: string
+          service_needed: string
+          status: string
+        }
+        Insert: {
+          business_sphere_id: number
+          client_name: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          points_awarded?: number | null
+          referred_to_id: string
+          referrer_id: string
+          service_needed: string
+          status?: string
+        }
+        Update: {
+          business_sphere_id?: number
+          client_name?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          points_awarded?: number | null
+          referred_to_id?: string
+          referrer_id?: string
+          service_needed?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sphere_internal_references_business_sphere_id_fkey"
+            columns: ["business_sphere_id"]
+            isOneToOne: false
+            referencedRelation: "business_spheres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sphere_internal_references_referred_to_id_fkey"
+            columns: ["referred_to_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sphere_internal_references_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sphere_project_participants: {
         Row: {
           contribution_notes: string | null
@@ -2004,6 +2068,10 @@ export type Database = {
         Returns: number
       }
       calculate_banner_ctr: { Args: { _banner_id: string }; Returns: number }
+      calculate_sphere_synergy_score: {
+        Args: { _professional_id: string }
+        Returns: number
+      }
       calculate_user_weekly_goals: {
         Args: { p_professional_id: string }
         Returns: {
