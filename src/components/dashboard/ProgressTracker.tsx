@@ -35,8 +35,8 @@ export const ProgressTracker = ({ goals }: ProgressTrackerProps) => {
 
   return (
     <Card className="border-l-4 border-l-primary">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
           <Target className="h-5 w-5" />
           {isNewUser ? 'Tus Primeros Objetivos' : 'Tus Objetivos'}
         </CardTitle>
@@ -46,7 +46,7 @@ export const ProgressTracker = ({ goals }: ProgressTrackerProps) => {
           </p>
         )}
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
         {/* Referido semanal */}
         <div>
           <div className="flex justify-between mb-2">
