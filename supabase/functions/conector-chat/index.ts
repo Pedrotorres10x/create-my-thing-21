@@ -29,6 +29,22 @@ serve(async (req) => {
     let chapterMemberCount = 0;
     let completedMeetingsCount = 0;
     
+    // ===== NUEVAS MÉTRICAS DE ACTIVIDAD PARA KPIs =====
+    let activityMetrics = {
+      referralsThisMonth: 0,
+      referralsCompleted: 0,
+      meetingsThisMonth: 0,
+      meetingsPending: 0,
+      sphereReferencesSent: 0,
+      sphereReferencesReceived: 0,
+      postsThisMonth: 0,
+      commentsThisMonth: 0,
+      lastLogin: null as Date | null,
+      daysInactive: 0,
+      engagementStatus: 'unknown' as 'active' | 'at_risk' | 'inactive' | 'dormant' | 'unknown',
+      activityScore: 0
+    };
+    
     if (professionalId) {
       // Get professional profile with chapter and specialization info
       const { data: profile } = await supabase
@@ -44,6 +60,8 @@ serve(async (req) => {
           chapter_id,
           birth_date,
           years_experience,
+          business_sphere_id,
+          referral_code,
           specializations(name),
           sector_catalog(name)
         `)
@@ -73,7 +91,106 @@ serve(async (req) => {
         completedMeetingsCount = meetingsData;
       }
       
-      // Determine if user is new in registration (no specialization or no chapter)
+      // ===== OBTENER MÉTRICAS DE ACTIVIDAD PARA LOS 3 KPIs =====
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const thirtyDaysAgoStr = thirtyDaysAgo.toISOString();
+      
+      // KPI 1: REFERIDOS - Contar referidos enviados este mes
+      const { data: referralsData } = await supabase
+        .from('referrals')
+        .select('id, status, reward_points, created_at')
+        .eq('referrer_id', professionalId)
+        .gte('created_at', thirtyDaysAgoStr);
+      
+      if (referralsData) {
+        activityMetrics.referralsThisMonth = referralsData.length;
+        activityMetrics.referralsCompleted = referralsData.filter(r => r.status === 'completed').length;
+      }
+      
+      // KPI 2: REUNIONES - Contar meetings este mes
+      const { data: meetingsDataMonth } = await supabase
+        .from('meetings')
+        .select('id, status, created_at')
+        .or(`requester_id.eq.${professionalId},recipient_id.eq.${professionalId}`)
+        .gte('created_at', thirtyDaysAgoStr);
+      
+      if (meetingsDataMonth) {
+        activityMetrics.meetingsThisMonth = meetingsDataMonth.filter(m => 
+          m.status === 'confirmed' || m.status === 'completed'
+        ).length;
+        activityMetrics.meetingsPending = meetingsDataMonth.filter(m => 
+          m.status === 'pending'
+        ).length;
+      }
+      
+      // KPI 3: INTERACCIONES 1-A-1 - Referencias internas de esfera
+      if (profile?.business_sphere_id) {
+        const { data: sphereRefsData } = await supabase
+          .from('sphere_internal_references')
+          .select('id, referrer_id, created_at')
+          .eq('business_sphere_id', profile.business_sphere_id)
+          .gte('created_at', thirtyDaysAgoStr);
+        
+        if (sphereRefsData) {
+          activityMetrics.sphereReferencesSent = sphereRefsData.filter(r => 
+            r.referrer_id === professionalId
+          ).length;
+          activityMetrics.sphereReferencesReceived = sphereRefsData.filter(r => 
+            r.referrer_id !== professionalId
+          ).length;
+        }
+      }
+      
+      // Contar posts y comentarios este mes
+      const { data: postsData } = await supabase
+        .from('posts')
+        .select('id')
+        .eq('professional_id', professionalId)
+        .gte('created_at', thirtyDaysAgoStr);
+      
+      if (postsData) {
+        activityMetrics.postsThisMonth = postsData.length;
+      }
+      
+      const { data: commentsData } = await supabase
+        .from('post_comments')
+        .select('id')
+        .eq('professional_id', professionalId)
+        .gte('created_at', thirtyDaysAgoStr);
+      
+      if (commentsData) {
+        activityMetrics.commentsThisMonth = commentsData.length;
+      }
+      
+      // Obtener última actividad y calcular días de inactividad
+      const { data: activityTrackingData } = await supabase
+        .from('user_activity_tracking')
+        .select('last_login, inactivity_days, reengagement_stage, activity_score')
+        .eq('professional_id', professionalId)
+        .single();
+      
+      if (activityTrackingData) {
+        if (activityTrackingData.last_login) {
+          activityMetrics.lastLogin = new Date(activityTrackingData.last_login);
+          const now = new Date();
+          activityMetrics.daysInactive = Math.floor((now.getTime() - activityMetrics.lastLogin.getTime()) / (1000 * 60 * 60 * 24));
+        }
+        
+        if (activityTrackingData.reengagement_stage) {
+          activityMetrics.engagementStatus = activityTrackingData.reengagement_stage as any;
+        }
+        
+        if (activityTrackingData.activity_score !== null) {
+          activityMetrics.activityScore = activityTrackingData.activity_score;
+        }
+      } else {
+        // Si no existe registro de actividad, asumir que es nuevo o inactivo
+        activityMetrics.daysInactive = 999;
+        activityMetrics.engagementStatus = 'dormant';
+      }
+      
+      // Determinar si user es new in registration (no specialization or no chapter)
       isNewUser = !profile?.specialization_id || !profile?.chapter_id;
       
       // Determine if user is experienced (has completed at least 3 meetings)
