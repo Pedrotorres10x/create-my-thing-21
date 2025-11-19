@@ -118,7 +118,7 @@ export default function PremiumMarketplace() {
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent flex items-center gap-2">
               <Sparkles className="h-8 w-8 text-primary" />
-              Marketplace Premium
+              Escaparate Premium
             </h1>
             <p className="text-muted-foreground mt-2">
               Empresas líderes que confían en nuestra red de profesionales

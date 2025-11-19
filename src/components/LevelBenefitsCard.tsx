@@ -16,7 +16,7 @@ const levelBenefits = [
     benefits: [
       "Acceso al feed de publicaciones",
       "Crear perfil profesional",
-      "Ver ofertas del marketplace",
+      "Ver ofertas de la plaza",
     ],
     icon: Star,
     color: "text-gray-500",
@@ -27,7 +27,7 @@ const levelBenefits = [
     minPoints: 100,
     benefits: [
       "Todo lo anterior",
-      "Publicar en el marketplace",
+      "Publicar en la plaza",
       "Solicitar reuniones 1-1",
       "Comentar en publicaciones",
     ],
@@ -40,7 +40,7 @@ const levelBenefits = [
     minPoints: 500,
     benefits: [
       "Todo lo anterior",
-      "Destacar ofertas en marketplace",
+      "Destacar ofertas en la plaza",
       "Ver estadísticas de perfil",
       "Badge de miembro activo",
     ],

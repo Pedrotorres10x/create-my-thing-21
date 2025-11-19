@@ -26,7 +26,7 @@ const features = [
     items: [
       { name: "Mensajes AI asistente", free: "10/mes", provincial: "50/mes", regional: "200/mes", national: "Ilimitados" },
       { name: "Analytics avanzados", free: false, provincial: false, regional: true, national: true },
-      { name: "Marketplace destacado", free: false, provincial: false, regional: false, national: true },
+      { name: "Destacado en plaza", free: false, provincial: false, regional: false, national: true },
     ]
   }
 ];

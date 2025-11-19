@@ -119,7 +119,7 @@ export const ReengagementWelcomeBack = () => {
             >
               <Gift className="h-5 w-5 text-primary" />
               <div className="text-left">
-                <p className="font-semibold">Marketplace</p>
+                <p className="font-semibold">Plaza Premium</p>
                 <p className="text-xs text-muted-foreground">Ofrece tus servicios</p>
               </div>
             </Button>
