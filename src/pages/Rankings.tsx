@@ -27,7 +27,14 @@ interface Professional {
   chapter_id: string | null;
   sector_id: number;
   business_sphere_id: number | null;
+  profession_specialization_id: number | null;
   sector_catalog: {
+    name: string;
+  } | null;
+  specializations: {
+    name: string;
+  } | null;
+  profession_specializations: {
     name: string;
   } | null;
   chapters: {
@@ -100,7 +107,14 @@ const Rankings = () => {
             chapter_id,
             sector_id,
             business_sphere_id,
+            profession_specialization_id,
             sector_catalog (
+              name
+            ),
+            specializations (
+              name
+            ),
+            profession_specializations (
               name
             ),
             chapters (
@@ -327,9 +341,30 @@ const Rankings = () => {
                           </p>
                         )}
                         <div className="flex gap-2 mt-1">
-                          {prof.sector_catalog && (
+                          {prof.profession_specializations ? (
+                            <Badge variant="secondary" className="text-xs">
+                              {prof.profession_specializations.name}
+                            </Badge>
+                          ) : prof.specializations ? (
+                            <Badge variant="secondary" className="text-xs">
+                              {prof.specializations.name}
+                            </Badge>
+                          ) : prof.sector_catalog ? (
                             <Badge variant="secondary" className="text-xs">
                               {prof.sector_catalog.name}
+                            </Badge>
+                          ) : null}
+                          {prof.business_spheres && (
+                            <Badge 
+                              variant="outline" 
+                              className="text-xs"
+                              style={{ 
+                                borderColor: prof.business_spheres.color || undefined,
+                                color: prof.business_spheres.color || undefined
+                              }}
+                            >
+                              {prof.business_spheres.icon && <span className="mr-1">{prof.business_spheres.icon}</span>}
+                              {prof.business_spheres.name}
                             </Badge>
                           )}
                         </div>

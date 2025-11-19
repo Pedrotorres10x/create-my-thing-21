@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Upload, Loader2 } from "lucide-react";
 import { BusinessSphereSelector } from "@/components/BusinessSphereSelector";
+import { ProfessionSpecializationSelector } from "@/components/ProfessionSpecializationSelector";
+import { SpecializationAvailabilityIndicator } from "@/components/SpecializationAvailabilityIndicator";
 
 const profileSchema = z.object({
   full_name: z.string().min(2, "Nombre muy corto").max(100, "Nombre muy largo"),
@@ -38,6 +40,13 @@ interface Specialization {
   sector_id: string;
 }
 
+interface Chapter {
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+}
+
 export function ProfileForm() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -47,6 +56,8 @@ export function ProfileForm() {
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [specializations, setSpecializations] = useState<Specialization[]>([]);
   const [filteredSpecs, setFilteredSpecs] = useState<Specialization[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [filteredChapters, setFilteredChapters] = useState<Chapter[]>([]);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -56,7 +67,9 @@ export function ProfileForm() {
     position: "",
     sector_id: "",
     specialization_id: "",
+    profession_specialization_id: null as number | null,
     business_sphere_id: 0,
+    chapter_id: null as string | null,
     bio: "",
     linkedin_url: "",
     website: "",
@@ -74,6 +87,7 @@ export function ProfileForm() {
   useEffect(() => {
     loadSectors();
     loadSpecializations();
+    loadChapters();
     loadProfile();
     
     // Check for referral code in URL
@@ -91,6 +105,15 @@ export function ProfileForm() {
     }
   }, [formData.sector_id, specializations]);
 
+  useEffect(() => {
+    if (formData.state) {
+      const filtered = chapters.filter(c => c.state === formData.state);
+      setFilteredChapters(filtered);
+    } else {
+      setFilteredChapters(chapters);
+    }
+  }, [formData.state, chapters]);
+
   const loadSectors = async () => {
     const { data } = await (supabase as any).from("sector_catalog").select("*").order("name");
     if (data) setSectors(data.map((s: any) => ({ ...s, id: String(s.id) })));
@@ -99,6 +122,11 @@ export function ProfileForm() {
   const loadSpecializations = async () => {
     const { data } = await (supabase as any).from("specializations").select("*").order("name");
     if (data) setSpecializations(data.map((s: any) => ({ ...s, id: String(s.id), sector_id: String(s.sector_id) })));
+  };
+
+  const loadChapters = async () => {
+    const { data } = await (supabase as any).from("chapters").select("id, name, city, state").order("name");
+    if (data) setChapters(data);
   };
 
   const loadProfile = async () => {
@@ -118,7 +146,9 @@ export function ProfileForm() {
         position: data.position || "",
         sector_id: data.sector_id ? String(data.sector_id) : "",
         specialization_id: data.specialization_id ? String(data.specialization_id) : "",
+        profession_specialization_id: data.profession_specialization_id || null,
         business_sphere_id: data.business_sphere_id || 0,
+        chapter_id: data.chapter_id || null,
         bio: data.bio || "",
         linkedin_url: data.linkedin_url || "",
         website: data.website || "",
@@ -210,7 +240,9 @@ export function ProfileForm() {
           position: validated.position,
           sector_id: formData.sector_id ? parseInt(formData.sector_id) : null,
           specialization_id: formData.specialization_id ? parseInt(formData.specialization_id) : null,
+          profession_specialization_id: formData.profession_specialization_id,
           business_sphere_id: formData.business_sphere_id || null,
+          chapter_id: formData.chapter_id,
           bio: validated.bio,
           linkedin_url: validated.linkedin_url,
           website: validated.website,
@@ -359,6 +391,23 @@ export function ProfileForm() {
           specializationId={formData.specialization_id ? parseInt(formData.specialization_id) : undefined}
           required
         />
+
+        <ProfessionSpecializationSelector
+          specializationId={formData.specialization_id ? parseInt(formData.specialization_id) : null}
+          chapterId={formData.chapter_id}
+          value={formData.profession_specialization_id}
+          onChange={(value) => setFormData({ ...formData, profession_specialization_id: value })}
+          required
+        />
+
+        {formData.profession_specialization_id && formData.chapter_id && (
+          <SpecializationAvailabilityIndicator
+            professionSpecializationId={formData.profession_specialization_id}
+            currentChapterId={formData.chapter_id}
+            currentState={formData.state}
+            showAlternatives
+          />
+        )}
       </div>
 
       <div className="space-y-2">
@@ -420,12 +469,13 @@ export function ProfileForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="state">Provincia/Estado</Label>
+          <Label htmlFor="state">Provincia/Estado *</Label>
           <Input
             id="state"
             value={formData.state}
-            onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+            onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value, chapter_id: null }))}
             maxLength={100}
+            required
           />
         </div>
 
@@ -448,6 +498,31 @@ export function ProfileForm() {
             maxLength={20}
           />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="chapter_id">Capítulo *</Label>
+        <Select 
+          value={formData.chapter_id || ""} 
+          onValueChange={(value) => setFormData(prev => ({ ...prev, chapter_id: value }))}
+          disabled={!formData.state}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecciona tu capítulo" />
+          </SelectTrigger>
+          <SelectContent>
+            {filteredChapters.map((chapter) => (
+              <SelectItem key={chapter.id} value={chapter.id}>
+                {chapter.name} - {chapter.city}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {!formData.state && (
+          <p className="text-sm text-muted-foreground">
+            Primero selecciona tu provincia/estado para ver los capítulos disponibles
+          </p>
+        )}
       </div>
 
       <div className="space-y-4">

@@ -1064,6 +1064,38 @@ export type Database = {
           },
         ]
       }
+      profession_specializations: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: number
+          name: string
+          specialization_id: number
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          name: string
+          specialization_id: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          name?: string
+          specialization_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profession_specializations_specialization_id_fkey"
+            columns: ["specialization_id"]
+            isOneToOne: false
+            referencedRelation: "specializations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professionals: {
         Row: {
           address: string | null
@@ -1100,6 +1132,7 @@ export type Database = {
           photo_url: string | null
           position: string | null
           postal_code: string | null
+          profession_specialization_id: number | null
           referral_code: string | null
           referred_by_code: string | null
           registration_type: string | null
@@ -1155,6 +1188,7 @@ export type Database = {
           photo_url?: string | null
           position?: string | null
           postal_code?: string | null
+          profession_specialization_id?: number | null
           referral_code?: string | null
           referred_by_code?: string | null
           registration_type?: string | null
@@ -1210,6 +1244,7 @@ export type Database = {
           photo_url?: string | null
           position?: string | null
           postal_code?: string | null
+          profession_specialization_id?: number | null
           referral_code?: string | null
           referred_by_code?: string | null
           registration_type?: string | null
@@ -1243,6 +1278,13 @@ export type Database = {
             columns: ["chapter_id"]
             isOneToOne: false
             referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professionals_profession_specialization_id_fkey"
+            columns: ["profession_specialization_id"]
+            isOneToOne: false
+            referencedRelation: "profession_specializations"
             referencedColumns: ["id"]
           },
           {
@@ -1865,6 +1907,10 @@ export type Database = {
         Args: { _professional_id: string }
         Returns: boolean
       }
+      check_specialization_availability: {
+        Args: { _chapter_id: string; _profession_specialization_id: number }
+        Returns: boolean
+      }
       deduct_points: {
         Args: { points: number; prof_id: string }
         Returns: undefined
@@ -1874,6 +1920,16 @@ export type Database = {
         Returns: string
       }
       generate_referral_code: { Args: never; Returns: string }
+      get_available_chapters_for_specialization: {
+        Args: { _profession_specialization_id: number; _state?: string }
+        Returns: {
+          chapter_id: string
+          chapter_name: string
+          city: string
+          member_count: number
+          state: string
+        }[]
+      }
       get_available_slots_count: { Args: never; Returns: number }
       get_completed_meetings_count: {
         Args: { professional_uuid: string }

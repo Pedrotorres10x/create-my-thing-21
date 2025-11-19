@@ -13,6 +13,12 @@ interface Professional {
   sector_catalog?: {
     name: string;
   } | null;
+  specializations?: {
+    name: string;
+  } | null;
+  profession_specializations?: {
+    name: string;
+  } | null;
 }
 
 interface PodiumDisplayProps {
@@ -97,11 +103,19 @@ export const PodiumDisplay = ({ topThree, myProfessionalId }: PodiumDisplayProps
               </p>
             )}
 
-            {professional.sector_catalog && (
+            {professional.profession_specializations ? (
+              <Badge variant="secondary" className="text-xs mb-2">
+                {professional.profession_specializations.name}
+              </Badge>
+            ) : professional.specializations ? (
+              <Badge variant="secondary" className="text-xs mb-2">
+                {professional.specializations.name}
+              </Badge>
+            ) : professional.sector_catalog ? (
               <Badge variant="secondary" className="text-xs mb-2">
                 {professional.sector_catalog.name}
               </Badge>
-            )}
+            ) : null}
           </div>
 
           {/* Points */}
