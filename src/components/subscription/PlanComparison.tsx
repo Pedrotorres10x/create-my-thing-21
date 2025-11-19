@@ -35,7 +35,7 @@ export function PlanComparison() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-center">Comparación Detallada de Planes</CardTitle>
+        <CardTitle className="text-center">Lo que Incluye Cada Plan 📊</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -43,10 +43,10 @@ export function PlanComparison() {
             <thead>
               <tr className="border-b">
                 <th className="text-left p-4 font-semibold">Característica</th>
-                <th className="text-center p-4 font-semibold text-muted-foreground">Gratis</th>
-                <th className="text-center p-4 font-semibold text-muted-foreground">Provincial</th>
-                <th className="text-center p-4 font-semibold text-muted-foreground">Autonómico</th>
-                <th className="text-center p-4 font-semibold bg-primary/10 text-primary">Nacional 🚀</th>
+                <th className="text-center p-4 font-semibold text-muted-foreground">El Explorador</th>
+                <th className="text-center p-4 font-semibold text-muted-foreground">El Local Pro</th>
+                <th className="text-center p-4 font-semibold text-muted-foreground">El Regional Boss</th>
+                <th className="text-center p-4 font-semibold bg-primary/10 text-primary">El Todoterreno 🚀</th>
               </tr>
             </thead>
             <tbody>

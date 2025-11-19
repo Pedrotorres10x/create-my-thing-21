@@ -18,19 +18,19 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainItems = [
-  { title: "Inicio", url: "/dashboard", icon: Home },
-  { title: "Tutoriales", url: "/tutorials", icon: BookOpen },
-  { title: "Mi Perfil", url: "/profile", icon: UserCircle },
-  { title: "Suscripción", url: "/subscriptions", icon: CreditCard },
-  { title: "Referidos", url: "/referrals", icon: Handshake },
-  { title: "Mi Capítulo", url: "/chapter", icon: Users },
+  { title: "Tu Home", url: "/dashboard", icon: Home },
+  { title: "Aprende el Juego", url: "/tutorials", icon: BookOpen },
+  { title: "Tu Carta", url: "/profile", icon: UserCircle },
+  { title: "Tu Plan", url: "/subscriptions", icon: CreditCard },
+  { title: "Tus Aliados", url: "/referrals", icon: Handshake },
+  { title: "Mi Chapter", url: "/chapter", icon: Users },
 ];
 
 const communityItems = [
-  { title: "One-to-Ones", url: "/meetings", icon: Calendar },
-  { title: "Marketplace Premium", url: "/premium-marketplace", icon: Sparkles, badge: "PREMIUM" },
-  { title: "Comunidad", url: "/feed", icon: MessageSquare },
-  { title: "Rankings", url: "/rankings", icon: Trophy },
+  { title: "Cafés 1:1", url: "/meetings", icon: Calendar },
+  { title: "Plaza Premium", url: "/premium-marketplace", icon: Sparkles, badge: "VIP" },
+  { title: "El Feed", url: "/feed", icon: MessageSquare },
+  { title: "El Podio", url: "/rankings", icon: Trophy },
 ];
 
 export function AppSidebar() {
@@ -46,7 +46,7 @@ export function AppSidebar() {
     <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Principal</SidebarGroupLabel>
+          <SidebarGroupLabel>Tu Base</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
@@ -69,7 +69,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Comunidad</SidebarGroupLabel>
+          <SidebarGroupLabel>Tu Crew</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {communityItems.map((item) => (

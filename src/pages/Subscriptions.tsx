@@ -45,12 +45,12 @@ export default function Subscriptions() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
           </span>
-          Únete a más de 500 profesionales activos
+          +500 pros activos en la red
         </div>
-        <h1 className="text-4xl font-bold mb-2">Invierte en tu Red de Networking</h1>
+        <h1 className="text-4xl font-bold mb-2">Elige Tu Nivel de Juego 🎮</h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Cada contacto de calidad puede generar oportunidades de miles de euros. <br />
-          <span className="text-primary font-medium">¿Cuánto vale expandir tu red a nivel nacional?</span>
+          Cada contacto puede abrirte puertas de miles de euros. <br />
+          <span className="text-primary font-medium">¿Hasta dónde quieres llegar? 🚀</span>
         </p>
       </div>
 
@@ -127,29 +127,29 @@ export default function Subscriptions() {
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              🎯 Por qué el Plan Nacional
+              🚀 El Todoterreno: Tu Pase VIP
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-start gap-3">
-              <span className="text-2xl">🤝</span>
+              <span className="text-2xl">🗺️</span>
               <div>
-                <p className="font-medium">Acceso ilimitado a toda España</p>
-                <p className="text-sm text-muted-foreground">Conecta con profesionales en las 17 comunidades autónomas</p>
+                <p className="font-medium">España entera es tu playground</p>
+                <p className="text-sm text-muted-foreground">Las 17 comunidades sin límites. Cero fronteras</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <span className="text-2xl">💼</span>
+              <span className="text-2xl">💰</span>
               <div>
-                <p className="font-medium">Oportunidades multiplicadas</p>
-                <p className="text-sm text-muted-foreground">Cada región multiplica tus posibilidades de negocio</p>
+                <p className="font-medium">Cada región = Más oportunidades</p>
+                <p className="text-sm text-muted-foreground">Multiplica x17 tus posibilidades de cerrar negocios</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <span className="text-2xl">📈</span>
+              <span className="text-2xl">📊</span>
               <div>
-                <p className="font-medium">ROI comprobado</p>
-                <p className="text-sm text-muted-foreground">Miembros reportan 3.5x retorno en 6 meses</p>
+                <p className="font-medium">ROI del bueno</p>
+                <p className="text-sm text-muted-foreground">Nuestros miembros recuperan 3.5x la inversión en 6 meses</p>
               </div>
             </div>
           </CardContent>
@@ -157,14 +157,14 @@ export default function Subscriptions() {
 
         <Card className="bg-primary/5 border-primary/20">
           <CardHeader>
-            <CardTitle>¿Necesitas un plan personalizado?</CardTitle>
+            <CardTitle>¿Tu empresa va a otro nivel? 🏢</CardTitle>
             <CardDescription>
-              Si tu organización necesita características adicionales o un plan a medida, contáctanos.
+              Si necesitas algo a medida para tu organización, hablamos.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Ofrecemos soluciones empresariales con soporte dedicado, integraciones personalizadas y más.
+              Soluciones enterprise con soporte dedicado, integraciones custom y todo lo que necesites.
             </p>
           </CardContent>
         </Card>
