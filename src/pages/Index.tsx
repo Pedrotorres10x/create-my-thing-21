@@ -27,23 +27,23 @@ const Index = () => {
   const features = [
     {
       icon: Users,
-      title: "Red Profesional",
-      description: "Conecta con profesionales de tu sector y ciudad"
+      title: "Tu Crew Profesional",
+      description: "Conecta con pros de tu rollo en toda España"
     },
     {
       icon: Trophy,
-      title: "Sistema de Puntos",
-      description: "Gana puntos por referidos y sube de nivel"
+      title: "Sube de Nivel Jugando",
+      description: "Consigue puntos, desbloquea logros y llega al top"
     },
     {
       icon: Handshake,
-      title: "One-to-Ones",
-      description: "Agenda reuniones con otros miembros"
+      title: "Cafés que Cierran Negocios",
+      description: "Matches 1:1 con gente que suma de verdad"
     },
     {
       icon: Store,
-      title: "Marketplace",
-      description: "Ofrece y encuentra servicios profesionales"
+      title: "Tu Plaza de Oportunidades",
+      description: "Comparte y encuentra lo que necesitas"
     }
   ];
 
@@ -54,7 +54,7 @@ const Index = () => {
         <div className="text-center space-y-8 max-w-4xl mx-auto">
           <Badge className="text-sm px-4 py-2" variant="secondary">
             <Sparkles className="w-3 h-3 mr-2" />
-            Tu Red Profesional de Crecimiento
+            Donde Networking es Divertido 🚀
           </Badge>
           
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
@@ -65,7 +65,7 @@ const Index = () => {
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            La plataforma que conecta, impulsa y recompensa tu crecimiento empresarial a través de una comunidad activa de profesionales
+            La red donde <strong>conectar</strong> es divertido, <strong>crecer</strong> es el objetivo y <strong>ganar</strong> es la norma
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
@@ -93,10 +93,10 @@ const Index = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            ¿Qué puedes hacer en CONECTOR?
+            ¿Qué te espera aquí dentro?
           </h2>
           <p className="text-muted-foreground text-lg">
-            Todo lo que necesitas para expandir tu red profesional
+            Tu toolkit completo para hacer crecer tu network (y tu negocio)
           </p>
         </div>
 
@@ -126,27 +126,27 @@ const Index = () => {
                 <div className="w-12 h-12 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
                   <Target className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold">Crece</h3>
+                <h3 className="text-2xl font-bold">Level Up</h3>
                 <p className="text-muted-foreground">
-                  Expande tu red de contactos profesionales
+                  Tu red crece, tu negocio crece. Es así de simple
                 </p>
               </div>
               <div className="space-y-3">
                 <div className="w-12 h-12 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
                   <Trophy className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold">Gana</h3>
+                <h3 className="text-2xl font-bold">Game On</h3>
                 <p className="text-muted-foreground">
-                  Acumula puntos y alcanza nuevos niveles
+                  Puntos, logros, premios reales. Networking gamificado
                 </p>
               </div>
               <div className="space-y-3">
                 <div className="w-12 h-12 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
                   <Rocket className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold">Conecta</h3>
+                <h3 className="text-2xl font-bold">Vibe Check ✓</h3>
                 <p className="text-muted-foreground">
-                  Colabora con profesionales de tu sector
+                  Solo gente con la que da gusto hacer negocios
                 </p>
               </div>
             </div>
@@ -158,17 +158,17 @@ const Index = () => {
       <div className="container mx-auto px-4 py-16 text-center">
         <div className="max-w-2xl mx-auto space-y-6">
           <h2 className="text-3xl md:text-4xl font-bold">
-            ¿Listo para crecer profesionalmente?
+            ¿Te unes a la party? 🎉
           </h2>
           <p className="text-lg text-muted-foreground">
-            Únete a la comunidad de profesionales que están transformando su negocio
+            Más de 500 profesionales ya están haciendo crecer su network (y su facturación)
           </p>
           <Button 
             size="lg" 
             onClick={() => navigate("/auth")}
             className="text-lg px-12 py-6"
           >
-            Únete Ahora Gratis
+            Quiero Entrar
           </Button>
         </div>
       </div>
