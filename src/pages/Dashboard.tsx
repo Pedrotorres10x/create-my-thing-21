@@ -188,6 +188,11 @@ const Dashboard = () => {
             userName={professional?.full_name?.split(' ')[0] || 'Profesional'}
             consecutiveDays={0}
           />
+
+          {/* Alic.ia Chat - MÁXIMA PROMINENCIA - FULL WIDTH */}
+          <div className="w-full">
+            <AIChat />
+          </div>
           
           {/* Smart Suggestions */}
           <SmartSuggestions goals={goals} />
@@ -240,15 +245,9 @@ const Dashboard = () => {
           {/* Premium Banner Advertising */}
           <PremiumBanner location="dashboard" size="horizontal_large" />
 
-          {/* AI Chat + Progress Tracker */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-            <div className="lg:col-span-2 order-2 lg:order-1">
-              <AIChat />
-            </div>
-            
-            <div className="lg:col-span-1 order-1 lg:order-2">
-              <ProgressTracker goals={goals} />
-            </div>
+          {/* Progress Tracker */}
+          <div className="w-full">
+            <ProgressTracker goals={goals} />
           </div>
 
           {/* Gamification Section */}
