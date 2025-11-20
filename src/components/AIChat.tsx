@@ -306,13 +306,13 @@ export function AIChat() {
       </div>
 
       {/* Cabecera vibrante con Alicia como protagonista */}
-      <div className="relative z-10 border-b border-primary/20 p-5 alicia-gradient">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="relative z-10 border-b border-primary/20 p-4 md:p-5 alicia-gradient">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div className="flex items-center gap-3">
             <div className="relative animate-float">
-              <Avatar className="h-14 w-14 border-3 border-white/30 shadow-2xl alicia-shadow ring-2 ring-white/20">
-                <AvatarFallback className="bg-white/90 text-primary text-xl font-bold">
-                  <Bot className="h-7 w-7" />
+              <Avatar className="h-12 w-12 md:h-14 md:w-14 border-3 border-white/30 shadow-2xl alicia-shadow ring-2 ring-white/20">
+                <AvatarFallback className="bg-white/90 text-primary text-lg md:text-xl font-bold">
+                  <Bot className="h-6 w-6 md:h-7 md:w-7" />
                 </AvatarFallback>
               </Avatar>
               <div className="absolute -top-1 -right-1 bg-white text-primary rounded-full p-1 animate-bounce">
@@ -320,13 +320,13 @@ export function AIChat() {
               </div>
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
                 Alic.ia
                 <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
                   IA
                 </Badge>
               </h3>
-              <p className="text-sm text-white/90 font-medium">Tu asistente personal inteligente</p>
+              <p className="text-xs md:text-sm text-white/90 font-medium">Tu asistente personal inteligente</p>
             </div>
           </div>
           <AIUsageIndicator />
