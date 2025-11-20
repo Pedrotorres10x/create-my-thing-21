@@ -1,11 +1,20 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const analysisRequestSchema = z.object({
+  text: z.string().min(1).max(10000),
+  context: z.string().max(200),
+  professionalId: z.string().uuid(),
+  contextId: z.string().optional()
+});
 
 interface AnalysisRequest {
   text: string;
@@ -28,12 +37,47 @@ serve(async (req) => {
   }
 
   try {
+    // Get authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Missing authorization' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Validate input
+    const body = await req.json();
+    const validationResult = analysisRequestSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid input',
+        details: validationResult.error.issues 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const { text, context, professionalId, contextId } = validationResult.data;
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const { text, context, professionalId, contextId }: AnalysisRequest = await req.json();
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Verify user authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
     console.log('Analyzing content for payment evasion:', { context, professionalId, textLength: text.length });
 
