@@ -96,7 +96,7 @@ const Rankings = () => {
 
       const [profsRes, chaptersRes, sectorsRes, spheresRes] = await Promise.all([
         supabase
-          .from('professionals')
+          .from('professionals_public')
           .select(`
             id,
             full_name,
@@ -126,7 +126,6 @@ const Rankings = () => {
               color
             )
           `)
-          .eq('status', 'approved')
           .order('total_points', { ascending: false }),
         supabase.from('chapters').select('id, name').order('name'),
         supabase.from('sector_catalog').select('id, name').order('name'),

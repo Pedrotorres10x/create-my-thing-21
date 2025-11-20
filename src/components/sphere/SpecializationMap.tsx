@@ -59,10 +59,9 @@ export const SpecializationMap = ({ sphereId, chapterId }: SpecializationMapProp
 
       // Check which are covered in this chapter
       let coveredQuery = supabase
-        .from("professionals")
+        .from("professionals_public")
         .select("profession_specialization_id, full_name, id")
         .eq("business_sphere_id", sphereId)
-        .eq("status", "approved")
         .not("profession_specialization_id", "is", null);
 
       if (chapterId) {
