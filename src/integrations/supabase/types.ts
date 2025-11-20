@@ -2323,8 +2323,10 @@ export type Database = {
           business_sphere_id: number | null
           chapter_id: string | null
           city: string | null
+          company_name: string | null
           country: string | null
           created_at: string | null
+          full_name: string | null
           id: string | null
           linkedin_url: string | null
           logo_url: string | null
@@ -2348,8 +2350,10 @@ export type Database = {
           business_sphere_id?: number | null
           chapter_id?: string | null
           city?: string | null
+          company_name?: string | null
           country?: string | null
           created_at?: string | null
+          full_name?: string | null
           id?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
@@ -2373,8 +2377,10 @@ export type Database = {
           business_sphere_id?: number | null
           chapter_id?: string | null
           city?: string | null
+          company_name?: string | null
           country?: string | null
           created_at?: string | null
+          full_name?: string | null
           id?: string | null
           linkedin_url?: string | null
           logo_url?: string | null

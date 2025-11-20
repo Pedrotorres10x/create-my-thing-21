@@ -59,7 +59,7 @@ export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) =
   const loadProfessionals = async () => {
     try {
       let query = supabase
-        .from("professionals")
+        .from("professionals_public")
         .select(`
           id,
           full_name,
@@ -72,7 +72,6 @@ export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) =
           )
         `)
         .eq("business_sphere_id", sphereId)
-        .eq("status", "approved")
         .order("total_points", { ascending: false });
 
       if (chapterId) {

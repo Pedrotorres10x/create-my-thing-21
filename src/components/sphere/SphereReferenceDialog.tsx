@@ -59,7 +59,7 @@ export const SphereReferenceDialog = ({
   const loadProfessionals = async () => {
     try {
       const { data } = await supabase
-        .from("professionals")
+        .from("professionals_public")
         .select(`
           id,
           full_name,
@@ -68,7 +68,6 @@ export const SphereReferenceDialog = ({
           )
         `)
         .eq("business_sphere_id", sphereId)
-        .eq("status", "approved")
         .neq("id", currentProfessionalId)
         .order("full_name");
 
