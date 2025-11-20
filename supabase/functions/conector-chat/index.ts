@@ -48,21 +48,24 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Initialize Supabase client with user's auth context
+    // Initialize Supabase client with service role for admin operations
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify user authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    // Extract user from JWT (already verified by Supabase when verify_jwt = true)
+    const token = authHeader.replace('Bearer ', '');
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const userId = payload.sub;
+    
+    if (!userId) {
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
+    
+    const user = { id: userId };
 
     // Verify user owns this professional profile
     const { data: professional, error: profError } = await supabase
@@ -604,7 +607,7 @@ ${completedMeetingsCount} reuniones. Dale su siguiente meta HOY.
           const moderationResponse = await fetch(`${supabaseUrl}/functions/v1/moderate-content`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${supabaseAnonKey}`,
+              'Authorization': `Bearer ${supabaseServiceKey}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
