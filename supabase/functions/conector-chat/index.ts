@@ -644,7 +644,7 @@ ${completedMeetingsCount} reuniones. Dale su siguiente meta HOY.
     });
   } catch (e) {
     console.error("chat error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Error desconocido" }), {
+    return new Response(JSON.stringify({ error: "Error al procesar tu solicitud" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
