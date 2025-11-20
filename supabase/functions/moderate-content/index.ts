@@ -83,7 +83,7 @@ serve(async (req) => {
     console.error("Moderation error:", error);
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Error desconocido",
+        error: "Error al procesar la moderación",
         isAppropriate: false,
         reason: "Error en el sistema de moderación"
       }), 

@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
   } catch (error: any) {
     console.error('Error in track-slot-expiration:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'An error occurred processing your request' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
