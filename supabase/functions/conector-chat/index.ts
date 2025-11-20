@@ -164,38 +164,52 @@ serve(async (req) => {
         activityMetrics.commentsThisMonth = commentsData.length;
       }
       
-      // Obtener última actividad y calcular días de inactividad
+      // Obtener última actividad
       const { data: activityTrackingData } = await supabase
         .from('user_activity_tracking')
-        .select('last_login, inactivity_days, reengagement_stage, activity_score')
+        .select('last_login, reengagement_stage, activity_score')
         .eq('professional_id', professionalId)
         .single();
       
-      if (activityTrackingData) {
-        if (activityTrackingData.last_login) {
-          activityMetrics.lastLogin = new Date(activityTrackingData.last_login);
-          const now = new Date();
-          activityMetrics.daysInactive = Math.floor((now.getTime() - activityMetrics.lastLogin.getTime()) / (1000 * 60 * 60 * 24));
-        }
-        
-        if (activityTrackingData.reengagement_stage) {
-          activityMetrics.engagementStatus = activityTrackingData.reengagement_stage as any;
-        }
-        
-        if (activityTrackingData.activity_score !== null) {
-          activityMetrics.activityScore = activityTrackingData.activity_score;
-        }
-      } else {
-        // Si no existe registro de actividad, calcular desde fecha de creación
-        if (profile?.created_at) {
-          const createdAt = new Date(profile.created_at);
-          const now = new Date();
-          activityMetrics.daysInactive = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
-        } else {
-          activityMetrics.daysInactive = 0; // Usuario completamente nuevo
-        }
-        activityMetrics.engagementStatus = activityMetrics.daysInactive < 7 ? 'active' : 'dormant';
+      // Calcular días de inactividad con fallback robusto
+      let referenceDate: Date | null = null;
+
+      if (activityTrackingData?.last_login) {
+        referenceDate = new Date(activityTrackingData.last_login);
+      } else if (profile?.created_at) {
+        referenceDate = new Date(profile.created_at);
       }
+
+      if (referenceDate) {
+        const now = new Date();
+        activityMetrics.daysInactive = Math.floor((now.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24));
+        activityMetrics.lastLogin = referenceDate;
+      } else {
+        activityMetrics.daysInactive = 0;
+      }
+
+      // Actualizar estado de engagement
+      if (activityTrackingData?.reengagement_stage) {
+        activityMetrics.engagementStatus = activityTrackingData.reengagement_stage as any;
+      } else {
+        activityMetrics.engagementStatus = activityMetrics.daysInactive < 7 ? 'active' : 
+                                           activityMetrics.daysInactive < 14 ? 'at_risk' :
+                                           activityMetrics.daysInactive < 30 ? 'inactive' : 'dormant';
+      }
+
+      if (activityTrackingData?.activity_score !== null && activityTrackingData?.activity_score !== undefined) {
+        activityMetrics.activityScore = activityTrackingData.activity_score;
+      }
+
+      // Logging para debugging
+      console.log('Activity calculation:', {
+        professionalId,
+        hasActivityTracking: !!activityTrackingData,
+        lastLogin: activityTrackingData?.last_login,
+        profileCreatedAt: profile?.created_at,
+        calculatedDaysInactive: activityMetrics.daysInactive,
+        engagementStatus: activityMetrics.engagementStatus
+      });
       
       // Determinar si user es new in registration (no specialization or no chapter)
       isNewUser = !profile?.specialization_id || !profile?.chapter_id;
@@ -335,13 +349,22 @@ Cuando detectes este comando, genera un mensaje ULTRA CORTO (máximo 40 palabras
 3. Ofrezca UNA acción concreta
 4. SIN presentaciones, SIN divagar
 
-LÓGICA DE PRIORIZACIÓN (usa los datos reales de DATOS DE ACTIVIDAD):
-1. Si días inactivo > 7 → Menciona la inactividad y ofrece revisar estrategia
-2. Si referidos < 3 → Menciona el número real y ofrece ayuda para completar meta
-3. Si reuniones < 2 → Menciona el número real y ofrece agendar más
+LÓGICA DE PRIORIZACIÓN (usa EXACTAMENTE estos valores del contexto):
+- Días inactivo: ${activityMetrics.daysInactive}
+- Referidos este mes: ${activityMetrics.referralsThisMonth}
+- Reuniones este mes: ${activityMetrics.meetingsThisMonth}
+- Posts + comentarios este mes: ${activityMetrics.postsThisMonth + activityMetrics.commentsThisMonth}
+- Referencias esfera enviadas: ${activityMetrics.sphereReferencesSent}
+
+REGLAS DE PRIORIZACIÓN:
+1. Si días inactivo > 7 → Menciona el número EXACTO de días y ofrece revisar estrategia
+2. Si referidos < 3 → Menciona el número EXACTO y ofrece ayuda para completar meta
+3. Si reuniones < 2 → Menciona el número EXACTO y ofrece agendar más
 4. Si referencias esfera = 0 → Menciona oportunidades sin explotar en el capítulo
 5. Si posts + comentarios < 5 → Menciona baja visibilidad y sugiere acciones
-6. ELSE (todo bien) → Reconoce datos y sugiere optimización
+6. ELSE (todo bien) → Reconoce datos reales y sugiere optimización
+
+⚠️ CRÍTICO: NUNCA inventes números. Usa SOLO los valores proporcionados arriba.
 
 EJEMPLOS CORRECTOS:
 ✓ "7 días sin actividad detectados. ¿Revisamos tu estrategia de referidos? 🎯"
