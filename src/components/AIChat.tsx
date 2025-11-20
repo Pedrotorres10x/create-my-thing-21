@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, Loader2, Lock } from "lucide-react";
+import { Send, User, Sparkles, Bot, Lock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/hooks/useSubscription";
 import { AIUsageIndicator } from "./subscription/AIUsageIndicator";
@@ -297,39 +298,62 @@ export function AIChat() {
   };
 
   return (
-    <Card className="w-full border-border/40 shadow-sm">
-      {/* Header minimalista */}
-      <div className="flex items-center justify-between p-4 border-b border-border/40">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 border-2 border-primary/20">
-            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-primary font-semibold">
-              A
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h3 className="font-semibold text-base">Alic.ia</h3>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-xs text-muted-foreground">Conectada</span>
-            </div>
-          </div>
-        </div>
-        <AIUsageIndicator />
+    <Card className="w-full flex flex-col shadow-2xl border-none overflow-hidden bg-gradient-to-br from-background via-background to-primary/10 relative">
+      {/* Decorative elements */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <div className="absolute top-0 right-0 w-64 h-64 alicia-gradient rounded-full blur-3xl animate-pulse-glow" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-secondary/30 rounded-full blur-2xl animate-float" />
       </div>
 
-      {/* Área de mensajes limpia */}
-      <div ref={scrollContainerRef} className="h-[400px] overflow-y-auto p-6 space-y-4 bg-muted/10">
+      {/* Cabecera vibrante con Alicia como protagonista */}
+      <div className="relative z-10 border-b border-primary/20 p-5 alicia-gradient">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="relative animate-float">
+              <Avatar className="h-14 w-14 border-3 border-white/30 shadow-2xl alicia-shadow ring-2 ring-white/20">
+                <AvatarFallback className="bg-white/90 text-primary text-xl font-bold">
+                  <Bot className="h-7 w-7" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -top-1 -right-1 bg-white text-primary rounded-full p-1 animate-bounce">
+                <Sparkles className="h-3 w-3" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                Alic.ia
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
+                  IA
+                </Badge>
+              </h3>
+              <p className="text-sm text-white/90 font-medium">Tu asistente personal inteligente</p>
+            </div>
+          </div>
+          <AIUsageIndicator />
+        </div>
+      </div>
+
+      {/* Área de mensajes con diseño mejorado */}
+      <div ref={scrollContainerRef} className="relative z-10 h-[400px] overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-transparent to-primary/5">
         {initializing ? (
           <div className="space-y-3">
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-4 w-3/4 bg-primary/10" />
+            <Skeleton className="h-4 w-1/2 bg-secondary/10" />
+            <Skeleton className="h-4 w-2/3 bg-accent/10" />
           </div>
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-center">
-            <p className="text-muted-foreground text-sm">
-              ¡Hola! 👋 Soy Alic.ia, ¿en qué puedo ayudarte hoy?
-            </p>
+            <div className="space-y-3">
+              <div className="mx-auto w-16 h-16 alicia-gradient rounded-full flex items-center justify-center animate-pulse-glow">
+                <Bot className="h-8 w-8 text-white" />
+              </div>
+              <p className="text-foreground text-base font-medium">
+                ¡Hola! 👋 Soy Alic.ia
+              </p>
+              <p className="text-muted-foreground text-sm">
+                ¿En qué puedo ayudarte hoy?
+              </p>
+            </div>
           </div>
         ) : (
           messages.map((message, idx) => (
@@ -341,39 +365,44 @@ export function AIChat() {
               )}
             >
               {message.role === "assistant" && (
-                <Avatar className="h-8 w-8 border border-primary/20 flex-shrink-0">
-                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-primary text-xs font-semibold">
-                    A
+                <Avatar className="h-9 w-9 border-2 border-primary/30 shadow-lg alicia-shadow flex-shrink-0">
+                  <AvatarFallback className="alicia-gradient text-white text-sm font-bold animate-gradient">
+                    <Bot className="h-5 w-5" />
                   </AvatarFallback>
                 </Avatar>
               )}
               <div
                 className={cn(
-                  "px-4 py-3 rounded-2xl max-w-[80%]",
+                  "max-w-[80%] rounded-2xl px-5 py-3.5",
                   message.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-background border border-primary/10"
+                    ? "bg-primary text-primary-foreground shadow-lg"
+                    : "bg-gradient-to-br from-card to-primary/5 border border-primary/20 text-foreground shadow-lg backdrop-blur-sm"
                 )}
               >
-                <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
-                  {message.content}
-                </p>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
               </div>
+              {message.role === "user" && (
+                <Avatar className="h-9 w-9 border-2 border-primary/30 shadow-lg flex-shrink-0">
+                  <AvatarFallback className="bg-gradient-to-br from-secondary to-primary text-white">
+                    <User className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+              )}
             </div>
           ))
         )}
         {isLoading && (
           <div className="flex gap-3 animate-fade-in">
-            <Avatar className="h-8 w-8 border border-primary/20">
-              <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-primary text-xs font-semibold">
-                A
+            <Avatar className="h-9 w-9 border-2 border-primary/30 shadow-lg alicia-shadow flex-shrink-0 animate-pulse-glow">
+              <AvatarFallback className="alicia-gradient text-white text-sm font-bold animate-gradient">
+                <Bot className="h-5 w-5" />
               </AvatarFallback>
             </Avatar>
-            <div className="bg-background border border-primary/10 px-4 py-3 rounded-2xl">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+            <div className="bg-gradient-to-br from-card to-primary/5 border border-primary/20 rounded-2xl px-5 py-3.5 shadow-lg backdrop-blur-sm">
+              <div className="flex gap-1.5">
+                <div className="w-2.5 h-2.5 alicia-gradient rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <div className="w-2.5 h-2.5 alicia-gradient rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-2.5 h-2.5 alicia-gradient rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           </div>
@@ -381,35 +410,46 @@ export function AIChat() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Footer simple */}
-      <div className="p-4 border-t border-border/40">
+      {/* Footer con input mejorado */}
+      <div className="relative z-10 border-t border-primary/20 p-5 bg-gradient-to-t from-card/90 to-background/90 backdrop-blur-md">
         {!canSendAIMessage ? (
-          <div className="flex items-center justify-center gap-2 py-3 px-4 bg-muted/50 rounded-lg">
-            <Lock className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">
-              Límite alcanzado. <Button variant="link" className="p-0 h-auto" onClick={() => navigate('/subscriptions')}>Ver planes</Button>
-            </span>
+          <div className="flex flex-col items-center justify-center p-6 bg-muted/50 rounded-lg border border-border">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="bg-primary/10 p-2 rounded-full">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+            <p className="text-sm font-medium mb-2 text-center">
+              Has alcanzado tu límite de mensajes de IA
+            </p>
+            <p className="text-xs text-muted-foreground mb-4 text-center">
+              Actualiza tu plan para continuar conversando con Alic.ia
+            </p>
+            <Button
+              onClick={() => navigate("/subscriptions")}
+              className="w-full max-w-[200px]"
+              size="sm"
+            >
+              Ver planes
+            </Button>
           </div>
         ) : (
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Escribe tu mensaje..."
+              placeholder="Escribe tu mensaje a Alic.ia..."
               disabled={isLoading}
-              className="flex-1 border-border/40"
+              className="flex-1 bg-background/50 border-primary/30 focus:border-primary focus:ring-primary/30 transition-all rounded-xl text-base shadow-inner backdrop-blur-sm"
             />
             <Button
               onClick={sendMessage}
               disabled={isLoading || !input.trim()}
               size="icon"
+              className="alicia-gradient hover:opacity-90 transition-opacity shadow-lg alicia-shadow h-10 w-10 rounded-xl"
             >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
+              <Send className="h-5 w-5" />
             </Button>
           </div>
         )}
