@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -11,6 +12,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+// Input validation schema
+const referralNotificationSchema = z.object({
+  referrerId: z.string().uuid(),
+  referredEmail: z.string().email().max(255),
+  pointsEarned: z.number().int().min(0).max(1000)
+});
 
 interface NotificationRequest {
   referrerId: string;
@@ -24,15 +32,52 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { referrerId, referredEmail, pointsEarned }: NotificationRequest = await req.json();
+    // Get authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Missing authorization' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Validate input
+    const body = await req.json();
+    const validationResult = referralNotificationSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid input',
+        details: validationResult.error.issues 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const { referrerId, referredEmail, pointsEarned } = validationResult.data;
 
     console.log("Processing referral notification:", { referrerId, referredEmail, pointsEarned });
 
-    // Create Supabase client
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Create Supabase client with auth
+    const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } }
+    });
 
-    // Get referrer information
-    const { data: referrer, error: referrerError } = await supabase
+    // Verify user authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Use service role for database operations
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get referrer information and verify ownership
+    const { data: referrer, error: referrerError } = await supabaseAdmin
       .from("professionals")
       .select("email, full_name, total_points")
       .eq("id", referrerId)
@@ -43,8 +88,22 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("No se pudo encontrar la información del referente");
     }
 
+    // Verify user owns this referrer record
+    const { data: referrerProfile } = await supabaseAdmin
+      .from("professionals")
+      .select("user_id")
+      .eq("id", referrerId)
+      .single();
+
+    if (!referrerProfile || referrerProfile.user_id !== user.id) {
+      return new Response(JSON.stringify({ error: 'Unauthorized: Cannot send notification for this referrer' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // Get level information
-    const { data: level, error: levelError } = await supabase
+    const { data: level, error: levelError } = await supabaseAdmin
       .from("point_levels")
       .select("name, badge_color")
       .lte("min_points", referrer.total_points)
