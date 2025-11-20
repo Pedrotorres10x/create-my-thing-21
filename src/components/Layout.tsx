@@ -47,28 +47,28 @@ export function Layout({ children }: LayoutProps) {
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
-          <header className="h-14 border-b flex items-center justify-between px-6 bg-background sticky top-0 z-10">
-            <div className="flex items-center gap-2">
+          <header className="h-12 border-b flex items-center justify-between px-4 bg-background sticky top-0 z-10">
+            <div className="flex items-center gap-1.5">
               <SidebarTrigger />
-              <div className="text-lg font-semibold">CONECTOR</div>
+              <div className="text-base font-semibold">CONECTOR</div>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               {professional?.business_sphere_id && professional?.id && (
                 <SphereNotifications professionalId={professional.id} />
               )}
               
               <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2 hover:bg-muted">
-                  <Avatar className="h-8 w-8">
+                <Button variant="ghost" size="sm" className="gap-1.5 h-9 hover:bg-muted">
+                  <Avatar className="h-7 w-7">
                     <AvatarImage src={professional?.photo_url || ""} />
-                    <AvatarFallback>
-                      {professional?.full_name?.charAt(0) || <User className="h-4 w-4" />}
+                    <AvatarFallback className="text-xs">
+                      {professional?.full_name?.charAt(0) || <User className="h-3.5 w-3.5" />}
                     </AvatarFallback>
                   </Avatar>
                   {professional?.full_name && (
-                    <span className="hidden md:inline text-sm">
+                    <span className="hidden lg:inline text-xs max-w-[120px] truncate">
                       {professional.full_name}
                     </span>
                   )}
