@@ -107,64 +107,64 @@ export const AliciaWelcomeModal = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg border-none shadow-2xl bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden">
-        {/* Decorative background elements */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 right-0 w-40 h-40 alicia-gradient rounded-full blur-3xl animate-pulse-glow" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-secondary/30 rounded-full blur-2xl animate-float" />
+      <DialogContent className="sm:max-w-lg border-none shadow-lg bg-background/95 backdrop-blur-sm overflow-hidden">
+        {/* Sutil decoración de fondo */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-0 right-0 w-24 h-24 alicia-gradient rounded-full blur-2xl" />
         </div>
 
         <div className="relative z-10">
-          {/* Avatar prominente con animación */}
-          <div className="flex justify-center mb-6 mt-4">
-            <div className="relative animate-float">
-              <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-2xl alicia-shadow">
-                <AvatarFallback className="alicia-gradient text-white text-4xl font-bold animate-gradient">
+          {/* Avatar más pequeño y limpio */}
+          <div className="flex justify-center mb-4 mt-2">
+            <div className="relative">
+              <Avatar className="h-20 w-20 border-2 border-primary/20 shadow-lg alicia-shadow">
+                <AvatarFallback className="alicia-gradient text-white text-3xl font-bold">
                   A
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-2 animate-pulse">
-                <Sparkles className="h-4 w-4" />
+              <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full p-1.5">
+                <Sparkles className="h-3 w-3" />
               </div>
             </div>
           </div>
 
-          <DialogTitle className="text-center text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-2">
-            ¡Hola {userName}! 👋
+          <DialogTitle className="text-center text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-1">
+            ¡Hola {userName}!
           </DialogTitle>
 
-          <DialogDescription className="text-center text-muted-foreground mb-4">
-            Soy Alic.ia, tu asistente personal de IA
+          <DialogDescription className="text-center text-muted-foreground text-sm mb-4">
+            Soy Alic.ia, tu asistente de IA
           </DialogDescription>
 
-          <div className="py-8 px-4 min-h-[120px] bg-card/50 backdrop-blur-sm rounded-2xl border border-primary/10 shadow-inner">
+          <div className="py-6 px-4 min-h-[100px] bg-card/30 rounded-xl border border-border/50">
             {initializing ? (
-              <div className="space-y-3">
-                <Skeleton className="h-4 w-full bg-primary/10" />
-                <Skeleton className="h-4 w-full bg-secondary/10" />
-                <Skeleton className="h-4 w-3/4 mx-auto bg-accent/10" />
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-full bg-primary/10" />
+                <Skeleton className="h-3 w-4/5 mx-auto bg-secondary/10" />
               </div>
             ) : (
-              <p className="text-base leading-relaxed text-center text-foreground font-medium">
+              <p className="text-sm leading-relaxed text-center text-foreground">
                 {message}
               </p>
             )}
           </div>
 
-          <div className="flex gap-3 justify-center mt-6 pb-2">
+          <div className="flex gap-2 justify-center mt-4 pb-1">
             <Button 
               variant="outline" 
               onClick={handleClose}
-              className="border-primary/20 hover:border-primary/40 hover:bg-primary/5"
+              size="sm"
+              className="border-border hover:bg-accent/10"
             >
               Gracias
             </Button>
             <Button 
               onClick={handleOpenFullChat} 
-              className="alicia-gradient hover:opacity-90 transition-opacity shadow-lg alicia-shadow group"
+              size="sm"
+              className="alicia-gradient hover:opacity-90 transition-opacity shadow-md group"
             >
-              <MessageCircle className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-              Abrir chat completo
+              <MessageCircle className="mr-1.5 h-3.5 w-3.5 group-hover:scale-110 transition-transform" />
+              Abrir chat
             </Button>
           </div>
         </div>

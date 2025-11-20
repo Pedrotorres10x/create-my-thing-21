@@ -62,6 +62,7 @@ serve(async (req) => {
           years_experience,
           business_sphere_id,
           referral_code,
+          created_at,
           specializations(name),
           sector_catalog(name)
         `)
@@ -185,9 +186,15 @@ serve(async (req) => {
           activityMetrics.activityScore = activityTrackingData.activity_score;
         }
       } else {
-        // Si no existe registro de actividad, asumir que es nuevo o inactivo
-        activityMetrics.daysInactive = 999;
-        activityMetrics.engagementStatus = 'dormant';
+        // Si no existe registro de actividad, calcular desde fecha de creación
+        if (profile?.created_at) {
+          const createdAt = new Date(profile.created_at);
+          const now = new Date();
+          activityMetrics.daysInactive = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+        } else {
+          activityMetrics.daysInactive = 0; // Usuario completamente nuevo
+        }
+        activityMetrics.engagementStatus = activityMetrics.daysInactive < 7 ? 'active' : 'dormant';
       }
       
       // Determinar si user es new in registration (no specialization or no chapter)
