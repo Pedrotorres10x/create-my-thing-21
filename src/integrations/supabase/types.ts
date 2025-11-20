@@ -895,6 +895,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts_with_authors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "post_comments_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
@@ -935,6 +942,13 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts_with_authors"
             referencedColumns: ["id"]
           },
           {
@@ -2315,6 +2329,36 @@ export type Database = {
       }
     }
     Views: {
+      posts_with_authors: {
+        Row: {
+          author_business: string | null
+          author_name: string | null
+          author_photo: string | null
+          author_position: string | null
+          content: string | null
+          created_at: string | null
+          id: string | null
+          image_url: string | null
+          professional_id: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professionals_public: {
         Row: {
           bio: string | null
