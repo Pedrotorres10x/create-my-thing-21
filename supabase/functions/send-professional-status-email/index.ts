@@ -1,13 +1,22 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Input validation schema
+const statusEmailSchema = z.object({
+  professionalId: z.string().uuid(),
+  status: z.enum(['approved', 'rejected'])
+});
 
 interface StatusEmailRequest {
   professionalId: string;
@@ -21,26 +30,79 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { professionalId, status }: StatusEmailRequest = await req.json();
+    // Get authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Missing authorization' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Validate input
+    const body = await req.json();
+    const validationResult = statusEmailSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid input',
+        details: validationResult.error.issues 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const { professionalId, status } = validationResult.data;
 
     console.log("Processing status email for professional:", professionalId, "Status:", status);
 
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Create Supabase client with auth to verify user
+    const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } }
+    });
 
-    // Fetch professional details
-    const { data: professional, error: fetchError } = await supabase
+    // Verify user authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Use service role for database operations
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Verify user owns this professional record or is admin
+    const { data: targetProfessional } = await supabaseAdmin
       .from("professionals")
-      .select("full_name, email, business_name")
+      .select("user_id, full_name, email, business_name")
       .eq("id", professionalId)
       .single();
 
-    if (fetchError || !professional) {
-      console.error("Error fetching professional:", fetchError);
-      throw new Error("No se pudo obtener la información del profesional");
+    if (!targetProfessional) {
+      return new Response(JSON.stringify({ error: 'Professional not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
+
+    // Check if user is admin
+    const { data: isAdmin } = await supabaseAdmin.rpc('has_role', {
+      _user_id: user.id,
+      _role: 'admin'
+    });
+
+    // Verify ownership or admin status
+    if (targetProfessional.user_id !== user.id && !isAdmin) {
+      return new Response(JSON.stringify({ error: 'Unauthorized: Cannot send status email for this professional' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const professional = targetProfessional;
 
     console.log("Sending email to:", professional.email);
 
