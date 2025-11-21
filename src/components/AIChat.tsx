@@ -212,13 +212,24 @@ export function AIChat() {
       }
 
       // Get the user's session token for authentication
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      // Get fresh session to ensure we have valid access token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session?.access_token) {
+        console.error('Session error:', sessionError);
         throw new Error("No hay sesión activa");
       }
 
-      console.log('Session exists:', !!session);
-      console.log('Access token first 50 chars:', session.access_token?.substring(0, 50));
+      // Verify token is not the anon key by checking it has user data
+      const tokenPayload = JSON.parse(atob(session.access_token.split('.')[1]));
+      if (!tokenPayload.sub || tokenPayload.role === 'anon') {
+        console.error('Invalid token - refreshing session');
+        const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError || !refreshedSession?.access_token) {
+          throw new Error("No se pudo refrescar la sesión");
+        }
+        session.access_token = refreshedSession.access_token;
+      }
       
       const resp = await fetch(CHAT_URL, {
         method: "POST",
