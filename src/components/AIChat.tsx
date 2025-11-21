@@ -21,7 +21,7 @@ interface Message {
 
 export function AIChat() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
   const { canSendAIMessage, incrementAIMessages } = useSubscription();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -55,7 +55,7 @@ export function AIChat() {
   // Generar mensaje inicial proactivo de Alicia cuando el usuario entra
   useEffect(() => {
     // Wait for auth to be fully ready with valid session
-    if (authLoading || !user) {
+    if (authLoading || !user || !session?.access_token) {
       setInitializing(false);
       return;
     }
@@ -65,9 +65,6 @@ export function AIChat() {
     
     const initializeChat = async () => {
       try {
-        // Wait a bit to ensure session is fully established
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
         const { data: professional } = await supabase
           .from('professionals')
           .select('id')
@@ -75,43 +72,6 @@ export function AIChat() {
           .single();
 
         if (!professional) {
-          setInitializing(false);
-          return;
-        }
-
-        // Get fresh session with retry logic
-        let session = null;
-        for (let i = 0; i < 3; i++) {
-          const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-          
-          if (sessionError) {
-            console.error('Init session error:', sessionError);
-            await new Promise(resolve => setTimeout(resolve, 500));
-            continue;
-          }
-
-          if (!currentSession?.access_token) {
-            console.error('No access token in session');
-            await new Promise(resolve => setTimeout(resolve, 500));
-            continue;
-          }
-
-          // Verify token has user data
-          try {
-            const tokenPayload = JSON.parse(atob(currentSession.access_token.split('.')[1]));
-            if (tokenPayload.sub && tokenPayload.role === 'authenticated') {
-              session = currentSession;
-              break;
-            }
-          } catch (e) {
-            console.error('Token parse error:', e);
-          }
-          
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-
-        if (!session) {
-          console.error('Failed to get valid session after retries');
           setInitializing(false);
           return;
         }
@@ -190,7 +150,7 @@ export function AIChat() {
     };
 
     initializeChat();
-  }, [authLoading, user, CHAT_URL]);
+  }, [authLoading, user, session, CHAT_URL]);
 
 
   const sendMessage = async () => {
