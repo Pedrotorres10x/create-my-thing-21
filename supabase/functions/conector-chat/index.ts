@@ -48,28 +48,26 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Initialize Supabase clients
+    // Initialize Supabase client with service role for admin operations
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Create client with user auth context to get authenticated user
-    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
+    // Extract user ID from JWT (already verified by Supabase when verify_jwt = true)
+    // No need to call getUser() - just decode the payload
+    const token = authHeader.replace('Bearer ', '');
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const userId = payload.sub;
     
-    // Get authenticated user (JWT already verified by Supabase when verify_jwt = true)
-    const { data: { user }, error: authError } = await authClient.auth.getUser();
-    if (authError || !user) {
-      console.error('Auth error:', authError);
+    if (!userId) {
+      console.error('No user ID in token');
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
     
-    // Create service client for admin operations
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const user = { id: userId };
 
     // Verify user owns this professional profile
     const { data: professional, error: profError } = await supabase
@@ -611,7 +609,7 @@ ${completedMeetingsCount} reuniones. Dale su siguiente meta HOY.
           const moderationResponse = await fetch(`${supabaseUrl}/functions/v1/moderate-content`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${supabaseAnonKey}`,
+              'Authorization': `Bearer ${supabaseServiceKey}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
