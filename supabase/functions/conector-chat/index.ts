@@ -54,19 +54,32 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     // Extract user ID from JWT (already verified by Supabase when verify_jwt = true)
-    // No need to call getUser() - just decode the payload
     const token = authHeader.replace('Bearer ', '');
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const userId = payload.sub;
+    console.log('Token first 50 chars:', token.substring(0, 50));
     
-    if (!userId) {
-      console.error('No user ID in token');
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    let payload;
+    try {
+      payload = JSON.parse(atob(token.split('.')[1]));
+      console.log('Decoded payload:', JSON.stringify(payload));
+    } catch (error) {
+      console.error('Failed to decode token:', error);
+      return new Response(JSON.stringify({ error: 'Invalid token format' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
     
+    const userId = payload.sub;
+    
+    if (!userId) {
+      console.error('No user ID in token. Payload:', JSON.stringify(payload));
+      return new Response(JSON.stringify({ error: 'Unauthorized - No user ID in token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    console.log('Authenticated user ID:', userId);
     const user = { id: userId };
 
     // Verify user owns this professional profile

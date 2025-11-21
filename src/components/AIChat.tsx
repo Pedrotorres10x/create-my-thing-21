@@ -217,6 +217,9 @@ export function AIChat() {
         throw new Error("No hay sesión activa");
       }
 
+      console.log('Session exists:', !!session);
+      console.log('Access token first 50 chars:', session.access_token?.substring(0, 50));
+      
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
