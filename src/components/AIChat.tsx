@@ -7,6 +7,7 @@ import { Send, User, Sparkles, Bot, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useAuth } from "@/hooks/useAuth";
 import { AIUsageIndicator } from "./subscription/AIUsageIndicator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -20,6 +21,7 @@ interface Message {
 
 export function AIChat() {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const { canSendAIMessage, incrementAIMessages } = useSubscription();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -52,17 +54,16 @@ export function AIChat() {
 
   // Generar mensaje inicial proactivo de Alicia cuando el usuario entra
   useEffect(() => {
+    // Wait for auth to be ready
+    if (authLoading || !user) {
+      return;
+    }
+
     if (hasInitialized.current) return;
     hasInitialized.current = true;
     
     const initializeChat = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setInitializing(false);
-          return;
-        }
-
         const { data: professional } = await supabase
           .from('professionals')
           .select('id')
@@ -172,7 +173,7 @@ export function AIChat() {
     };
 
     initializeChat();
-  }, [CHAT_URL]);
+  }, [authLoading, user, CHAT_URL]);
 
 
   const sendMessage = async () => {
