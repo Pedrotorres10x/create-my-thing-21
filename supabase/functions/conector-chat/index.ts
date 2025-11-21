@@ -48,32 +48,28 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Initialize Supabase client with service role for database operations
+    // Initialize Supabase clients
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    
+    // Create client with user auth context to get authenticated user
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+    
+    // Get authenticated user (JWT already verified by Supabase when verify_jwt = true)
+    const { data: { user }, error: authError } = await authClient.auth.getUser();
+    if (authError || !user) {
+      console.error('Auth error:', authError);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // Create service client for admin operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Extract user ID from JWT payload (JWT already verified by Supabase when verify_jwt = true)
-    const token = authHeader.replace('Bearer ', '');
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      return new Response(JSON.stringify({ error: 'Invalid token format' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-    
-    const payload = JSON.parse(atob(parts[1]));
-    const userId = payload.sub;
-    
-    if (!userId) {
-      return new Response(JSON.stringify({ error: 'Invalid token: missing user ID' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    const user = { id: userId };
 
     // Verify user owns this professional profile
     const { data: professional, error: profError } = await supabase
@@ -615,7 +611,7 @@ ${completedMeetingsCount} reuniones. Dale su siguiente meta HOY.
           const moderationResponse = await fetch(`${supabaseUrl}/functions/v1/moderate-content`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${supabaseServiceKey}`,
+              'Authorization': `Bearer ${supabaseAnonKey}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
