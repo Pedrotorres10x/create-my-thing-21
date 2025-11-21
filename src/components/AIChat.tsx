@@ -60,6 +60,20 @@ export function AIChat() {
       return;
     }
 
+    // Validate that we have a real user token, not anon key
+    try {
+      const tokenPayload = JSON.parse(atob(session.access_token.split('.')[1]));
+      if (!tokenPayload.sub || tokenPayload.role !== 'authenticated') {
+        console.error('Invalid token - not authenticated user token');
+        setInitializing(false);
+        return;
+      }
+    } catch (e) {
+      console.error('Token validation failed:', e);
+      setInitializing(false);
+      return;
+    }
+
     if (hasInitialized.current) return;
     hasInitialized.current = true;
     
@@ -205,31 +219,26 @@ export function AIChat() {
         }
       }
 
-      // Get the user's session token for authentication
       // Get fresh session to ensure we have valid access token
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
       
-      if (sessionError || !session?.access_token) {
+      if (sessionError || !currentSession?.access_token) {
         console.error('Session error:', sessionError);
         throw new Error("No hay sesión activa");
       }
 
-      // Verify token is not the anon key by checking it has user data
-      const tokenPayload = JSON.parse(atob(session.access_token.split('.')[1]));
-      if (!tokenPayload.sub || tokenPayload.role === 'anon') {
-        console.error('Invalid token - refreshing session');
-        const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
-        if (refreshError || !refreshedSession?.access_token) {
-          throw new Error("No se pudo refrescar la sesión");
-        }
-        session.access_token = refreshedSession.access_token;
+      // Verify token has user data and is authenticated
+      const tokenPayload = JSON.parse(atob(currentSession.access_token.split('.')[1]));
+      if (!tokenPayload.sub || tokenPayload.role !== 'authenticated') {
+        console.error('Invalid token - not authenticated:', tokenPayload);
+        throw new Error("Token de autenticación inválido");
       }
       
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${currentSession.access_token}`,
         },
         body: JSON.stringify({ 
           messages: [...messages, userMessage],
