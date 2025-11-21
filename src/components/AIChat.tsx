@@ -77,12 +77,28 @@ export function AIChat() {
         // Generar mensaje inicial proactivo basado en el estado del usuario
         isStreamingRef.current = true;
         
-        // Get the user's session token for authentication
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
+        // Get fresh session to ensure we have valid access token
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !session?.access_token) {
+          console.error('Init session error:', sessionError);
           setInitializing(false);
           isStreamingRef.current = false;
           return;
+        }
+
+        // Verify token is not the anon key by checking it has user data
+        const tokenPayload = JSON.parse(atob(session.access_token.split('.')[1]));
+        if (!tokenPayload.sub || tokenPayload.role === 'anon') {
+          console.error('Init: Invalid token - refreshing session');
+          const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError || !refreshedSession?.access_token) {
+            console.error('Init: Failed to refresh session');
+            setInitializing(false);
+            isStreamingRef.current = false;
+            return;
+          }
+          session.access_token = refreshedSession.access_token;
         }
 
         const resp = await fetch(CHAT_URL, {
