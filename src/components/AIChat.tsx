@@ -54,8 +54,9 @@ export function AIChat() {
 
   // Generar mensaje inicial proactivo de Alicia cuando el usuario entra
   useEffect(() => {
-    // Wait for auth to be ready
+    // Wait for auth to be fully ready with valid session
     if (authLoading || !user) {
+      setInitializing(false);
       return;
     }
 
@@ -64,6 +65,9 @@ export function AIChat() {
     
     const initializeChat = async () => {
       try {
+        // Wait a bit to ensure session is fully established
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         const { data: professional } = await supabase
           .from('professionals')
           .select('id')
@@ -75,32 +79,45 @@ export function AIChat() {
           return;
         }
 
-        // Generar mensaje inicial proactivo basado en el estado del usuario
-        isStreamingRef.current = true;
-        
-        // Get fresh session to ensure we have valid access token
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError || !session?.access_token) {
-          console.error('Init session error:', sessionError);
+        // Get fresh session with retry logic
+        let session = null;
+        for (let i = 0; i < 3; i++) {
+          const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+          
+          if (sessionError) {
+            console.error('Init session error:', sessionError);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            continue;
+          }
+
+          if (!currentSession?.access_token) {
+            console.error('No access token in session');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            continue;
+          }
+
+          // Verify token has user data
+          try {
+            const tokenPayload = JSON.parse(atob(currentSession.access_token.split('.')[1]));
+            if (tokenPayload.sub && tokenPayload.role === 'authenticated') {
+              session = currentSession;
+              break;
+            }
+          } catch (e) {
+            console.error('Token parse error:', e);
+          }
+          
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        if (!session) {
+          console.error('Failed to get valid session after retries');
           setInitializing(false);
-          isStreamingRef.current = false;
           return;
         }
 
-        // Verify token is not the anon key by checking it has user data
-        const tokenPayload = JSON.parse(atob(session.access_token.split('.')[1]));
-        if (!tokenPayload.sub || tokenPayload.role === 'anon') {
-          console.error('Init: Invalid token - refreshing session');
-          const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError || !refreshedSession?.access_token) {
-            console.error('Init: Failed to refresh session');
-            setInitializing(false);
-            isStreamingRef.current = false;
-            return;
-          }
-          session.access_token = refreshedSession.access_token;
-        }
+        // Generar mensaje inicial proactivo basado en el estado del usuario
+        isStreamingRef.current = true;
 
         const resp = await fetch(CHAT_URL, {
           method: "POST",
