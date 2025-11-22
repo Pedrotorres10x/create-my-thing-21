@@ -54,8 +54,8 @@ export function AIChat() {
 
   // Generar mensaje inicial proactivo de Alicia cuando el usuario entra
   useEffect(() => {
-    // Wait for auth to be fully ready
-    if (authLoading || !user) {
+    // Wait for auth to be fully ready with valid session
+    if (authLoading || !user || !session?.access_token) {
       setInitializing(false);
       return;
     }
@@ -65,35 +65,6 @@ export function AIChat() {
     
     const initializeChat = async () => {
       try {
-        // Get fresh session with retry to ensure we have a valid user JWT
-        let validSession = null;
-        for (let attempt = 0; attempt < 5; attempt++) {
-          await new Promise(resolve => setTimeout(resolve, attempt * 300)); // Progressive delay
-          
-          const { data: { session: currentSession } } = await supabase.auth.getSession();
-          
-          if (currentSession?.access_token) {
-            try {
-              const tokenPayload = JSON.parse(atob(currentSession.access_token.split('.')[1]));
-              // Ensure it's a user token, not the anon key
-              if (tokenPayload.sub && tokenPayload.role === 'authenticated') {
-                validSession = currentSession;
-                break;
-              } else {
-                console.log(`Attempt ${attempt + 1}: Invalid token, role=${tokenPayload.role}`);
-              }
-            } catch (e) {
-              console.error('Token parse error:', e);
-            }
-          }
-        }
-
-        if (!validSession) {
-          console.error('Failed to get valid authenticated session after retries');
-          setInitializing(false);
-          return;
-        }
-
         const { data: professional } = await supabase
           .from('professionals')
           .select('id')
@@ -112,7 +83,7 @@ export function AIChat() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${validSession.access_token}`,
+            Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({ 
             messages: [{ role: "user", content: "[INICIO_SESION]" }],
@@ -179,7 +150,7 @@ export function AIChat() {
     };
 
     initializeChat();
-  }, [authLoading, user, CHAT_URL]);
+  }, [authLoading, user, session, CHAT_URL]);
 
 
   const sendMessage = async () => {
@@ -234,26 +205,15 @@ export function AIChat() {
         }
       }
 
-      // Get fresh session to ensure we have valid access token
-      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !currentSession?.access_token) {
-        console.error('Session error:', sessionError);
+      if (!session?.access_token) {
         throw new Error("No hay sesión activa");
-      }
-
-      // Verify token has user data and is authenticated
-      const tokenPayload = JSON.parse(atob(currentSession.access_token.split('.')[1]));
-      if (!tokenPayload.sub || tokenPayload.role !== 'authenticated') {
-        console.error('Invalid token - not authenticated:', tokenPayload);
-        throw new Error("Token de autenticación inválido");
       }
       
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${currentSession.access_token}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ 
           messages: [...messages, userMessage],
