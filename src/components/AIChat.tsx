@@ -65,6 +65,9 @@ export function AIChat() {
     
     const initializeChat = async () => {
       try {
+        // Wait a bit for auth to fully settle before making the request
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         // Always get fresh session directly from Supabase to ensure valid token
         const { data: { session: freshSession } } = await supabase.auth.getSession();
         
@@ -75,15 +78,11 @@ export function AIChat() {
         }
 
         // Validate token is authenticated user token, not anon key
-        try {
-          const tokenPayload = JSON.parse(atob(freshSession.access_token.split('.')[1]));
-          if (!tokenPayload.sub || tokenPayload.role !== 'authenticated') {
-            console.error('Token is not authenticated user token:', tokenPayload.role);
-            setInitializing(false);
-            return;
-          }
-        } catch (e) {
-          console.error('Failed to validate token:', e);
+        const tokenPayload = JSON.parse(atob(freshSession.access_token.split('.')[1]));
+        console.log('Chat init token validation:', { sub: tokenPayload.sub, role: tokenPayload.role });
+        
+        if (!tokenPayload.sub || tokenPayload.role !== 'authenticated') {
+          console.error('Token is not authenticated user token:', tokenPayload.role);
           setInitializing(false);
           return;
         }
