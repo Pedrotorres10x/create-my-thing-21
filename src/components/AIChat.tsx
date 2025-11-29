@@ -65,24 +65,9 @@ export function AIChat() {
     
     const initializeChat = async () => {
       try {
-        // Wait a bit for auth to fully settle before making the request
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Always get fresh session directly from Supabase to ensure valid token
-        const { data: { session: freshSession } } = await supabase.auth.getSession();
-        
-        if (!freshSession?.access_token) {
+        // Use session from useAuth context - it's already the authenticated session
+        if (!session?.access_token) {
           console.error('No valid session available for chat initialization');
-          setInitializing(false);
-          return;
-        }
-
-        // Validate token is authenticated user token, not anon key
-        const tokenPayload = JSON.parse(atob(freshSession.access_token.split('.')[1]));
-        console.log('Chat init token validation:', { sub: tokenPayload.sub, role: tokenPayload.role });
-        
-        if (!tokenPayload.sub || tokenPayload.role !== 'authenticated') {
-          console.error('Token is not authenticated user token:', tokenPayload.role);
           setInitializing(false);
           return;
         }
@@ -105,7 +90,7 @@ export function AIChat() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${freshSession.access_token}`,
+            Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({ 
             messages: [{ role: "user", content: "[INICIO_SESION]" }],
@@ -114,6 +99,7 @@ export function AIChat() {
         });
 
         if (!resp.ok) {
+          console.error('Chat init failed:', resp.status, await resp.text().catch(() => ''));
           setInitializing(false);
           isStreamingRef.current = false;
           return;
@@ -172,7 +158,7 @@ export function AIChat() {
     };
 
     initializeChat();
-  }, [authLoading, user, CHAT_URL]);
+  }, [authLoading, user, session, CHAT_URL]);
 
 
   const sendMessage = async () => {
@@ -211,44 +197,27 @@ export function AIChat() {
     };
 
     try {
-      // Obtener professional ID
-      const { data: { user } } = await supabase.auth.getUser();
-      let professionalId = null;
-      
-      if (user) {
-        const { data: professional } = await supabase
-          .from('professionals')
-          .select('id')
-          .eq('user_id', user.id)
-          .single();
-        
-        if (professional) {
-          professionalId = professional.id;
-        }
-      }
-
-      // Get fresh session to ensure valid token
-      const { data: { session: freshSession } } = await supabase.auth.getSession();
-      
-      if (!freshSession?.access_token) {
+      // Use session from useAuth context directly
+      if (!session?.access_token) {
         throw new Error("No hay sesión activa");
       }
 
-      // Validate token
-      const tokenPayload = JSON.parse(atob(freshSession.access_token.split('.')[1]));
-      if (!tokenPayload.sub || tokenPayload.role !== 'authenticated') {
-        throw new Error("Token de autenticación inválido");
-      }
+      // Get professional ID
+      const { data: professional } = await supabase
+        .from('professionals')
+        .select('id')
+        .eq('user_id', user!.id)
+        .single();
       
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${freshSession.access_token}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ 
           messages: [...messages, userMessage],
-          professionalId
+          professionalId: professional?.id
         }),
       });
 
