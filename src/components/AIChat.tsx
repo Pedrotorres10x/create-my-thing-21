@@ -72,6 +72,20 @@ export function AIChat() {
           return;
         }
 
+        // Validate token is authenticated user token, not anon key
+        try {
+          const tokenPayload = JSON.parse(atob(session.access_token.split('.')[1]));
+          if (tokenPayload.role !== 'authenticated' || !tokenPayload.sub) {
+            console.log('Token not authenticated yet, skipping chat init');
+            setInitializing(false);
+            return;
+          }
+        } catch {
+          console.error('Failed to validate token');
+          setInitializing(false);
+          return;
+        }
+
         const { data: professional } = await supabase
           .from('professionals')
           .select('id')
@@ -200,6 +214,12 @@ export function AIChat() {
       // Use session from useAuth context directly
       if (!session?.access_token) {
         throw new Error("No hay sesión activa");
+      }
+
+      // Validate token is authenticated
+      const tokenPayload = JSON.parse(atob(session.access_token.split('.')[1]));
+      if (tokenPayload.role !== 'authenticated' || !tokenPayload.sub) {
+        throw new Error("Token de autenticación inválido");
       }
 
       // Get professional ID
