@@ -55,36 +55,32 @@ export function AIChat() {
   // Generar mensaje inicial proactivo de Alicia cuando el usuario entra
   useEffect(() => {
     // Wait for auth to be fully ready
-    if (authLoading || !user) {
+    if (authLoading || !user || !session?.access_token) {
       setInitializing(false);
       return;
     }
 
+    // Validate token is authenticated user token, not anon key - BEFORE setting hasInitialized
+    let tokenPayload;
+    try {
+      tokenPayload = JSON.parse(atob(session.access_token.split('.')[1]));
+      if (tokenPayload.role !== 'authenticated' || !tokenPayload.sub) {
+        console.log('Token not authenticated yet, waiting for auth session');
+        // Don't set hasInitialized here - we want to retry when session updates
+        return;
+      }
+    } catch {
+      console.error('Failed to validate token');
+      setInitializing(false);
+      return;
+    }
+
+    // Only mark as initialized AFTER we've confirmed we have an authenticated token
     if (hasInitialized.current) return;
     hasInitialized.current = true;
     
     const initializeChat = async () => {
       try {
-        // Use session from useAuth context - it's already the authenticated session
-        if (!session?.access_token) {
-          console.error('No valid session available for chat initialization');
-          setInitializing(false);
-          return;
-        }
-
-        // Validate token is authenticated user token, not anon key
-        try {
-          const tokenPayload = JSON.parse(atob(session.access_token.split('.')[1]));
-          if (tokenPayload.role !== 'authenticated' || !tokenPayload.sub) {
-            console.log('Token not authenticated yet, skipping chat init');
-            setInitializing(false);
-            return;
-          }
-        } catch {
-          console.error('Failed to validate token');
-          setInitializing(false);
-          return;
-        }
 
         const { data: professional } = await supabase
           .from('professionals')
