@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sparkles, MessageCircle } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AliciaWelcomeModalProps {
   professionalId: string;
@@ -16,6 +17,7 @@ export const AliciaWelcomeModal = ({
   userName = "amigo",
   onOpenFullChat 
 }: AliciaWelcomeModalProps) => {
+  const { session, loading: authLoading } = useAuth();
   const [open, setOpen] = useState(true);
   const [message, setMessage] = useState("");
   const [initializing, setInitializing] = useState(true);
@@ -25,6 +27,11 @@ export const AliciaWelcomeModal = ({
     const checkSessionStorage = sessionStorage.getItem('alicia-greeting-shown');
     if (checkSessionStorage) {
       setOpen(false);
+      return;
+    }
+
+    // Wait for auth to be ready
+    if (authLoading || !session?.access_token) {
       return;
     }
 
@@ -38,7 +45,7 @@ export const AliciaWelcomeModal = ({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
             messages: [{ role: "user", content: "[INICIO_SESION]" }],
@@ -90,7 +97,7 @@ export const AliciaWelcomeModal = ({
     if (professionalId) {
       fetchInitialMessage();
     }
-  }, [professionalId]);
+  }, [professionalId, authLoading, session]);
 
   const handleClose = () => {
     sessionStorage.setItem('alicia-greeting-shown', 'true');
