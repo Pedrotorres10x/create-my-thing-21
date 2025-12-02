@@ -52,12 +52,28 @@ export function AIChat() {
     }
   }, [messages.length]);
 
-  // Helper to validate token is authenticated
+  // Helper to validate token is authenticated (not anon key)
   const isAuthenticatedToken = (token: string): boolean => {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.role === 'authenticated' && !!payload.sub;
-    } catch {
+      const parts = token.split('.');
+      if (parts.length !== 3) return false;
+      
+      // Check header for 'kid' field (user tokens have this, anon keys don't)
+      const header = JSON.parse(atob(parts[0]));
+      if (!header.kid) {
+        console.log('Token missing kid in header - likely anon key');
+        return false;
+      }
+      
+      // Check payload for authenticated role and user ID
+      const payload = JSON.parse(atob(parts[1]));
+      const isValid = payload.role === 'authenticated' && !!payload.sub;
+      if (!isValid) {
+        console.log('Token validation failed:', { role: payload.role, hasSub: !!payload.sub });
+      }
+      return isValid;
+    } catch (e) {
+      console.error('Token validation error:', e);
       return false;
     }
   };
