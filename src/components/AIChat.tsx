@@ -52,27 +52,27 @@ export function AIChat() {
     }
   }, [messages.length]);
 
+  // Helper to validate token is authenticated
+  const isAuthenticatedToken = (token: string): boolean => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.role === 'authenticated' && !!payload.sub;
+    } catch {
+      return false;
+    }
+  };
+
   // Generar mensaje inicial proactivo de Alicia cuando el usuario entra
   useEffect(() => {
     // Wait for auth to be fully ready
     if (authLoading || !user || !session?.access_token) {
-      setInitializing(false);
-      return;
+      return; // Keep initializing true, wait for auth
     }
 
-    // Validate token is authenticated user token, not anon key - BEFORE setting hasInitialized
-    let tokenPayload;
-    try {
-      tokenPayload = JSON.parse(atob(session.access_token.split('.')[1]));
-      if (tokenPayload.role !== 'authenticated' || !tokenPayload.sub) {
-        console.log('Token not authenticated yet, waiting for auth session');
-        // Don't set hasInitialized here - we want to retry when session updates
-        return;
-      }
-    } catch {
-      console.error('Failed to validate token');
-      setInitializing(false);
-      return;
+    // Validate token is authenticated user token, not anon key
+    if (!isAuthenticatedToken(session.access_token)) {
+      console.log('Token not authenticated yet, waiting for auth session');
+      return; // Don't set hasInitialized - we want to retry when session updates
     }
 
     // Only mark as initialized AFTER we've confirmed we have an authenticated token
@@ -81,7 +81,6 @@ export function AIChat() {
     
     const initializeChat = async () => {
       try {
-
         const { data: professional } = await supabase
           .from('professionals')
           .select('id')
@@ -90,6 +89,13 @@ export function AIChat() {
 
         if (!professional) {
           setInitializing(false);
+          return;
+        }
+
+        // Double-check token is still valid before making request
+        if (!session?.access_token || !isAuthenticatedToken(session.access_token)) {
+          console.log('Token became invalid, aborting chat init');
+          hasInitialized.current = false; // Allow retry
           return;
         }
 
@@ -109,7 +115,14 @@ export function AIChat() {
         });
 
         if (!resp.ok) {
-          console.error('Chat init failed:', resp.status, await resp.text().catch(() => ''));
+          // On 401, reset hasInitialized to allow retry with new token
+          if (resp.status === 401) {
+            console.log('Got 401, will retry when session updates');
+            hasInitialized.current = false;
+            isStreamingRef.current = false;
+            return;
+          }
+          console.error('Chat init failed:', resp.status);
           setInitializing(false);
           isStreamingRef.current = false;
           return;
@@ -208,14 +221,8 @@ export function AIChat() {
 
     try {
       // Use session from useAuth context directly
-      if (!session?.access_token) {
-        throw new Error("No hay sesión activa");
-      }
-
-      // Validate token is authenticated
-      const tokenPayload = JSON.parse(atob(session.access_token.split('.')[1]));
-      if (tokenPayload.role !== 'authenticated' || !tokenPayload.sub) {
-        throw new Error("Token de autenticación inválido");
+      if (!session?.access_token || !isAuthenticatedToken(session.access_token)) {
+        throw new Error("No hay sesión activa o token inválido");
       }
 
       // Get professional ID
