@@ -92,9 +92,10 @@ export function AIChat() {
           return;
         }
 
-        // Double-check token is still valid before making request
-        if (!session?.access_token || !isAuthenticatedToken(session.access_token)) {
-          console.log('Token became invalid, aborting chat init');
+        // Get fresh session directly from Supabase to avoid stale closures
+        const { data: { session: freshSession } } = await supabase.auth.getSession();
+        if (!freshSession?.access_token || !isAuthenticatedToken(freshSession.access_token)) {
+          console.log('No valid authenticated session available');
           hasInitialized.current = false; // Allow retry
           return;
         }
@@ -106,7 +107,7 @@ export function AIChat() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
+            Authorization: `Bearer ${freshSession.access_token}`,
           },
           body: JSON.stringify({ 
             messages: [{ role: "user", content: "[INICIO_SESION]" }],
@@ -220,8 +221,9 @@ export function AIChat() {
     };
 
     try {
-      // Use session from useAuth context directly
-      if (!session?.access_token || !isAuthenticatedToken(session.access_token)) {
+      // Get fresh session directly from Supabase to avoid stale closures
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      if (!freshSession?.access_token || !isAuthenticatedToken(freshSession.access_token)) {
         throw new Error("No hay sesión activa o token inválido");
       }
 
@@ -236,7 +238,7 @@ export function AIChat() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${freshSession.access_token}`,
         },
         body: JSON.stringify({ 
           messages: [...messages, userMessage],
