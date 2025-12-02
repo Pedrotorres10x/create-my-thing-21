@@ -82,20 +82,24 @@ export function AIChat() {
   useEffect(() => {
     // Wait for auth to be fully ready
     if (authLoading || !user || !session?.access_token) {
-      return; // Keep initializing true, wait for auth
+      return;
     }
 
+    // Capture the validated token immediately from the session
+    const validatedToken = session.access_token;
+
     // Validate token is authenticated user token, not anon key
-    if (!isAuthenticatedToken(session.access_token)) {
+    if (!isAuthenticatedToken(validatedToken)) {
       console.log('Token not authenticated yet, waiting for auth session');
-      return; // Don't set hasInitialized - we want to retry when session updates
+      return;
     }
 
     // Only mark as initialized AFTER we've confirmed we have an authenticated token
     if (hasInitialized.current) return;
     hasInitialized.current = true;
     
-    const initializeChat = async () => {
+    // Pass the validated token to the async function to avoid race conditions
+    const initializeChat = async (accessToken: string) => {
       try {
         const { data: professional } = await supabase
           .from('professionals')
@@ -108,22 +112,14 @@ export function AIChat() {
           return;
         }
 
-        // Get fresh session directly from Supabase to avoid stale closures
-        const { data: { session: freshSession } } = await supabase.auth.getSession();
-        if (!freshSession?.access_token || !isAuthenticatedToken(freshSession.access_token)) {
-          console.log('No valid authenticated session available');
-          hasInitialized.current = false; // Allow retry
-          return;
-        }
-
-        // Generar mensaje inicial proactivo basado en el estado del usuario
+        // Use the validated token passed as parameter, not a fresh fetch
         isStreamingRef.current = true;
 
         const resp = await fetch(CHAT_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${freshSession.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify({ 
             messages: [{ role: "user", content: "[INICIO_SESION]" }],
@@ -132,7 +128,6 @@ export function AIChat() {
         });
 
         if (!resp.ok) {
-          // On 401, reset hasInitialized to allow retry with new token
           if (resp.status === 401) {
             console.log('Got 401, will retry when session updates');
             hasInitialized.current = false;
@@ -197,7 +192,7 @@ export function AIChat() {
       }
     };
 
-    initializeChat();
+    initializeChat(validatedToken);
   }, [authLoading, user, session, CHAT_URL]);
 
 
@@ -215,6 +210,16 @@ export function AIChat() {
       });
       return;
     }
+
+    // Validate session before proceeding
+    if (!session?.access_token || !isAuthenticatedToken(session.access_token)) {
+      toast.error("Sesión no válida", {
+        description: "Por favor, vuelve a iniciar sesión.",
+      });
+      return;
+    }
+
+    const accessToken = session.access_token;
 
     const userMessage: Message = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
@@ -237,12 +242,6 @@ export function AIChat() {
     };
 
     try {
-      // Get fresh session directly from Supabase to avoid stale closures
-      const { data: { session: freshSession } } = await supabase.auth.getSession();
-      if (!freshSession?.access_token || !isAuthenticatedToken(freshSession.access_token)) {
-        throw new Error("No hay sesión activa o token inválido");
-      }
-
       // Get professional ID
       const { data: professional } = await supabase
         .from('professionals')
@@ -254,7 +253,7 @@ export function AIChat() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${freshSession.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ 
           messages: [...messages, userMessage],
