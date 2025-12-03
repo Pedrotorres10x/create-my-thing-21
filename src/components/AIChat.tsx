@@ -199,18 +199,6 @@ export function AIChat() {
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
-    // Check AI message limit
-    if (!canSendAIMessage) {
-      toast.error("Has alcanzado el límite de mensajes de IA", {
-        description: "Actualiza tu plan para continuar usando el asistente de IA.",
-        action: {
-          label: "Ver planes",
-          onClick: () => navigate("/subscriptions"),
-        },
-      });
-      return;
-    }
-
     // Validate session before proceeding
     if (!session?.access_token || !isAuthenticatedToken(session.access_token)) {
       toast.error("Sesión no válida", {
@@ -459,47 +447,24 @@ export function AIChat() {
 
       {/* Footer con input mejorado */}
       <div className="relative z-10 border-t border-primary/20 p-5 bg-gradient-to-t from-card/90 to-background/90 backdrop-blur-md">
-        {!canSendAIMessage ? (
-          <div className="flex flex-col items-center justify-center p-6 bg-muted/50 rounded-lg border border-border">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="bg-primary/10 p-2 rounded-full">
-                <Sparkles className="h-5 w-5 text-primary" />
-              </div>
-            </div>
-            <p className="text-sm font-medium mb-2 text-center">
-              Has alcanzado tu límite de mensajes de IA
-            </p>
-            <p className="text-xs text-muted-foreground mb-4 text-center">
-              Actualiza tu plan para continuar conversando con Alic.ia
-            </p>
-            <Button
-              onClick={() => navigate("/subscriptions")}
-              className="w-full max-w-[200px]"
-              size="sm"
-            >
-              Ver planes
-            </Button>
-          </div>
-        ) : (
-          <div className="flex gap-3">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Escribe tu mensaje a Alic.ia..."
-              disabled={isLoading}
-              className="flex-1 bg-background/50 border-primary/30 focus:border-primary focus:ring-primary/30 transition-all rounded-xl text-base shadow-inner backdrop-blur-sm"
-            />
-            <Button
-              onClick={sendMessage}
-              disabled={isLoading || !input.trim()}
-              size="icon"
-              className="alicia-gradient hover:opacity-90 transition-opacity shadow-lg alicia-shadow h-10 w-10 rounded-xl"
-            >
-              <Send className="h-5 w-5" />
-            </Button>
-          </div>
-        )}
+        <div className="flex gap-3">
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyPress}
+            placeholder="Escribe tu mensaje a Alic.ia..."
+            disabled={isLoading}
+            className="flex-1 bg-background/50 border-primary/30 focus:border-primary focus:ring-primary/30 transition-all rounded-xl text-base shadow-inner backdrop-blur-sm"
+          />
+          <Button
+            onClick={sendMessage}
+            disabled={isLoading || !input.trim()}
+            size="icon"
+            className="alicia-gradient hover:opacity-90 transition-opacity shadow-lg alicia-shadow h-10 w-10 rounded-xl"
+          >
+            <Send className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
     </Card>
   );
