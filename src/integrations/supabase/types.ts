@@ -364,6 +364,139 @@ export type Database = {
           },
         ]
       }
+      lovable_interactions: {
+        Row: {
+          action_taken: string | null
+          created_at: string
+          ebs_change: number | null
+          emotional_state_after: string | null
+          emotional_state_before: string | null
+          id: string
+          interaction_type: string
+          message_content: string | null
+          outcome: string | null
+          professional_id: string
+          retention_change: number | null
+          reward_id: string | null
+          trust_change: number | null
+          user_response: Json | null
+        }
+        Insert: {
+          action_taken?: string | null
+          created_at?: string
+          ebs_change?: number | null
+          emotional_state_after?: string | null
+          emotional_state_before?: string | null
+          id?: string
+          interaction_type: string
+          message_content?: string | null
+          outcome?: string | null
+          professional_id: string
+          retention_change?: number | null
+          reward_id?: string | null
+          trust_change?: number | null
+          user_response?: Json | null
+        }
+        Update: {
+          action_taken?: string | null
+          created_at?: string
+          ebs_change?: number | null
+          emotional_state_after?: string | null
+          emotional_state_before?: string | null
+          id?: string
+          interaction_type?: string
+          message_content?: string | null
+          outcome?: string | null
+          professional_id?: string
+          retention_change?: number | null
+          reward_id?: string | null
+          trust_change?: number | null
+          user_response?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lovable_interactions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lovable_interactions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lovable_interactions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "user_micro_rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lovable_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_dismissed: boolean | null
+          is_read: boolean | null
+          message_type: string
+          professional_id: string
+          read_at: string | null
+          title: string
+          tone: string | null
+          trigger_action: string | null
+          trigger_state: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_dismissed?: boolean | null
+          is_read?: boolean | null
+          message_type: string
+          professional_id: string
+          read_at?: string | null
+          title: string
+          tone?: string | null
+          trigger_action?: string | null
+          trigger_state?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_dismissed?: boolean | null
+          is_read?: boolean | null
+          message_type?: string
+          professional_id?: string
+          read_at?: string | null
+          title?: string
+          tone?: string | null
+          trigger_action?: string | null
+          trigger_state?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lovable_messages_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lovable_messages_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_waitlist: {
         Row: {
           company_name: string
@@ -503,6 +636,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      micro_reward_types: {
+        Row: {
+          category: string
+          code: string
+          created_at: string
+          description: string | null
+          duration_hours: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          points_value: number | null
+        }
+        Insert: {
+          category: string
+          code: string
+          created_at?: string
+          description?: string | null
+          duration_hours?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          points_value?: number | null
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string
+          description?: string | null
+          duration_hours?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          points_value?: number | null
+        }
+        Relationships: []
       }
       moderation_violations: {
         Row: {
@@ -2001,6 +2173,214 @@ export type Database = {
           },
         ]
       }
+      user_emotional_metrics: {
+        Row: {
+          abandonment_sensitivity: number | null
+          created_at: string
+          ebs_history: Json | null
+          effective_message_tones: Json | null
+          emotional_bond_score: number | null
+          id: string
+          natural_activity_rhythm: Json | null
+          preferred_reward_types: Json | null
+          professional_id: string
+          referral_response_rate: number | null
+          retention_history: Json | null
+          retention_probability: number | null
+          trust_history: Json | null
+          trust_index: number | null
+          updated_at: string
+        }
+        Insert: {
+          abandonment_sensitivity?: number | null
+          created_at?: string
+          ebs_history?: Json | null
+          effective_message_tones?: Json | null
+          emotional_bond_score?: number | null
+          id?: string
+          natural_activity_rhythm?: Json | null
+          preferred_reward_types?: Json | null
+          professional_id: string
+          referral_response_rate?: number | null
+          retention_history?: Json | null
+          retention_probability?: number | null
+          trust_history?: Json | null
+          trust_index?: number | null
+          updated_at?: string
+        }
+        Update: {
+          abandonment_sensitivity?: number | null
+          created_at?: string
+          ebs_history?: Json | null
+          effective_message_tones?: Json | null
+          emotional_bond_score?: number | null
+          id?: string
+          natural_activity_rhythm?: Json | null
+          preferred_reward_types?: Json | null
+          professional_id?: string
+          referral_response_rate?: number | null
+          retention_history?: Json | null
+          retention_probability?: number | null
+          trust_history?: Json | null
+          trust_index?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_emotional_metrics_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_emotional_metrics_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_emotional_states: {
+        Row: {
+          activity_quality_score: number | null
+          created_at: string
+          days_since_last_activity: number | null
+          effort_signals: Json | null
+          emotional_state: string
+          energy_trend: string | null
+          id: string
+          last_activity_timestamp: string | null
+          marketplace_actions_24h: number | null
+          meetings_count_24h: number | null
+          messages_count_24h: number | null
+          previous_state: string | null
+          professional_id: string
+          referrals_count_24h: number | null
+          snapshot_generated_at: string | null
+          state_changed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          activity_quality_score?: number | null
+          created_at?: string
+          days_since_last_activity?: number | null
+          effort_signals?: Json | null
+          emotional_state?: string
+          energy_trend?: string | null
+          id?: string
+          last_activity_timestamp?: string | null
+          marketplace_actions_24h?: number | null
+          meetings_count_24h?: number | null
+          messages_count_24h?: number | null
+          previous_state?: string | null
+          professional_id: string
+          referrals_count_24h?: number | null
+          snapshot_generated_at?: string | null
+          state_changed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activity_quality_score?: number | null
+          created_at?: string
+          days_since_last_activity?: number | null
+          effort_signals?: Json | null
+          emotional_state?: string
+          energy_trend?: string | null
+          id?: string
+          last_activity_timestamp?: string | null
+          marketplace_actions_24h?: number | null
+          meetings_count_24h?: number | null
+          messages_count_24h?: number | null
+          previous_state?: string | null
+          professional_id?: string
+          referrals_count_24h?: number | null
+          snapshot_generated_at?: string | null
+          state_changed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_emotional_states_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_emotional_states_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_micro_rewards: {
+        Row: {
+          claimed_at: string | null
+          created_at: string
+          expires_at: string | null
+          granted_at: string
+          id: string
+          metadata: Json | null
+          professional_id: string
+          reward_type_id: string
+          status: string | null
+          trigger_action: string | null
+          trigger_state: string | null
+        }
+        Insert: {
+          claimed_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          id?: string
+          metadata?: Json | null
+          professional_id: string
+          reward_type_id: string
+          status?: string | null
+          trigger_action?: string | null
+          trigger_state?: string | null
+        }
+        Update: {
+          claimed_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          id?: string
+          metadata?: Json | null
+          professional_id?: string
+          reward_type_id?: string
+          status?: string | null
+          trigger_action?: string | null
+          trigger_state?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_micro_rewards_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_micro_rewards_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_micro_rewards_reward_type_id_fkey"
+            columns: ["reward_type_id"]
+            isOneToOne: false
+            referencedRelation: "micro_reward_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_penalties: {
         Row: {
           created_at: string
@@ -2500,6 +2880,17 @@ export type Database = {
         Args: { _chapter_id: string; _profession_specialization_id: number }
         Returns: boolean
       }
+      classify_emotional_state: {
+        Args: {
+          _activity_score: number
+          _days_inactive: number
+          _energy_trend: string
+          _previous_state: string
+          _recent_achievements: number
+          _total_points: number
+        }
+        Returns: string
+      }
       deduct_points: {
         Args: { points: number; prof_id: string }
         Returns: undefined
@@ -2534,6 +2925,7 @@ export type Database = {
           total_points: number
         }[]
       }
+      get_lovable_action: { Args: { _emotional_state: string }; Returns: Json }
       get_next_banner_to_display: {
         Args: { _location: string }
         Returns: string
