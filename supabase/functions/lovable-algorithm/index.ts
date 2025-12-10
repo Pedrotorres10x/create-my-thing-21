@@ -303,44 +303,91 @@ async function generatePersonalizedMessage(
   action: EmotionalAction
 ): Promise<string | null> {
   try {
+    // Templates LOVABLE: cálidos, humanos, profesionales, motivacionales
     const messageTemplates: Record<string, { title: string; prompt: string }> = {
       celebration: {
-        title: "¡Felicidades por tu progreso!",
-        prompt: `Genera un mensaje de celebración cálido y profesional para ${prof.full_name}. 
-        Han logrado ${snapshot.recentAchievements} logros recientes y tienen ${prof.total_points} puntos totales.
-        El mensaje debe ser motivador, reconocer su esfuerzo específico y animarle a seguir adelante.
-        Máximo 2 frases. Tono: ${action.tone}. No uses emojis excesivos.`,
+        title: "Esto que has logrado es enorme",
+        prompt: `Genera un mensaje de celebración CÁLIDO y HUMANO para ${prof.full_name}. 
+        Datos: ${snapshot.recentAchievements} logros recientes, ${prof.total_points} puntos, energía ${snapshot.energyTrend}.
+        
+        TONO OBLIGATORIO: Como un mentor orgulloso que celebra sinceramente un logro.
+        EJEMPLOS de frases válidas:
+        - "Esto que acabas de lograr es enorme."
+        - "Tu constancia inspira a otros miembros."
+        - "Hoy has marcado la diferencia."
+        
+        PROHIBIDO: ser genérico, robótico, usar clichés corporativos, más de 2 frases.
+        OBLIGATORIO: reconocimiento sincero + impulso hacia adelante.`,
       },
       support: {
         title: "Estamos aquí para ti",
-        prompt: `Genera un mensaje de apoyo empático para ${prof.full_name}.
-        Llevan ${snapshot.daysSinceLastActivity} días sin mucha actividad.
-        El mensaje debe ser comprensivo, no culpabilizador, y ofrecer una acción simple para reconectarse.
-        Máximo 2 frases. Tono: ${action.tone}. No seas invasivo.`,
+        prompt: `Genera un mensaje de APOYO EMPÁTICO para ${prof.full_name}.
+        Datos: ${snapshot.daysSinceLastActivity} días sin actividad significativa, tendencia ${snapshot.energyTrend}.
+        
+        TONO OBLIGATORIO: Comprensivo, NUNCA culpabilizador, ofrecer UNA acción simple.
+        EJEMPLOS de frases válidas:
+        - "Sabemos que hay días difíciles. Estamos aquí cuando quieras volver."
+        - "Tu capítulo te echa de menos. Un pequeño paso basta para reconectar."
+        
+        PROHIBIDO: presionar, hacer sentir mal, ser invasivo, más de 2 frases.
+        OBLIGATORIO: empatía genuina + guía clara con acción sencilla.`,
       },
       reminder: {
-        title: "Te echamos de menos",
-        prompt: `Genera un mensaje recordatorio suave para ${prof.full_name}.
-        Llevan ${snapshot.daysSinceLastActivity} días sin conectarse.
-        El mensaje debe ser amable, destacar algo positivo de la comunidad y sugerir una razón para volver.
-        Máximo 2 frases. Tono: ${action.tone}. Sin presión.`,
+        title: "Tu capítulo te echa de menos",
+        prompt: `Genera un recordatorio AMABLE para ${prof.full_name}.
+        Datos: ${snapshot.daysSinceLastActivity} días sin conectarse.
+        
+        TONO OBLIGATORIO: Cálido, sin presión, destacar algo positivo de la comunidad.
+        EJEMPLOS de frases válidas:
+        - "Tu capítulo te siente más cerca que nunca."
+        - "Han pasado cosas geniales desde tu última visita."
+        
+        PROHIBIDO: culpar, presionar, ser insistente, más de 2 frases.
+        OBLIGATORIO: recordatorio de valor + estímulo suave.`,
       },
       welcome: {
-        title: "¡Bienvenido de vuelta!",
-        prompt: `Genera un mensaje de bienvenida cálido para ${prof.full_name} que regresa después de ${snapshot.daysSinceLastActivity} días.
-        El mensaje debe celebrar su regreso y mencionar que le esperan nuevas oportunidades.
-        Máximo 2 frases. Tono: ${action.tone}. Hazle sentir valorado.`,
+        title: "¡Qué alegría verte de vuelta!",
+        prompt: `Genera una BIENVENIDA CÁLIDA para ${prof.full_name} que regresa después de ${snapshot.daysSinceLastActivity} días.
+        
+        TONO OBLIGATORIO: Celebratorio genuino, hacer sentir valorado.
+        EJEMPLOS de frases válidas:
+        - "¡Has vuelto! Eso es lo mejor que ha pasado hoy."
+        - "Tu regreso hace más fuerte a toda la comunidad."
+        
+        PROHIBIDO: mencionar la ausencia negativamente, más de 2 frases.
+        OBLIGATORIO: celebración del regreso + mencionar oportunidades que esperan.`,
       },
       recognition: {
         title: "Tu contribución marca la diferencia",
-        prompt: `Genera un mensaje de reconocimiento profesional para ${prof.full_name}.
-        Tienen ${prof.total_points} puntos y una actividad constante de ${snapshot.activityScore} puntos.
-        El mensaje debe reconocer su valor en la comunidad sin ser excesivo.
-        Máximo 2 frases. Tono: ${action.tone}. Profesional pero cercano.`,
+        prompt: `Genera un RECONOCIMIENTO profesional para ${prof.full_name}.
+        Datos: ${prof.total_points} puntos, ${snapshot.activityScore} de actividad, constante en su participación.
+        
+        TONO OBLIGATORIO: Profesional pero cercano, reconocimiento sincero.
+        EJEMPLOS de frases válidas:
+        - "Tu constancia inspira."
+        - "Lo que aportas a esta comunidad tiene un valor incalculable."
+        - "Hoy has ayudado a alguien a crecer. Eso vale oro."
+        
+        PROHIBIDO: ser excesivo, genérico, usar superlativos vacíos, más de 2 frases.
+        OBLIGATORIO: reconocer valor específico sin exagerar.`,
       },
     };
 
     const template = messageTemplates[action.message_type!] || messageTemplates.recognition;
+
+    // System prompt LOVABLE: fidelización emocional real
+    const systemPrompt = `Eres LOVABLE, el motor emocional de CONECTOR.
+Tu misión: hacer que cada usuario se sienta VALORADO, ACOMPAÑADO y CONECTADO.
+
+REGLAS DE COMUNICACIÓN:
+- Tono SIEMPRE humano, cálido, profesional, inspirador
+- Frases CORTAS (máximo 2-3)
+- NUNCA robótico o genérico
+- NUNCA regañar, presionar, usar miedo o comparaciones
+- SIEMPRE apoyar, acompañar, reconocer, motivar, celebrar
+- Español de España natural
+
+OBJETIVO: crear apego emocional genuino, no gamificación superficial.`;
 
     // Llamar a Lovable AI
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -352,13 +399,10 @@ async function generatePersonalizedMessage(
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          {
-            role: "system",
-            content: "Eres Alic.ia, la asistente de CONECTOR. Generas mensajes personalizados cortos y empáticos para los miembros de la comunidad profesional. Siempre en español de España. Nunca uses más de 2-3 frases.",
-          },
+          { role: "system", content: systemPrompt },
           { role: "user", content: template.prompt },
         ],
-        max_tokens: 150,
+        max_tokens: 120,
       }),
     });
 
@@ -392,6 +436,7 @@ async function generatePersonalizedMessage(
       return null;
     }
 
+    console.log(`[LOVABLE] Message generated for ${prof.full_name}: ${template.title}`);
     return savedMessage.id;
   } catch (err) {
     console.error("[LOVABLE] Error generating message:", err);
