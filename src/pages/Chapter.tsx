@@ -78,6 +78,7 @@ const Chapter = () => {
         setChapter(chapterData);
 
         // Get chapter members
+        // @ts-expect-error - Complex nested select causes type instantiation issues
         const { data: membersData } = await supabase
           .from('professionals')
           .select(`
