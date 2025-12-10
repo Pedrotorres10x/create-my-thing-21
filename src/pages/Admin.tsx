@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Shield, Activity } from "lucide-react";
+import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Shield, Activity, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,7 @@ import { ChapterManagement } from "@/components/admin/ChapterManagement";
 import { EngagementAnalytics } from "@/components/admin/EngagementAnalytics";
 import PremiumSlotsManagement from "@/components/admin/PremiumSlotsManagement";
 import { BannerManagement } from "@/components/admin/BannerManagement";
+import { LovableEmotionalDashboard } from "@/components/admin/LovableEmotionalDashboard";
 import { BarChart3 } from "lucide-react";
 
 interface Professional {
@@ -481,6 +482,10 @@ const Admin = () => {
             <BarChart3 className="w-4 h-4 mr-2" />
             Panel General
           </TabsTrigger>
+          <TabsTrigger value="lovable">
+            <Heart className="w-4 h-4 mr-2" />
+            Motor LOVABLE
+          </TabsTrigger>
           <TabsTrigger value="engagement">
             <Activity className="w-4 h-4 mr-2" />
             Engagement
@@ -500,6 +505,10 @@ const Admin = () => {
           <div className="grid grid-cols-1 gap-6">
             <RegistrationTrendChart professionals={professionals} />
           </div>
+        </TabsContent>
+
+        <TabsContent value="lovable" className="space-y-6">
+          <LovableEmotionalDashboard />
         </TabsContent>
 
         <TabsContent value="engagement" className="space-y-6">
