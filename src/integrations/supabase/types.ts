@@ -1074,6 +1074,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts_with_visibility"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "post_comments_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
@@ -1121,6 +1128,13 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts_with_authors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts_with_visibility"
             referencedColumns: ["id"]
           },
           {
@@ -2739,6 +2753,37 @@ export type Database = {
           },
         ]
       }
+      posts_with_visibility: {
+        Row: {
+          author_business: string | null
+          author_name: string | null
+          author_photo: string | null
+          author_position: string | null
+          content: string | null
+          created_at: string | null
+          id: string | null
+          image_url: string | null
+          professional_id: string | null
+          updated_at: string | null
+          visibility_boost: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professionals_public: {
         Row: {
           bio: string | null
@@ -2930,6 +2975,10 @@ export type Database = {
         Args: { _location: string }
         Returns: string
       }
+      get_visibility_boost_percentage: {
+        Args: { _professional_id: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2939,6 +2988,10 @@ export type Database = {
       }
       has_subscription_access: {
         Args: { _professional_id: string; _required_level: string }
+        Returns: boolean
+      }
+      has_visibility_boost: {
+        Args: { _professional_id: string }
         Returns: boolean
       }
       increment_ai_messages: {
