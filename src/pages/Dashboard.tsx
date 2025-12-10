@@ -23,6 +23,7 @@ import { SphereSynergyCard } from "@/components/sphere/SphereSynergyCard";
 import { SphereActivityFeed } from "@/components/sphere/SphereActivityFeed";
 import { SphereReferenceDialog } from "@/components/sphere/SphereReferenceDialog";
 import { AliciaWelcomeModal } from "@/components/AliciaWelcomeModal";
+import { LovableEngagement } from "@/components/dashboard/LovableEngagement";
 
 interface DashboardStats {
   referralsSent: number;
@@ -201,6 +202,9 @@ const Dashboard = () => {
             userName={professional?.full_name?.split(' ')[0] || 'Profesional'}
             consecutiveDays={0}
           />
+
+          {/* LOVABLE Algorithm - Mensajes personalizados y recompensas */}
+          <LovableEngagement />
 
           {/* Alic.ia Chat - MÁXIMA PROMINENCIA - FULL WIDTH */}
           <div ref={chatRef} className="w-full">

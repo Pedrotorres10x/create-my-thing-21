@@ -94,39 +94,42 @@ const Rankings = () => {
         }
       }
 
+      // @ts-expect-error - Complex nested select causes type instantiation issues
+      const profsQuery = supabase
+        .from('professionals_public')
+        .select(`
+          id,
+          full_name,
+          photo_url,
+          position,
+          company_name,
+          total_points,
+          chapter_id,
+          sector_id,
+          business_sphere_id,
+          profession_specialization_id,
+          sector_catalog (
+            name
+          ),
+          specializations (
+            name
+          ),
+          profession_specializations (
+            name
+          ),
+          chapters (
+            name
+          ),
+          business_spheres (
+            name,
+            icon,
+            color
+          )
+        `)
+        .order('total_points', { ascending: false });
+
       const [profsRes, chaptersRes, sectorsRes, spheresRes] = await Promise.all([
-        supabase
-          .from('professionals_public')
-          .select(`
-            id,
-            full_name,
-            photo_url,
-            position,
-            company_name,
-            total_points,
-            chapter_id,
-            sector_id,
-            business_sphere_id,
-            profession_specialization_id,
-            sector_catalog (
-              name
-            ),
-            specializations (
-              name
-            ),
-            profession_specializations (
-              name
-            ),
-            chapters (
-              name
-            ),
-            business_spheres (
-              name,
-              icon,
-              color
-            )
-          `)
-          .order('total_points', { ascending: false }),
+        profsQuery,
         supabase.from('chapters').select('id, name').order('name'),
         supabase.from('sector_catalog').select('id, name').order('name'),
         supabase.from('business_spheres').select('id, name').order('name')
