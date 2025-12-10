@@ -96,12 +96,15 @@ serve(async (req) => {
 
         console.log(`[LOVABLE] Action for ${prof.full_name}:`, action);
 
-        // PASO 4: Actualizar estado emocional
+        // PASO 4: Verificar límite de 2 mensajes por día
+        const canSendMessage = await checkDailyMessageLimit(supabase, prof.id);
+
+        // PASO 5: Actualizar estado emocional
         await upsertEmotionalState(supabase, prof.id, snapshot, newState);
 
-        // PASO 5: Generar mensaje personalizado si corresponde
+        // PASO 6: Generar mensaje personalizado si corresponde y no se excede el límite
         let messageId = null;
-        if (action.message_type && lovableApiKey) {
+        if (action.message_type && lovableApiKey && canSendMessage) {
           messageId = await generatePersonalizedMessage(
             supabase,
             lovableApiKey,
@@ -110,18 +113,20 @@ serve(async (req) => {
             newState,
             action
           );
+        } else if (!canSendMessage) {
+          console.log(`[LOVABLE] Skipping message for ${prof.full_name}: daily limit (2) reached`);
         }
 
-        // PASO 6: Aplicar micro-recompensa si corresponde
+        // PASO 7: Aplicar micro-recompensa si corresponde
         let rewardId = null;
         if (action.reward_category) {
           rewardId = await applyMicroReward(supabase, prof.id, newState, action.reward_category);
         }
 
-        // PASO 7: Actualizar métricas emocionales
+        // PASO 8: Actualizar métricas emocionales
         await updateEmotionalMetrics(supabase, prof.id, snapshot, newState, action);
 
-        // PASO 8: Registrar interacción
+        // PASO 9: Registrar interacción
         await logInteraction(supabase, prof.id, snapshot.previousState, newState, action.action, rewardId, messageId);
 
         results.push({
@@ -257,6 +262,34 @@ async function generateUserSnapshot(supabase: any, prof: any): Promise<UserSnaps
     marketplaceActions24h: marketplaceActions24h || 0,
     meetings24h: meetings24h || 0,
   };
+}
+
+// Verificar límite de 2 mensajes LOVABLE por día
+async function checkDailyMessageLimit(
+  supabase: any,
+  professionalId: string
+): Promise<boolean> {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const { count, error } = await supabase
+      .from("lovable_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("professional_id", professionalId)
+      .gte("created_at", today.toISOString());
+
+    if (error) {
+      console.error("[LOVABLE] Error checking message limit:", error);
+      return true; // Allow on error to not block functionality
+    }
+
+    const MAX_MESSAGES_PER_DAY = 2;
+    return (count || 0) < MAX_MESSAGES_PER_DAY;
+  } catch (err) {
+    console.error("[LOVABLE] Error in checkDailyMessageLimit:", err);
+    return true;
+  }
 }
 
 async function upsertEmotionalState(
