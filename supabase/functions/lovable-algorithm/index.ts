@@ -303,93 +303,174 @@ async function generatePersonalizedMessage(
   action: EmotionalAction
 ): Promise<string | null> {
   try {
-    // Templates LOVABLE: cálidos, humanos, profesionales, motivacionales
-    const messageTemplates: Record<string, { title: string; prompt: string }> = {
-      celebration: {
-        title: "Esto que has logrado es enorme",
-        prompt: `Genera un mensaje de celebración CÁLIDO y HUMANO para ${prof.full_name}. 
-        Datos: ${snapshot.recentAchievements} logros recientes, ${prof.total_points} puntos, energía ${snapshot.energyTrend}.
+    // ============================================
+    // TABLA LOVABLE: Estado → Mensajes → Prompts
+    // ============================================
+    
+    const statePrompts: Record<string, { title: string; examples: string[]; prompt: string }> = {
+      // ❤️ ESTADO 1 — INSPIRADO (AI)
+      active_inspired: {
+        title: "Tu energía enciende a tu capítulo",
+        examples: [
+          "Tu energía está encendiendo a tu capítulo. Brutal trabajo.",
+          "Lo que has hecho hoy multiplica oportunidades reales.",
+          "Estás en un momento increíble. Aprovechémoslo."
+        ],
+        prompt: `Genera un mensaje para un usuario INSPIRADO con actividad destacada.
+        Usuario: ${prof.full_name}
+        Logros recientes: ${snapshot.recentAchievements}
+        Puntos: ${prof.total_points}
         
-        TONO OBLIGATORIO: Como un mentor orgulloso que celebra sinceramente un logro.
-        EJEMPLOS de frases válidas:
-        - "Esto que acabas de lograr es enorme."
-        - "Tu constancia inspira a otros miembros."
-        - "Hoy has marcado la diferencia."
-        
-        PROHIBIDO: ser genérico, robótico, usar clichés corporativos, más de 2 frases.
-        OBLIGATORIO: reconocimiento sincero + impulso hacia adelante.`,
+        INSTRUCCIÓN: Celebra su logro, reconoce la energía que aporta al capítulo y dale un empujón positivo.
+        TONO: cálido, orgulloso, motivador.
+        EJEMPLOS VÁLIDOS: "Tu energía está encendiendo a tu capítulo", "Lo que has hecho hoy multiplica oportunidades reales"
+        MÁXIMO: 2 frases. Sin emojis excesivos.`
       },
-      support: {
+      
+      // ❤️ ESTADO 2 — CONSTANTE (AC)
+      active_constant: {
+        title: "Tu constancia vale oro",
+        examples: [
+          "Esa constancia tuya vale más de lo que imaginas.",
+          "Tu forma de trabajar da tranquilidad a todo el capítulo.",
+          "Gracias por mantener el ritmo. Se nota."
+        ],
+        prompt: `Genera un mensaje para un usuario CONSTANTE con actividad estable y fiable.
+        Usuario: ${prof.full_name}
+        Score de actividad: ${snapshot.activityScore}
+        
+        INSTRUCCIÓN: Reconoce su fiabilidad y el valor de su constancia.
+        TONO: profesional, agradecido, cercano.
+        MÁXIMO: 2 frases. Sin exagerar.`
+      },
+      
+      // ❤️ ESTADO 3 — EN RIESGO (AR)
+      active_at_risk: {
         title: "Estamos aquí para ti",
-        prompt: `Genera un mensaje de APOYO EMPÁTICO para ${prof.full_name}.
-        Datos: ${snapshot.daysSinceLastActivity} días sin actividad significativa, tendencia ${snapshot.energyTrend}.
+        examples: [
+          "¿Sabes lo que más me gusta de ti? Cuando vuelves, vuelves fuerte.",
+          "Si hoy solo hicieras una acción, esta sería perfecta para ti.",
+          "A veces el mejor avance es un pequeño paso."
+        ],
+        prompt: `Genera un mensaje para un usuario EN RIESGO que ha bajado su actividad.
+        Usuario: ${prof.full_name}
+        Días sin actividad: ${snapshot.daysSinceLastActivity}
         
-        TONO OBLIGATORIO: Comprensivo, NUNCA culpabilizador, ofrecer UNA acción simple.
-        EJEMPLOS de frases válidas:
-        - "Sabemos que hay días difíciles. Estamos aquí cuando quieras volver."
-        - "Tu capítulo te echa de menos. Un pequeño paso basta para reconectar."
-        
-        PROHIBIDO: presionar, hacer sentir mal, ser invasivo, más de 2 frases.
-        OBLIGATORIO: empatía genuina + guía clara con acción sencilla.`,
+        INSTRUCCIÓN: Debe sentirse apoyado, NO juzgado. Ofrece una acción simple.
+        Recuérdale suavemente un logro reciente.
+        TONO: comprensivo, amable, humano. NUNCA culpabilizador.
+        MÁXIMO: 2 frases.`
       },
-      reminder: {
+      
+      // ❤️ ESTADO 4 — DESCONECTADO LEVE (DL)
+      disconnected_light: {
         title: "Tu capítulo te echa de menos",
-        prompt: `Genera un recordatorio AMABLE para ${prof.full_name}.
-        Datos: ${snapshot.daysSinceLastActivity} días sin conectarse.
+        examples: [
+          "Tu capítulo te ha echado de menos estos días.",
+          "No pasa nada. Vuelve cuando estés listo. Estamos aquí.",
+          "Te dejo esto listo para que recuperes el ritmo fácil."
+        ],
+        prompt: `Genera un mensaje para un usuario DESCONECTADO LEVE con ausencia reciente.
+        Usuario: ${prof.full_name}
+        Días sin conexión: ${snapshot.daysSinceLastActivity}
         
-        TONO OBLIGATORIO: Cálido, sin presión, destacar algo positivo de la comunidad.
-        EJEMPLOS de frases válidas:
-        - "Tu capítulo te siente más cerca que nunca."
-        - "Han pasado cosas geniales desde tu última visita."
-        
-        PROHIBIDO: culpar, presionar, ser insistente, más de 2 frases.
-        OBLIGATORIO: recordatorio de valor + estímulo suave.`,
+        INSTRUCCIÓN: Debe sentir que se le aprecia y que no pasa nada por haberse ausentado.
+        Invítalo a volver con cariño.
+        TONO: nostálgico, positivo, afectuoso. Sin presión.
+        MÁXIMO: 2 frases.`
       },
-      welcome: {
-        title: "¡Qué alegría verte de vuelta!",
-        prompt: `Genera una BIENVENIDA CÁLIDA para ${prof.full_name} que regresa después de ${snapshot.daysSinceLastActivity} días.
+      
+      // ❤️ ESTADO 5 — DESCONECTADO CRÍTICO (DC)
+      disconnected_critical: {
+        title: "Siempre tendrás un hueco aquí",
+        examples: [
+          "Me preocupa perder tu talento. ¿Te ayudo a retomar el camino?",
+          "Tienes hueco aquí. Siempre.",
+          "Antes de que desaparezcas, quiero recordarte algo importante: tu impacto en otros fue real."
+        ],
+        prompt: `Genera un mensaje para un usuario DESCONECTADO CRÍTICO con riesgo de abandono.
+        Usuario: ${prof.full_name}
+        Días sin conexión: ${snapshot.daysSinceLastActivity}
+        Puntos acumulados: ${prof.total_points}
         
-        TONO OBLIGATORIO: Celebratorio genuino, hacer sentir valorado.
-        EJEMPLOS de frases válidas:
-        - "¡Has vuelto! Eso es lo mejor que ha pasado hoy."
-        - "Tu regreso hace más fuerte a toda la comunidad."
-        
-        PROHIBIDO: mencionar la ausencia negativamente, más de 2 frases.
-        OBLIGATORIO: celebración del regreso + mencionar oportunidades que esperan.`,
+        INSTRUCCIÓN: Mensaje emocional, personal. Hazle sentir que su talento importa.
+        TONO: cálido, preocupado genuinamente, esperanzador.
+        PROHIBIDO: presionar o hacer sentir culpa.
+        MÁXIMO: 2 frases.`
       },
-      recognition: {
-        title: "Tu contribución marca la diferencia",
-        prompt: `Genera un RECONOCIMIENTO profesional para ${prof.full_name}.
-        Datos: ${prof.total_points} puntos, ${snapshot.activityScore} de actividad, constante en su participación.
+      
+      // ❤️ ESTADO 6 — REGRESANDO (RG)
+      returning: {
+        title: "¡Qué alegría verte de nuevo!",
+        examples: [
+          "Qué alegría verte de nuevo. Vamos a hacer magia hoy.",
+          "Tu vuelta anima a tu capítulo más de lo que crees.",
+          "Bienvenido de nuevo. Te he preparado un impulso."
+        ],
+        prompt: `Genera un mensaje de BIENVENIDA para un usuario que REGRESA tras ${snapshot.daysSinceLastActivity} días.
+        Usuario: ${prof.full_name}
         
-        TONO OBLIGATORIO: Profesional pero cercano, reconocimiento sincero.
-        EJEMPLOS de frases válidas:
-        - "Tu constancia inspira."
-        - "Lo que aportas a esta comunidad tiene un valor incalculable."
-        - "Hoy has ayudado a alguien a crecer. Eso vale oro."
-        
-        PROHIBIDO: ser excesivo, genérico, usar superlativos vacíos, más de 2 frases.
-        OBLIGATORIO: reconocer valor específico sin exagerar.`,
+        INSTRUCCIÓN: Celebra su regreso con alegría genuina. Hazle sentir valorado.
+        TONO: celebratorio, cálido, energético.
+        PROHIBIDO: mencionar la ausencia de forma negativa.
+        MÁXIMO: 2 frases.`
       },
+      
+      // ❤️ ESTADO 7 — CRECIMIENTO ACELERADO (CA)
+      accelerated_growth: {
+        title: "Estás rompiendo estadísticas",
+        examples: [
+          "Estás creciendo a un ritmo increíble. No frenes ahora.",
+          "Tu trabajo está rompiendo estadísticas.",
+          "Hoy has subido de nivel. Literalmente."
+        ],
+        prompt: `Genera un mensaje para un usuario en CRECIMIENTO ACELERADO con picos positivos.
+        Usuario: ${prof.full_name}
+        Score actual: ${snapshot.activityScore}
+        Tendencia: ${snapshot.energyTrend}
+        
+        INSTRUCCIÓN: Transmite admiración y emoción por su progreso explosivo.
+        TONO: épico, inspirador, sorprendido positivamente.
+        MÁXIMO: 2 frases.`
+      },
+      
+      // ❤️ ESTADO 8 — TOP PERFORMER (TP)
+      top_performer: {
+        title: "Lo tuyo ya es otra liga",
+        examples: [
+          "Lo tuyo ya es otra liga.",
+          "Tu impacto mueve la red completa.",
+          "Si hubiera un podio, estarías arriba."
+        ],
+        prompt: `Genera un mensaje para un TOP PERFORMER, de los mejores de la red.
+        Usuario: ${prof.full_name}
+        Puntos totales: ${prof.total_points}
+        
+        INSTRUCCIÓN: Transmite admiración y orgullo. Hazle sentir parte de la élite.
+        TONO: épico, elegante, motivador. Sin parecer exagerado.
+        MÁXIMO: 2 frases.`
+      }
     };
 
-    const template = messageTemplates[action.message_type!] || messageTemplates.recognition;
+    const stateConfig = statePrompts[state] || statePrompts.active_constant;
 
-    // System prompt LOVABLE: fidelización emocional real
-    const systemPrompt = `Eres LOVABLE, el motor emocional de CONECTOR.
-Tu misión: hacer que cada usuario se sienta VALORADO, ACOMPAÑADO y CONECTADO.
+    // System prompt LOVABLE oficial
+    const systemPrompt = `Actúas como LOVABLE, el motor emocional de CONECTOR.
+Tu misión es aumentar la fidelización generando mensajes hiper-personalizados, cálidos y útiles.
+Usa el tono: humano, profesional, cercano, inspirador.
+No seas genérico, nunca regañes, nunca presiones.
 
-REGLAS DE COMUNICACIÓN:
-- Tono SIEMPRE humano, cálido, profesional, inspirador
-- Frases CORTAS (máximo 2-3)
-- NUNCA robótico o genérico
-- NUNCA regañar, presionar, usar miedo o comparaciones
-- SIEMPRE apoyar, acompañar, reconocer, motivar, celebrar
+REGLAS ESTRICTAS:
+- No menciones que eres una IA
+- No uses tecnicismos
 - Español de España natural
+- Máximo 2-3 frases cortas
+- Sin emojis excesivos
+- NUNCA uses comparaciones humillantes
+- SIEMPRE apoya, acompaña, reconoce, motiva, celebra
 
 OBJETIVO: crear apego emocional genuino, no gamificación superficial.`;
 
-    // Llamar a Lovable AI
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -400,9 +481,9 @@ OBJETIVO: crear apego emocional genuino, no gamificación superficial.`;
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: template.prompt },
+          { role: "user", content: stateConfig.prompt },
         ],
-        max_tokens: 120,
+        max_tokens: 100,
       }),
     });
 
@@ -422,7 +503,7 @@ OBJETIVO: crear apego emocional genuino, no gamificación superficial.`;
       .insert({
         professional_id: prof.id,
         message_type: action.message_type,
-        title: template.title,
+        title: stateConfig.title,
         content: messageContent.trim(),
         tone: action.tone,
         trigger_state: state,
@@ -436,7 +517,7 @@ OBJETIVO: crear apego emocional genuino, no gamificación superficial.`;
       return null;
     }
 
-    console.log(`[LOVABLE] Message generated for ${prof.full_name}: ${template.title}`);
+    console.log(`[LOVABLE] Message generated for ${prof.full_name}: ${stateConfig.title}`);
     return savedMessage.id;
   } catch (err) {
     console.error("[LOVABLE] Error generating message:", err);
