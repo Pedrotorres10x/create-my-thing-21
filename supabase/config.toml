@@ -37,3 +37,6 @@ verify_jwt = false
 
 [functions.generate-smart-suggestions]
 verify_jwt = true
+
+[functions.lovable-algorithm]
+verify_jwt = false
