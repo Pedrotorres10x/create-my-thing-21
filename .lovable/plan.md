@@ -1,128 +1,143 @@
 
 
-# Consejo de Sabios: Poder Real sobre Expulsiones + Narrativa de Prestigio
+# Gamificacion con Badges + Sistema de Recomendacion por Ranking
 
 ## Resumen
 
-Convertir el Consejo de Sabios en el organo que **decide** las expulsiones por inactividad, en lugar de que sean automaticas. Ademas, reforzar la narrativa para que estar en el Consejo se sienta como "ser el que manda" -- prestigio real con poder real.
+Dos sistemas complementarios que hacen que los puntos "se sientan como dinero":
 
-## Cambios en el flujo de expulsion
+1. **Badges visuales**: Insignias desbloqueables que se muestran en el perfil y en rankings, premiando logros concretos
+2. **Recomendacion por ranking**: Cuando alguien de fuera de la provincia necesita un profesional de cierta especialidad, el sistema propone automaticamente al de mayor puntuacion de cada capitulo/grupo
 
-Actualmente, cuando un usuario llega a 6 meses sin dar referidos, el sistema (`check-inactivity`) lo expulsa directamente. El nuevo flujo sera:
+---
 
-1. Los **3 primeros avisos** (meses 3, 4 y 5) siguen siendo automaticos -- no cambian
-2. Al llegar a **6 meses**, en lugar de expulsar directamente:
-   - Se crea una **solicitud de expulsion** (`expulsion_reviews`) dirigida al Consejo de Sabios
-   - El usuario queda en estado `pending_expulsion` (no se expulsa aun)
-   - Se notifica a los 3 miembros del Consejo
-3. Los miembros del Consejo **votan**: expulsar, dar prorroga (1 mes mas), o absolver
-4. **Mayoria simple** (2 de 3 votos) decide el resultado
-5. Si el Consejo no actua en 7 dias, se ejecuta la expulsion automaticamente (fallback)
+## Parte 1: Sistema de Badges
 
-## Cambios en solicitudes de reentrada
+### Concepto
 
-Las `reentry_requests` existentes tambien pasan por el Consejo:
-- El usuario expulsado solicita reentrada (tras 6 meses de espera)
-- El Consejo revisa y vota: aprobar o rechazar
-- Misma mecanica de mayoria simple
+Los badges son insignias permanentes que se desbloquean al cumplir hitos. Se muestran en el perfil del usuario y en la lista de rankings, creando un efecto de "coleccion" que motiva a seguir participando.
 
-## Esquema de base de datos
+### Badges propuestos (primera version)
 
-### Nueva tabla: `expulsion_reviews`
+| Badge | Condicion | Icono |
+|-------|-----------|-------|
+| **Primer Referido** | Completar 1 referido exitoso | Estrella |
+| **Networker** | 5 reuniones Cara a Cara completadas | Apretón de manos |
+| **Conector Nato** | 10 referidos completados | Red/enlaces |
+| **Cerrador** | Cerrar 5 deals | Candado |
+| **Veterano** | 6 meses activo sin interrupciones | Escudo |
+| **Top 10** | Estar en el Top 10 del ranking general | Medalla |
+| **El Consejo** | Ser miembro del Consejo de Sabios | Corona |
+| **Diamante** | Alcanzar nivel Diamante | Diamante |
+| **Mentor** | Invitar a 5 profesionales que se aprueben | Libro |
+| **Deal Maker** | Superar 10.000 EUR en deals cerrados | Moneda |
 
-| Columna | Tipo | Descripcion |
-|---------|------|-------------|
-| id | uuid (PK) | ID unico |
-| professional_id | uuid (FK) | Usuario propuesto para expulsion |
-| trigger_type | text | 'inactivity' / 'red_flag' / 'reports' |
-| trigger_details | jsonb | Evidencia (meses inactivo, etc) |
-| status | text | 'pending' / 'approved' / 'rejected' / 'extended' / 'auto_expired' |
-| votes_for_expulsion | int | Contador de votos a favor |
-| votes_against | int | Contador en contra |
-| votes_extend | int | Votos por prorroga |
-| decided_at | timestamptz | Cuando se alcanzo mayoria |
-| auto_expire_at | timestamptz | 7 dias tras creacion (fallback) |
-| created_at | timestamptz | Fecha creacion |
+### Base de datos
 
-### Nueva tabla: `expulsion_votes`
+**Nueva tabla: `badges`**
+- id, code (unique), name, description, icon, category ('networking', 'deals', 'engagement', 'prestige'), unlock_condition (jsonb), created_at
 
-| Columna | Tipo | Descripcion |
-|---------|------|-------------|
-| id | uuid (PK) | ID unico |
-| review_id | uuid (FK) | Referencia a expulsion_reviews |
-| voter_id | uuid (FK) | Miembro del Consejo que vota |
-| vote | text | 'expel' / 'absolve' / 'extend' |
-| reasoning | text | Justificacion del voto |
-| created_at | timestamptz | Fecha del voto |
+**Nueva tabla: `professional_badges`**
+- id, professional_id (FK), badge_id (FK), unlocked_at
+- UNIQUE constraint en (professional_id, badge_id)
 
-Restriccion UNIQUE en (review_id, voter_id) para evitar doble voto.
+### Logica de desbloqueo
 
-### Modificacion de `reentry_requests`
+- Un trigger o edge function (`check-badges`) que se ejecuta cuando cambian los puntos, referidos, meetings o deals
+- Verifica las condiciones de cada badge no desbloqueado
+- Al desbloquear uno nuevo, inserta en `professional_badges` y muestra el modal de AchievementModal existente con confetti
 
-Agregar columna `committee_review_id` (uuid, FK a expulsion_reviews) para vincular reentradas al mismo sistema de votacion del Consejo.
+### UI
 
-## Cambios en Edge Function `check-inactivity`
+- **Perfil**: Seccion "Mis Insignias" con grid de badges (desbloqueados en color, bloqueados en gris con tooltip de condicion)
+- **Rankings**: Mostrar los badges mas relevantes junto al nombre de cada profesional (maximo 3 iconos)
+- **Dashboard**: Notificacion cuando se desbloquea un nuevo badge
 
-- En el nivel 4 (6 meses), **ya no expulsa directamente**
-- En su lugar, crea un registro en `expulsion_reviews` con status `pending`
-- Calcula `auto_expire_at` = ahora + 7 dias
-- Envia notificacion a los 3 miembros del Consejo via Alic.ia y push
+---
 
-## Nueva Edge Function: `process-expulsion-votes`
+## Parte 2: Sistema de Recomendacion por Ranking
 
-- Se ejecuta via cron diario
-- Busca `expulsion_reviews` donde:
-  - Ya hay 2+ votos iguales (mayoria) --> ejecuta decision
-  - `auto_expire_at` ha pasado sin mayoria --> expulsion automatica
-- Actualiza el estado del profesional segun la decision
+### Concepto
 
-## Cambios en la UI del Consejo de Sabios
+Cuando un miembro necesita un profesional de una especialidad que no existe en su propio capitulo/provincia, el sistema busca en otros capitulos y **propone al profesional con mayor puntuacion** de esa especialidad. Esto convierte el ranking en acceso directo a oportunidades de negocio.
 
-### Rebranding narrativo
+### Flujo
 
-- Titulo: **"El Consejo"** (subtitulo: "Los que deciden")
-- Descripcion: "Los 3 profesionales con mayor ranking tienen el poder de decidir quien se queda y quien se va"
-- Miembros mostrados con badges especiales: el #1 es "El Estratega", #2 "El Guardian", #3 "El Juez"
-- Cada miembro ve su poder como algo exclusivo y aspiracional
+```text
++-------------------------------+
+| Miembro busca "Arquitecto"    |
+| en su capitulo/provincia      |
++-------------------------------+
+         |
+         v
+  +--------------------+
+  | Existe en su       |----SI----> Muestra los de su capitulo
+  | capitulo?          |            (ordenados por puntos)
+  +--------------------+
+         |
+         NO
+         v
+  +-----------------------------+
+  | Busca en TODOS los          |
+  | capitulos/provincias        |
+  | Filtra por especialidad     |
+  | Ordena por total_points     |
+  +-----------------------------+
+         |
+         v
+  +-----------------------------+
+  | Muestra "Recomendados"      |
+  | con badge especial:         |
+  | "Top de su zona"            |
+  | El #1 aparece destacado     |
+  +-----------------------------+
+```
 
-### Nueva pestana: "Expulsiones"
+### Base de datos
 
-Ademas de las pestanas existentes (Pendientes, En revision), se anade:
-- **"Expulsiones"**: muestra los casos de inactividad pendientes de voto
-- Cada caso muestra:
-  - Nombre y datos del usuario propuesto
-  - Meses de inactividad y evidencia
-  - Estado de los votos actuales (quien ha votado que, sin revelar el voto especifico hasta que haya mayoria)
-  - Botones: "Expulsar", "Absolver", "Dar prorroga (1 mes)"
-  - Campo de texto para justificacion obligatoria
+**Nueva tabla: `cross_chapter_requests`**
+- id, requester_id (FK professionals), requested_specialization_id, requested_sector_id, description, status ('open', 'matched', 'closed'), matched_professional_id, created_at
 
-### Nueva pestana: "Reentradas"
+**Nueva vista o funcion RPC: `find_top_professionals_by_specialization`**
+- Parametros: specialization_id (o profession_specialization_id), exclude_chapter_id
+- Retorna: profesionales ordenados por total_points, agrupados por capitulo (el top 1 de cada uno)
+- Filtra solo status = 'approved'
 
-- Solicitudes de usuarios expulsados que piden volver
-- Misma mecanica de votacion
-- Muestra historial del usuario (por que fue expulsado, cuanto tiempo lleva fuera)
+### UI
 
-### Historial de decisiones
+- **Busqueda en "Mi Terreno"**: Al buscar una especialidad sin resultados locales, aparece seccion "Profesionales recomendados de otras zonas" con el top de cada capitulo
+- **Nuevo componente `CrossChapterRecommendation`**: Card destacada con el badge "Top de [Ciudad]", foto, puntos, nivel, y boton para solicitar Cara a Cara
+- **Notificacion al recomendado**: Cuando alguien de otra zona lo solicita, recibe notificacion push + mensaje de Alic.ia: "Te han solicitado desde [Ciudad]. Tu ranking te posiciona como el mejor de tu zona."
 
-Al final de la pagina, seccion de "Decisiones pasadas" con las votaciones resueltas, mostrando:
-- Caso, resultado, votos de cada miembro
-- Transparencia total entre los 3 miembros
+### Narrativa
 
-## Notificaciones
+El mensaje clave: **"Cada punto que sumas es una puerta que se abre. Cuando alguien de otra ciudad necesite lo que tu haces, tu nombre es el primero que aparece."**
 
-- Cuando se crea un caso de expulsion, los 3 miembros reciben notificacion push + mensaje de Alic.ia:
-  "Tienes un caso pendiente en El Consejo. Tu voto es necesario."
-- Cuando se resuelve un caso, el usuario afectado recibe notificacion con la decision
-- Si un miembro no ha votado a las 48h, recibe recordatorio
+---
 
 ## Archivos a crear/modificar
 
 | Archivo | Accion |
 |---------|--------|
-| Migracion SQL | Crear tablas `expulsion_reviews` y `expulsion_votes`, modificar `reentry_requests` |
-| `supabase/functions/check-inactivity/index.ts` | Cambiar nivel 4 para crear review en vez de expulsar |
-| `supabase/functions/process-expulsion-votes/index.ts` | **Nuevo** - Cron para procesar votos y fallback |
-| `src/hooks/useEthicsCommittee.tsx` | Agregar queries para expulsion reviews, votos y reentradas |
-| `src/pages/EthicsCommittee.tsx` | Rebranding + pestanas Expulsiones y Reentradas + sistema de votacion |
-| `supabase/config.toml` | Agregar cron para `process-expulsion-votes` |
+| Migracion SQL | Crear tablas `badges`, `professional_badges`, `cross_chapter_requests`; crear RPC `find_top_professionals_by_specialization` |
+| `src/components/gamification/BadgeGrid.tsx` | **Nuevo** - Grid de badges del perfil (desbloqueados/bloqueados) |
+| `src/components/gamification/BadgeIcon.tsx` | **Nuevo** - Componente individual de badge con tooltip |
+| `src/components/sphere/CrossChapterRecommendation.tsx` | **Nuevo** - Card de recomendacion inter-capitulo |
+| `src/pages/Profile.tsx` | Agregar seccion de badges |
+| `src/pages/Rankings.tsx` | Mostrar badges junto a cada profesional |
+| `src/hooks/useAchievements.tsx` | Extender para verificar badges al detectar cambios |
+| `src/pages/MyBusinessSphere.tsx` | Integrar busqueda cross-chapter cuando no hay resultados locales |
+
+---
+
+## Secuencia de implementacion
+
+1. Migracion: tablas de badges y datos iniciales (seed de los 10 badges)
+2. Componentes de badges (BadgeGrid, BadgeIcon)
+3. Logica de desbloqueo en useAchievements
+4. Integracion en Profile y Rankings
+5. RPC de busqueda cross-chapter
+6. Tabla y UI de cross_chapter_requests
+7. Componente CrossChapterRecommendation
+8. Notificaciones al profesional recomendado
 
