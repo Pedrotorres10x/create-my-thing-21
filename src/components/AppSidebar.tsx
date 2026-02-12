@@ -1,4 +1,4 @@
-import { Home, Users, Handshake, Calendar, Store, MessageSquare, Trophy, UserCircle, Shield, BookOpen, AlertTriangle, CreditCard, Scale, Sparkles, Globe } from "lucide-react";
+import { Home, Users, Handshake, Calendar, Store, MessageSquare, Trophy, UserCircle, Shield, BookOpen, AlertTriangle, CreditCard, Scale, Globe } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -29,7 +29,7 @@ const mainItems = [
 const communityItems = [
   { title: "Mi Esfera", url: "/mi-esfera", icon: Globe },
   { title: "Cafés 1:1", url: "/meetings", icon: Calendar },
-  { title: "Plaza Premium", url: "/premium-marketplace", icon: Sparkles, badge: "VIP" },
+  
   { title: "El Feed", url: "/feed", icon: MessageSquare },
   { title: "El Podio", url: "/rankings", icon: Trophy },
 ];
@@ -84,14 +84,7 @@ export function AppSidebar() {
                     >
                       <item.icon className="h-4 w-4" />
                       {open && (
-                        <span className="flex items-center gap-2">
-                          {item.title}
-                          {item.badge && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-bold">
-                              {item.badge}
-                            </span>
-                          )}
-                        </span>
+                        <span>{item.title}</span>
                       )}
                     </NavLink>
                   </SidebarMenuButton>

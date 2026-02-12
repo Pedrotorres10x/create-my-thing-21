@@ -62,9 +62,8 @@ export const ReengagementWelcomeBack = () => {
       case "feed":
         navigate("/feed");
         break;
-      case "marketplace":
-        navigate("/marketplace");
-        break;
+      case "referrals":
+        navigate("/referrals");
       case "meetings":
         navigate("/meetings");
         break;
@@ -115,12 +114,12 @@ export const ReengagementWelcomeBack = () => {
             <Button 
               variant="outline" 
               className="h-auto py-4 flex flex-col items-start gap-2"
-              onClick={() => handleAction("marketplace")}
+              onClick={() => handleAction("referrals")}
             >
               <Gift className="h-5 w-5 text-primary" />
               <div className="text-left">
-                <p className="font-semibold">Plaza Premium</p>
-                <p className="text-xs text-muted-foreground">Ofrece tus servicios</p>
+                <p className="font-semibold">Tus Aliados</p>
+                <p className="text-xs text-muted-foreground">Pasa contactos y gana</p>
               </div>
             </Button>
 
