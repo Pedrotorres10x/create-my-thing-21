@@ -13,6 +13,17 @@ export function PushNotificationToggle({ professionalId }: PushNotificationToggl
   if (!isSupported) return null;
 
   const handleToggle = async () => {
+    // If permission is already denied, guide the user
+    if (!isSubscribed && Notification.permission === "denied") {
+      toast({
+        title: "🔒 Notificaciones bloqueadas por el navegador",
+        description: "Haz clic en el icono de candado 🔒 en la barra de direcciones de tu navegador → Permisos → Notificaciones → Permitir. Luego recarga la página.",
+        variant: "destructive",
+        duration: 10000,
+      });
+      return;
+    }
+
     if (isSubscribed) {
       await unsubscribe();
       toast({
@@ -26,11 +37,12 @@ export function PushNotificationToggle({ professionalId }: PushNotificationToggl
           title: "🔔 ¡Notificaciones activadas!",
           description: "Te avisaremos de referencias, reuniones y oportunidades",
         });
-      } else if (permission === "denied") {
+      } else if (Notification.permission === "denied") {
         toast({
-          title: "Notificaciones bloqueadas",
-          description: "Permite las notificaciones en la configuración de tu navegador",
+          title: "🔒 Notificaciones bloqueadas por el navegador",
+          description: "Haz clic en el icono de candado 🔒 en la barra de direcciones → Permisos → Notificaciones → Permitir. Luego recarga la página.",
           variant: "destructive",
+          duration: 10000,
         });
       }
     }
