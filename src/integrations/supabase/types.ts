@@ -444,6 +444,57 @@ export type Database = {
           },
         ]
       }
+      inactivity_warnings: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          last_referral_given_at: string | null
+          message: string
+          months_inactive: number
+          professional_id: string
+          warning_level: number
+          warning_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          last_referral_given_at?: string | null
+          message: string
+          months_inactive: number
+          professional_id: string
+          warning_level?: number
+          warning_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          last_referral_given_at?: string | null
+          message?: string
+          months_inactive?: number
+          professional_id?: string
+          warning_level?: number
+          warning_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inactivity_warnings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inactivity_warnings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lovable_interactions: {
         Row: {
           action_taken: string | null
