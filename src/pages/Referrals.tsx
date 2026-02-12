@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Copy, Share2, Mail, Gift, CheckCircle, Clock, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { PremiumBanner } from "@/components/advertising/PremiumBanner";
+
 
 interface Professional {
   id: string;
@@ -184,7 +184,7 @@ const Referrals = () => {
   return (
     <div className="p-8 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Sistema de Referidos</h1>
+        <h1 className="text-3xl font-bold mb-2">Mi Red</h1>
         <p className="text-muted-foreground">Invita a otros profesionales y gana recompensas</p>
       </div>
 
@@ -218,9 +218,6 @@ const Referrals = () => {
           </CardHeader>
         </Card>
       </div>
-
-      {/* Premium Banner */}
-      <PremiumBanner location="dashboard" size="horizontal_large" />
 
       {/* Referral Code Card */}
       <Card>

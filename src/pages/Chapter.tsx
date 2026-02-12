@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Users, Calendar, Award } from "lucide-react";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
-import { PremiumBanner } from "@/components/advertising/PremiumBanner";
+
 
 interface Chapter {
   id: string;
@@ -120,18 +120,18 @@ const Chapter = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Mi Capítulo</h1>
-          <p className="text-muted-foreground">Miembros y actividades de tu capítulo</p>
+          <h1 className="text-3xl font-bold">Mi Trinchera</h1>
+          <p className="text-muted-foreground">Miembros y actividades de tu trinchera</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Sin Capítulo Asignado</CardTitle>
-            <CardDescription>Aún no has sido asignado a un capítulo</CardDescription>
+            <CardTitle>Sin Trinchera Asignada</CardTitle>
+            <CardDescription>Aún no has sido asignado a una trinchera</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Serás asignado a un capítulo según tu ubicación. Contacta con el administrador para más información.
+              Serás asignado a una trinchera según tu ubicación. Contacta con el administrador para más información.
             </p>
           </CardContent>
         </Card>
@@ -149,14 +149,11 @@ const Chapter = () => {
         </p>
       </div>
 
-      {/* Premium Banner */}
-      <PremiumBanner location="dashboard" size="horizontal_large" />
-
       {/* Chapter Info */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Información del Capítulo</CardTitle>
+            <CardTitle>Información de la Trinchera</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {chapter.description && (
@@ -192,7 +189,7 @@ const Chapter = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Estadísticas del Capítulo</CardTitle>
+            <CardTitle>Estadísticas de la Trinchera</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">

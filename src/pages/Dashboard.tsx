@@ -3,27 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Trophy, Calendar, Zap, Loader2, AlertCircle } from "lucide-react";
+import { Users, Calendar, Loader2, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AIChat } from "@/components/AIChat";
-import { PointsLevelBadge } from "@/components/PointsLevelBadge";
-import { DailyMotivationModal } from "@/components/DailyMotivationModal";
 import { AchievementModal } from "@/components/gamification/AchievementModal";
 import { RankingCard } from "@/components/gamification/RankingCard";
 import { useAchievements } from "@/hooks/useAchievements";
-import { ReengagementWelcomeBack } from "@/components/reengagement/ReengagementWelcomeBack";
 import { PremiumBanner } from "@/components/advertising/PremiumBanner";
 import { DynamicGreeting } from "@/components/dashboard/DynamicGreeting";
 import { SmartSuggestions } from "@/components/dashboard/SmartSuggestions";
-import { ProgressTracker } from "@/components/dashboard/ProgressTracker";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
-import { SphereStatsCard } from "@/components/SphereStatsCard";
-import { SphereStatsEnhanced } from "@/components/sphere/SphereStatsEnhanced";
-import { SphereSynergyCard } from "@/components/sphere/SphereSynergyCard";
-import { SphereActivityFeed } from "@/components/sphere/SphereActivityFeed";
-import { SphereReferenceDialog } from "@/components/sphere/SphereReferenceDialog";
 import { AliciaWelcomeModal } from "@/components/AliciaWelcomeModal";
-import { LovableEngagement } from "@/components/dashboard/LovableEngagement";
 
 interface DashboardStats {
   referralsSent: number;
@@ -52,11 +42,9 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [upcomingMeetings, setUpcomingMeetings] = useState<UpcomingMeeting[]>([]);
   const [professional, setProfessional] = useState<any>(null);
-  const [showReferenceDialog, setShowReferenceDialog] = useState(false);
   const { achievement, clearAchievement } = useAchievements();
   const chatRef = useRef<HTMLDivElement>(null);
   
-  // Weekly goals for dynamic suggestions
   const { goals } = useWeeklyGoals(professional?.id || null);
 
   useEffect(() => {
@@ -64,7 +52,6 @@ const Dashboard = () => {
       if (!user) return;
 
       try {
-        // Get professional data
         const { data: professionalData } = await supabase
           .from("professionals")
           .select(`
@@ -90,7 +77,6 @@ const Dashboard = () => {
 
         setProfessional(professionalData);
 
-        // Get referrals statistics
         const { data: referrals } = await supabase
           .from("referrals")
           .select("status, created_at")
@@ -99,7 +85,6 @@ const Dashboard = () => {
         const referralsSent = referrals?.length || 0;
         const referralsCompleted = referrals?.filter(r => r.status === "completed").length || 0;
 
-        // Get level information
         const { data: level } = await supabase
           .from("point_levels")
           .select("name, badge_color, min_points, max_points")
@@ -108,7 +93,6 @@ const Dashboard = () => {
           .limit(1)
           .single();
 
-        // Get ranking
         const { count } = await supabase
           .from("professionals")
           .select("*", { count: "exact", head: true })
@@ -116,7 +100,6 @@ const Dashboard = () => {
 
         const ranking = (count || 0) + 1;
 
-        // Get upcoming meetings
         const { data: meetings } = await supabase
           .from("meetings")
           .select(`
@@ -160,8 +143,6 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <DailyMotivationModal />
-      
       {professional?.id && (
         <AliciaWelcomeModal 
           professionalId={professional.id}
@@ -172,7 +153,6 @@ const Dashboard = () => {
         />
       )}
       
-      <ReengagementWelcomeBack />
       <AchievementModal 
         achievement={achievement}
         onClose={clearAchievement}
@@ -191,7 +171,7 @@ const Dashboard = () => {
               Para comenzar a usar CONECTOR, primero necesitas completar tu perfil profesional.
             </p>
             <Button onClick={() => navigate('/profile')}>
-              Ir a Mi Perfil
+              Ir a Mi Marca
             </Button>
           </CardContent>
         </Card>
@@ -203,72 +183,16 @@ const Dashboard = () => {
             consecutiveDays={0}
           />
 
-          {/* LOVABLE Algorithm - Mensajes personalizados y recompensas */}
-          <LovableEngagement />
-
-          {/* Alic.ia Chat - MÁXIMA PROMINENCIA - FULL WIDTH */}
+          {/* Alic.ia Chat - MÁXIMA PROMINENCIA */}
           <div ref={chatRef} className="w-full">
             <AIChat />
           </div>
           
-          {/* Smart Suggestions */}
+          {/* Smart Suggestions - 1 acción clave */}
           <SmartSuggestions goals={goals} />
 
-          {/* Sphere Stats */}
-          {professional?.business_sphere_id && professional?.business_spheres && (
-            <SphereStatsEnhanced
-              sphereId={professional.business_sphere_id}
-              sphereName={professional.business_spheres.name}
-              chapterId={professional.chapter_id || undefined}
-              professionalId={professional.id}
-            />
-          )}
-
-          {/* Sphere Activity & Synergy */}
-          {professional?.business_sphere_id && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-              <SphereActivityFeed
-                sphereId={professional.business_sphere_id}
-                chapterId={professional.chapter_id}
-                currentProfessionalId={professional.id}
-              />
-              <SphereSynergyCard professionalId={professional.id} />
-            </div>
-          )}
-
-          {/* Sphere Reference Button */}
-          {professional?.business_sphere_id && (
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <h3 className="font-semibold text-lg">¿Cliente que necesita otro servicio?</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Refiere dentro de tu esfera y gana <span className="font-bold text-primary">50 puntos</span> (vs 30 normales)
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => setShowReferenceDialog(true)}
-                    size="lg"
-                    className="gap-2"
-                  >
-                    🤝 Referir a mi Esfera
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Premium Banner Advertising */}
-          <PremiumBanner location="dashboard" size="horizontal_large" />
-
-          {/* Progress Tracker */}
-          <div className="w-full">
-            <ProgressTracker goals={goals} />
-          </div>
-
-          {/* Gamification Section */}
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-4 lg:mt-6">
+          {/* 3 KPIs compactas */}
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
             <RankingCard 
               ranking={stats.ranking}
               totalPoints={stats.totalPoints}
@@ -278,7 +202,7 @@ const Dashboard = () => {
               }}
             />
             
-            <Card className="hover:shadow-md transition-shadow cursor-pointer hover-scale" onClick={() => navigate('/referrals')}>
+            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/referrals')}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Referencias</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -291,33 +215,23 @@ const Dashboard = () => {
               </CardContent>
             </Card>
             
-            <Card className="hover:shadow-md transition-shadow cursor-pointer hover-scale" onClick={() => navigate('/meetings')}>
+            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/meetings')}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Próximas Reuniones</CardTitle>
+                <CardTitle className="text-sm font-medium">Cara a Cara</CardTitle>
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{upcomingMeetings.length}</div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground">
                   Reuniones confirmadas
                 </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Secondary Banner - Bottom */}
-          <PremiumBanner location="dashboard" size="horizontal_small" />
+          {/* Premium Banner - solo 1 */}
+          <PremiumBanner location="dashboard" size="horizontal_large" />
         </>
-      )}
-
-      {/* Sphere Reference Dialog */}
-      {professional?.business_sphere_id && (
-        <SphereReferenceDialog
-          open={showReferenceDialog}
-          onOpenChange={setShowReferenceDialog}
-          sphereId={professional.business_sphere_id}
-          currentProfessionalId={professional.id}
-        />
       )}
     </div>
   );

@@ -16,7 +16,7 @@ import Meetings from "./pages/Meetings";
 
 import Feed from "./pages/Feed";
 import Rankings from "./pages/Rankings";
-import Tutorials from "./pages/Tutorials";
+
 import Subscriptions from "./pages/Subscriptions";
 import EthicsCommittee from "./pages/EthicsCommittee";
 import Admin from "./pages/Admin";
@@ -44,7 +44,7 @@ const App = () => (
             
             <Route path="/feed" element={<ProtectedRoute><Layout><Feed /></Layout></ProtectedRoute>} />
             <Route path="/rankings" element={<ProtectedRoute><Layout><Rankings /></Layout></ProtectedRoute>} />
-            <Route path="/tutorials" element={<ProtectedRoute><Layout><Tutorials /></Layout></ProtectedRoute>} />
+            
             <Route path="/subscriptions" element={<ProtectedRoute><Layout><Subscriptions /></Layout></ProtectedRoute>} />
             <Route path="/ethics-committee" element={<ProtectedRoute><Layout><EthicsCommittee /></Layout></ProtectedRoute>} />
             <Route path="/mi-esfera" element={<ProtectedRoute><Layout><MyBusinessSphere /></Layout></ProtectedRoute>} />
