@@ -1815,6 +1815,83 @@ export type Database = {
           },
         ]
       }
+      red_flag_alerts: {
+        Row: {
+          admin_notes: string | null
+          ai_analysis: string
+          ai_confidence: number
+          alert_type: string
+          created_at: string
+          evidence: Json
+          id: string
+          professional_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          ai_analysis: string
+          ai_confidence?: number
+          alert_type: string
+          created_at?: string
+          evidence?: Json
+          id?: string
+          professional_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          ai_analysis?: string
+          ai_confidence?: number
+          alert_type?: string
+          created_at?: string
+          evidence?: Json
+          id?: string
+          professional_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "red_flag_alerts_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "red_flag_alerts_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "red_flag_alerts_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "red_flag_alerts_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referrals: {
         Row: {
           completed_at: string | null

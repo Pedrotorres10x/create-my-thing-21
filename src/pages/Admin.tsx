@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Shield, Activity, Heart } from "lucide-react";
+import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Shield, Activity, Heart, AlertTriangle as AlertTriangleIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,7 @@ import { SectorDistributionChart } from "@/components/admin/SectorDistributionCh
 import { RegistrationTrendChart } from "@/components/admin/RegistrationTrendChart";
 import { ChapterManagement } from "@/components/admin/ChapterManagement";
 import { EngagementAnalytics } from "@/components/admin/EngagementAnalytics";
+import { RedFlagsDashboard } from "@/components/admin/RedFlagsDashboard";
 
 
 import { LovableEmotionalDashboard } from "@/components/admin/LovableEmotionalDashboard";
@@ -492,8 +493,10 @@ const Admin = () => {
           </TabsTrigger>
           <TabsTrigger value="professionals">Profesionales</TabsTrigger>
           <TabsTrigger value="chapters">Capítulos</TabsTrigger>
-          
-          
+          <TabsTrigger value="redflags">
+            <AlertTriangleIcon className="w-4 h-4 mr-2" />
+            Red Flags
+          </TabsTrigger>
           <TabsTrigger value="referrals">Referidos</TabsTrigger>
         </TabsList>
 
@@ -835,6 +838,10 @@ const Admin = () => {
 
         <TabsContent value="chapters" className="space-y-4">
           <ChapterManagement />
+        </TabsContent>
+
+        <TabsContent value="redflags" className="space-y-4">
+          <RedFlagsDashboard />
         </TabsContent>
 
 
