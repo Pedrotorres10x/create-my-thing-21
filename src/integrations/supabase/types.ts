@@ -444,6 +444,112 @@ export type Database = {
           },
         ]
       }
+      expulsion_reviews: {
+        Row: {
+          auto_expire_at: string
+          created_at: string
+          decided_at: string | null
+          id: string
+          professional_id: string
+          status: string
+          trigger_details: Json | null
+          trigger_type: string
+          votes_against: number
+          votes_extend: number
+          votes_for_expulsion: number
+        }
+        Insert: {
+          auto_expire_at?: string
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          professional_id: string
+          status?: string
+          trigger_details?: Json | null
+          trigger_type?: string
+          votes_against?: number
+          votes_extend?: number
+          votes_for_expulsion?: number
+        }
+        Update: {
+          auto_expire_at?: string
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          professional_id?: string
+          status?: string
+          trigger_details?: Json | null
+          trigger_type?: string
+          votes_against?: number
+          votes_extend?: number
+          votes_for_expulsion?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expulsion_reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expulsion_reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expulsion_votes: {
+        Row: {
+          created_at: string
+          id: string
+          reasoning: string
+          review_id: string
+          vote: string
+          voter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reasoning: string
+          review_id: string
+          vote: string
+          voter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reasoning?: string
+          review_id?: string
+          vote?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expulsion_votes_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "expulsion_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expulsion_votes_voter_id_fkey"
+            columns: ["voter_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expulsion_votes_voter_id_fkey"
+            columns: ["voter_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inactivity_warnings: {
         Row: {
           created_at: string
@@ -1952,6 +2058,7 @@ export type Database = {
       reentry_requests: {
         Row: {
           admin_notes: string | null
+          committee_review_id: string | null
           created_at: string
           eligible_at: string
           id: string
@@ -1963,6 +2070,7 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          committee_review_id?: string | null
           created_at?: string
           eligible_at: string
           id?: string
@@ -1974,6 +2082,7 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          committee_review_id?: string | null
           created_at?: string
           eligible_at?: string
           id?: string
@@ -1984,6 +2093,13 @@ export type Database = {
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "reentry_requests_committee_review_id_fkey"
+            columns: ["committee_review_id"]
+            isOneToOne: false
+            referencedRelation: "expulsion_reviews"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reentry_requests_professional_id_fkey"
             columns: ["professional_id"]
@@ -3319,6 +3435,15 @@ export type Database = {
       can_send_ai_message: {
         Args: { _professional_id: string }
         Returns: boolean
+      }
+      cast_expulsion_vote: {
+        Args: {
+          _reasoning: string
+          _review_id: string
+          _vote: string
+          _voter_id: string
+        }
+        Returns: Json
       }
       check_overdue_commissions: { Args: never; Returns: undefined }
       check_specialization_availability: {

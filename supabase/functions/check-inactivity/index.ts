@@ -10,7 +10,9 @@ const corsHeaders = {
   - 3 months without GIVING a referral → first warning
   - 4 months → second warning
   - 5 months → final warning (last chance)
-  - 6 months → automatic expulsion (status → 'inactive')
+  - 6 months → case sent to El Consejo (top 3 by ranking) for vote
+  - El Consejo votes: expel / absolve / extend (1 month)
+  - If no majority in 7 days → auto-expulsion fallback
 
   NOTE: "inviting" new members does NOT count as giving a referral.
   Only actual business referrals (deals where they are the referrer) count.
@@ -29,28 +31,28 @@ const WARNING_STAGES: WarningConfig[] = [
     level: 1,
     type: "first_warning",
     message:
-      "Llevas 3 meses sin dar un referido a tu Trinchera. Recuerda que el sistema funciona con reciprocidad: cuanto más das, más recibes. Si no generas actividad en los próximos 3 meses, tu cuenta será desactivada.",
+      "Llevas 3 meses sin dar un referido a tu Trinchera. Recuerda que el sistema funciona con reciprocidad: cuanto más das, más recibes. Si no generas actividad en los próximos 3 meses, tu caso será revisado por El Consejo.",
   },
   {
     months: 4,
     level: 2,
     type: "second_warning",
     message:
-      "Segundo aviso: llevas 4 meses sin dar referidos. Tu Trinchera te necesita activo. Te quedan 2 meses para generar al menos un referido antes de la desactivación automática.",
+      "Segundo aviso: llevas 4 meses sin dar referidos. Tu Trinchera te necesita activo. Te quedan 2 meses antes de que tu caso sea elevado a El Consejo.",
   },
   {
     months: 5,
     level: 3,
     type: "final_warning",
     message:
-      "⚠️ ÚLTIMO AVISO: Llevas 5 meses sin dar ningún referido. Si en 30 días no generas actividad, tu cuenta será desactivada automáticamente. Contacta con tu líder de Trinchera si necesitas ayuda.",
+      "⚠️ ÚLTIMO AVISO: Llevas 5 meses sin dar ningún referido. Si en 30 días no generas actividad, tu caso será enviado a El Consejo para que decidan sobre tu permanencia.",
   },
   {
     months: 6,
     level: 4,
-    type: "expulsion",
+    type: "council_review",
     message:
-      "Tu cuenta ha sido desactivada por inactividad prolongada (6 meses sin dar referidos). Si crees que es un error o quieres reactivarla, contacta con el administrador.",
+      "Tu caso ha sido elevado a El Consejo por inactividad prolongada (6 meses sin dar referidos). Los 3 miembros con mayor ranking decidirán sobre tu permanencia.",
   },
 ];
 
@@ -81,7 +83,7 @@ Deno.serve(async (req) => {
     }
 
     let warningsSent = 0;
-    let expulsions = 0;
+    let councilCases = 0;
 
     for (const prof of professionals) {
       // Skip members who joined less than 3 months ago
@@ -99,11 +101,11 @@ Deno.serve(async (req) => {
 
       const lastReferralDate = lastDeal && lastDeal.length > 0
         ? new Date(lastDeal[0].created_at)
-        : memberSince; // If never gave a referral, count from join date
+        : memberSince;
 
       const monthsInactive = monthsDiff(lastReferralDate, now);
 
-      if (monthsInactive < 3) continue; // Not inactive yet
+      if (monthsInactive < 3) continue;
 
       // Get highest warning level already sent
       const { data: existingWarnings } = await supabase
@@ -122,31 +124,77 @@ Deno.serve(async (req) => {
         .filter((s) => s.months <= monthsInactive && s.level > highestLevel)
         .sort((a, b) => b.level - a.level)[0];
 
-      if (!applicableStage) continue; // Already warned at this level
+      if (!applicableStage) continue;
 
-      // Handle expulsion (level 4)
+      // Level 4: Send to El Consejo instead of direct expulsion
       if (applicableStage.level === 4) {
-        // Increment expulsion count and deactivate
-        const { data: currentProf } = await supabase
-          .from("professionals")
-          .select("expulsion_count")
-          .eq("id", prof.id)
-          .single();
+        // Check if there's already a pending review for this professional
+        const { data: existingReview } = await supabase
+          .from("expulsion_reviews")
+          .select("id")
+          .eq("professional_id", prof.id)
+          .eq("status", "pending")
+          .limit(1);
 
-        const newCount = (currentProf?.expulsion_count || 0) + 1;
-        // If 2nd expulsion → permanently banned (no reentry possible)
-        const newStatus = newCount >= 2 ? "banned" : "inactive";
+        if (existingReview && existingReview.length > 0) continue; // Already has pending review
 
-        await supabase
-          .from("professionals")
-          .update({
-            status: newStatus,
-            expulsion_count: newCount,
-            last_expulsion_at: new Date().toISOString(),
-          })
-          .eq("id", prof.id);
+        // Create expulsion review for El Consejo
+        const { error: reviewError } = await supabase
+          .from("expulsion_reviews")
+          .insert({
+            professional_id: prof.id,
+            trigger_type: "inactivity",
+            trigger_details: {
+              months_inactive: monthsInactive,
+              last_referral_at: lastDeal?.[0]?.created_at || null,
+              member_since: prof.created_at,
+              full_name: prof.full_name,
+            },
+            status: "pending",
+            auto_expire_at: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          });
 
-        expulsions++;
+        if (reviewError) {
+          console.error("Error creating expulsion review:", reviewError);
+          continue;
+        }
+
+        // Notify El Consejo members via Alic.ia
+        const { data: committeeMembers } = await supabase.rpc("get_ethics_committee_members");
+
+        if (committeeMembers) {
+          for (const member of committeeMembers) {
+            await supabase.from("lovable_messages").insert({
+              professional_id: member.id,
+              title: "Caso pendiente en El Consejo",
+              content: `${prof.full_name} lleva ${monthsInactive} meses sin dar referidos. Tu voto es necesario para decidir su permanencia. Tienes 7 días.`,
+              message_type: "critical",
+              tone: "urgent",
+              trigger_state: "council_review",
+            });
+
+            // Push notification
+            try {
+              await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${supabaseServiceKey}`,
+                },
+                body: JSON.stringify({
+                  professionalId: member.id,
+                  title: "⚖️ El Consejo te necesita",
+                  body: `Caso de expulsión pendiente: ${prof.full_name}. Tu voto es necesario.`,
+                  url: "/ethics-committee",
+                }),
+              });
+            } catch {
+              // Push is best-effort
+            }
+          }
+        }
+
+        councilCases++;
       }
 
       // Insert the warning
@@ -161,11 +209,11 @@ Deno.serve(async (req) => {
           : null,
       });
 
-      // Also create a Lovable message so Alic.ia shows it
+      // Alic.ia message for the affected user
       await supabase.from("lovable_messages").insert({
         professional_id: prof.id,
         title: applicableStage.level === 4
-          ? "Cuenta desactivada por inactividad"
+          ? "Tu caso ha sido elevado a El Consejo"
           : `Aviso de inactividad (${applicableStage.level}/3)`,
         content: applicableStage.message,
         message_type: applicableStage.level === 4 ? "critical" : "warning",
@@ -173,7 +221,7 @@ Deno.serve(async (req) => {
         trigger_state: "inactivity",
       });
 
-      // Try to send push notification
+      // Push notification
       try {
         await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
           method: "POST",
@@ -184,16 +232,16 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             professionalId: prof.id,
             title: applicableStage.level === 4
-              ? "⛔ Cuenta desactivada"
+              ? "⚖️ Caso elevado a El Consejo"
               : `⚠️ Aviso de inactividad`,
             body: applicableStage.level === 4
-              ? "Tu cuenta ha sido desactivada por 6 meses sin dar referidos."
-              : `Llevas ${monthsInactive} meses sin dar referidos. ${6 - monthsInactive} meses para la desactivación.`,
+              ? "Tu caso de inactividad será revisado por El Consejo."
+              : `Llevas ${monthsInactive} meses sin dar referidos. ${6 - monthsInactive} meses para revisión por El Consejo.`,
             url: "/dashboard",
           }),
         });
       } catch {
-        // Push notification is best-effort
+        // Push is best-effort
       }
 
       warningsSent++;
@@ -201,9 +249,9 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        message: `Inactivity check complete. ${warningsSent} warnings sent, ${expulsions} expulsions.`,
+        message: `Inactivity check complete. ${warningsSent} warnings sent, ${councilCases} cases sent to El Consejo.`,
         warnings_sent: warningsSent,
-        expulsions,
+        council_cases: councilCases,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
