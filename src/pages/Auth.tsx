@@ -99,7 +99,7 @@ const Auth = () => {
       if (signInError) throw signInError;
 
       const refCode = localStorage.getItem('referral_code');
-      navigate(refCode ? `/profile?ref=${refCode}` : "/profile");
+      navigate(refCode ? `/dashboard?ref=${refCode}` : "/dashboard");
       if (refCode) localStorage.removeItem('referral_code');
     } catch (error: any) {
       toast({
