@@ -52,3 +52,6 @@ verify_jwt = false
 
 [functions.check-inactivity]
 verify_jwt = false
+
+[functions.process-expulsion-votes]
+verify_jwt = false
