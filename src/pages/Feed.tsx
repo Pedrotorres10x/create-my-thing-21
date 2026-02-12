@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { PremiumBanner } from "@/components/advertising/PremiumBanner";
+
 import {
   Select,
   SelectContent,
@@ -251,8 +251,6 @@ const Feed = () => {
         </Select>
       </div>
 
-      {/* Premium Banner */}
-      <PremiumBanner location="feed" size="horizontal_large" />
 
       <div className="space-y-4">
         {filteredPosts.length === 0 ? (
