@@ -23,8 +23,6 @@ export default function EthicsCommittee() {
     committeeMembers,
     pendingReports,
     loadingReports,
-    resolveReport,
-    resolvingReport,
     expulsionReviews,
     loadingExpulsions,
     expulsionVotes,
@@ -32,6 +30,9 @@ export default function EthicsCommittee() {
     castingVote,
     reentryRequests,
     loadingReentries,
+    reportVotes,
+    castReportVote,
+    castingReportVote,
   } = useEthicsCommittee();
 
   if (checkingMembership) {
@@ -161,8 +162,11 @@ export default function EthicsCommittee() {
             reports={pendingReports}
             loading={loadingReports}
             statusFilter="pending"
-            onResolve={resolveReport as any}
-            isResolving={resolvingReport}
+            onCastVote={castReportVote}
+            isCastingVote={castingReportVote}
+            reportVotes={reportVotes}
+            currentProfessionalId={professionalId}
+            committeeMembers={committeeMembers}
           />
         </TabsContent>
 
@@ -171,8 +175,11 @@ export default function EthicsCommittee() {
             reports={pendingReports}
             loading={loadingReports}
             statusFilter="under_ethics_review"
-            onResolve={resolveReport as any}
-            isResolving={resolvingReport}
+            onCastVote={castReportVote}
+            isCastingVote={castingReportVote}
+            reportVotes={reportVotes}
+            currentProfessionalId={professionalId}
+            committeeMembers={committeeMembers}
           />
         </TabsContent>
       </Tabs>
