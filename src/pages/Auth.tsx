@@ -12,6 +12,7 @@ import { z } from "zod";
 import { Loader2, Info } from "lucide-react";
 import { BackgroundImage } from "@/components/ui/background-image";
 import authBg from "@/assets/auth-background.jpg";
+import { lovable } from "@/integrations/lovable/index";
 
 const authSchema = z.object({
   email: z.string().email("Email inválido").max(255, "Email demasiado largo"),
@@ -152,14 +153,16 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`,
-        },
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
       });
 
-      if (error) throw error;
+      if (result?.error) throw result.error;
+      
+      // If not redirected, navigate to dashboard
+      if (!result?.redirected) {
+        navigate("/dashboard");
+      }
     } catch (error: any) {
       toast({
         title: "❌ Error",
