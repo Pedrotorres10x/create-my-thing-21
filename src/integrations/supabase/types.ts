@@ -1591,8 +1591,10 @@ export type Database = {
           deals_completed: number
           email: string
           email_verified: boolean | null
+          expulsion_count: number
           full_name: string
           id: string
+          last_expulsion_at: string | null
           linkedin: string | null
           linkedin_url: string | null
           logo_url: string | null
@@ -1649,8 +1651,10 @@ export type Database = {
           deals_completed?: number
           email: string
           email_verified?: boolean | null
+          expulsion_count?: number
           full_name: string
           id?: string
+          last_expulsion_at?: string | null
           linkedin?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
@@ -1707,8 +1711,10 @@ export type Database = {
           deals_completed?: number
           email?: string
           email_verified?: boolean | null
+          expulsion_count?: number
           full_name?: string
           id?: string
+          last_expulsion_at?: string | null
           linkedin?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
@@ -1936,6 +1942,71 @@ export type Database = {
           },
           {
             foreignKeyName: "red_flag_alerts_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reentry_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          eligible_at: string
+          id: string
+          professional_id: string
+          reason: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          eligible_at: string
+          id?: string
+          professional_id: string
+          reason: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          eligible_at?: string
+          id?: string
+          professional_id?: string
+          reason?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reentry_requests_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reentry_requests_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reentry_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reentry_requests_reviewed_by_fkey"
             columns: ["reviewed_by"]
             isOneToOne: false
             referencedRelation: "professionals_public"

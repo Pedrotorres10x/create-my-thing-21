@@ -126,10 +126,24 @@ Deno.serve(async (req) => {
 
       // Handle expulsion (level 4)
       if (applicableStage.level === 4) {
-        // Deactivate the professional
+        // Increment expulsion count and deactivate
+        const { data: currentProf } = await supabase
+          .from("professionals")
+          .select("expulsion_count")
+          .eq("id", prof.id)
+          .single();
+
+        const newCount = (currentProf?.expulsion_count || 0) + 1;
+        // If 2nd expulsion → permanently banned (no reentry possible)
+        const newStatus = newCount >= 2 ? "banned" : "inactive";
+
         await supabase
           .from("professionals")
-          .update({ status: "inactive" })
+          .update({
+            status: newStatus,
+            expulsion_count: newCount,
+            last_expulsion_at: new Date().toISOString(),
+          })
           .eq("id", prof.id);
 
         expulsions++;
