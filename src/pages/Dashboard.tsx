@@ -3,12 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Calendar, Loader2 } from "lucide-react";
+import { Users, Calendar, Loader2, ArrowRight, Handshake, TrendingUp, Target } from "lucide-react";
 import { ProfileForm } from "@/components/ProfileForm";
 import { useNavigate } from "react-router-dom";
 import { AIChat } from "@/components/AIChat";
 import { AchievementModal } from "@/components/gamification/AchievementModal";
-import { RankingCard } from "@/components/gamification/RankingCard";
 import { useAchievements } from "@/hooks/useAchievements";
 
 import { DynamicGreeting } from "@/components/dashboard/DynamicGreeting";
@@ -87,7 +86,6 @@ const Dashboard = () => {
 
         setProfessional(professionalData);
 
-        // Check if user just hit 2 deals and should see upgrade prompt
         const isPremium = (professionalData as any).subscription_plans?.slug === 'premium';
         if (professionalData.deals_completed >= MAX_FREE_DEALS && !isPremium) {
           const dismissed = sessionStorage.getItem('upgrade-prompt-dismissed');
@@ -177,7 +175,6 @@ const Dashboard = () => {
         />
       )}
 
-      {/* Upgrade prompt - only shows when 2+ deals completed */}
       <DealUpgradePrompt
         totalEarnings={professional?.total_deal_value || 0}
         dealsCompleted={professional?.deals_completed || 0}
@@ -192,24 +189,34 @@ const Dashboard = () => {
       
       {loading ? (
         <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full gradient-primary animate-pulse opacity-30" />
+              <Loader2 className="w-8 h-8 animate-spin text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            </div>
+            <p className="text-sm text-muted-foreground animate-pulse">Cargando tu tablero...</p>
+          </div>
         </div>
       ) : !professional ? (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <ProfileForm />
         </div>
       ) : (
-        <>
-          {/* Dynamic Greeting */}
+        <div className="space-y-6">
+          {/* Hero Greeting with ranking embedded */}
           <DynamicGreeting 
             userName={professional?.full_name?.split(' ')[0] || 'Profesional'}
             consecutiveDays={0}
             chapterSize={stats?.level ? upcomingMeetings.length : 0}
             referralsSent={stats?.referralsSent || 0}
             meetingsCompleted={upcomingMeetings.length}
+            ranking={stats?.ranking}
+            totalPoints={stats?.totalPoints}
+            levelName={stats?.level.name}
+            levelColor={stats?.level.color}
           />
 
-          {/* Subtle deal limit banner */}
+          {/* Deal limit banner */}
           <DealLimitBanner
             dealsCompleted={professional?.deals_completed || 0}
             maxFreeDeals={MAX_FREE_DEALS}
@@ -217,55 +224,81 @@ const Dashboard = () => {
             onUpgrade={() => setShowUpgradePrompt(true)}
           />
 
+          {/* KPI Grid — visual cards */}
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+            <KPICard
+              title="Referencias"
+              value={stats?.referralsSent || 0}
+              subtitle={`${stats?.referralsCompleted || 0} completadas`}
+              icon={<Handshake className="h-5 w-5" />}
+              gradient="from-primary/10 to-secondary/5"
+              accentColor="text-primary"
+              onClick={() => navigate('/referrals')}
+            />
+            <KPICard
+              title="El Ritual"
+              value={upcomingMeetings.length}
+              subtitle="Reuniones confirmadas"
+              icon={<Calendar className="h-5 w-5" />}
+              gradient="from-secondary/10 to-primary/5"
+              accentColor="text-secondary"
+              onClick={() => navigate('/meetings')}
+            />
+            <KPICard
+              title="Crecimiento"
+              value={`${stats?.totalPoints || 0}`}
+              subtitle="Puntos totales"
+              icon={<TrendingUp className="h-5 w-5" />}
+              gradient="from-accent/10 to-primary/5"
+              accentColor="text-accent"
+              onClick={() => navigate('/rankings')}
+            />
+          </div>
+
+          {/* Smart Suggestions */}
+          <SmartSuggestions goals={goals} />
+
           {/* Alic.ia Chat */}
           <div ref={chatRef} className="w-full">
             <AIChat />
           </div>
-          
-          {/* Smart Suggestions */}
-          <SmartSuggestions goals={goals} />
-
-          {/* 3 KPIs */}
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-            <RankingCard 
-              ranking={stats?.ranking || 0}
-              totalPoints={stats?.totalPoints || 0}
-              level={{
-                name: stats?.level.name || "Bronce",
-                color: stats?.level.color || "#CD7F32"
-              }}
-            />
-            
-            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/referrals')}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Referencias</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats?.referralsSent || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.referralsCompleted || 0} completadas
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/meetings')}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">El Ritual</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{upcomingMeetings.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Reuniones confirmadas
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </>
+        </div>
       )}
     </div>
   );
 };
+
+// KPI Card component
+interface KPICardProps {
+  title: string;
+  value: number | string;
+  subtitle: string;
+  icon: React.ReactNode;
+  gradient: string;
+  accentColor: string;
+  onClick: () => void;
+}
+
+function KPICard({ title, value, subtitle, icon, gradient, accentColor, onClick }: KPICardProps) {
+  return (
+    <Card 
+      className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-glow hover:-translate-y-1 border-border/50"
+      onClick={onClick}
+    >
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-50 group-hover:opacity-80 transition-opacity`} />
+      <CardContent className="relative p-5">
+        <div className="flex items-start justify-between mb-3">
+          <div className={`p-2.5 rounded-xl bg-background/80 shadow-sm ${accentColor}`}>
+            {icon}
+          </div>
+          <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1" />
+        </div>
+        <p className="text-3xl font-bold tracking-tight">{value}</p>
+        <p className="text-xs font-medium text-muted-foreground mt-1">{title}</p>
+        <p className="text-[11px] text-muted-foreground/70 mt-0.5">{subtitle}</p>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default Dashboard;
