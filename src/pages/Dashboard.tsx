@@ -9,7 +9,7 @@ import { AIChat } from "@/components/AIChat";
 import { AchievementModal } from "@/components/gamification/AchievementModal";
 import { RankingCard } from "@/components/gamification/RankingCard";
 import { useAchievements } from "@/hooks/useAchievements";
-import { PremiumBanner } from "@/components/advertising/PremiumBanner";
+
 import { DynamicGreeting } from "@/components/dashboard/DynamicGreeting";
 import { SmartSuggestions } from "@/components/dashboard/SmartSuggestions";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
@@ -229,8 +229,6 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Premium Banner - solo 1 */}
-          <PremiumBanner location="dashboard" size="horizontal_large" />
         </>
       )}
     </div>
