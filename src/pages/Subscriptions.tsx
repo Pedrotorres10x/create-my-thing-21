@@ -43,8 +43,8 @@ export default function Subscriptions() {
           Empieza gratis, crece sin límites
         </h1>
         <p className="text-base sm:text-lg text-muted-foreground">
-          Tus primeros <span className="text-primary font-semibold">2 tratos al mes son gratis</span>. 
-          Cuando quieras más, desbloquea todo por 99€/mes.
+          Tus <span className="text-primary font-semibold">2 primeros tratos son totalmente gratis</span>. 
+          A partir del tercero, desbloquea todo por 99€/mes.
         </p>
       </div>
 
@@ -60,12 +60,12 @@ export default function Subscriptions() {
               <ArrowRight className="h-5 w-5 text-muted-foreground hidden sm:block" />
               <div className="flex flex-col items-center gap-2">
                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold text-primary">2</div>
-                <p className="text-sm font-medium">2 tratos gratis/mes</p>
+                <p className="text-sm font-medium">2 primeros tratos gratis</p>
               </div>
               <ArrowRight className="h-5 w-5 text-muted-foreground hidden sm:block" />
               <div className="flex flex-col items-center gap-2">
                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold text-primary">3</div>
-                <p className="text-sm font-medium">¿Quieres más? → Premium</p>
+                <p className="text-sm font-medium">3er trato → Premium</p>
               </div>
             </div>
           </CardContent>
@@ -91,7 +91,7 @@ export default function Subscriptions() {
               <span className="text-muted-foreground ml-1">/mes</span>
             </div>
             <ul className="space-y-3">
-              {(freePlan?.features || ['2 tratos gratis al mes', 'Acceso a tu capítulo local', 'Perfil profesional', 'Feed de publicaciones']).map((feature: string, i: number) => (
+              {(freePlan?.features || ['2 primeros tratos GRATIS', 'Acceso a tu capítulo local', 'Perfil profesional', 'Feed de publicaciones']).map((feature: string, i: number) => (
                 <li key={i} className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <span className="text-sm">{feature}</span>
@@ -164,15 +164,15 @@ export default function Subscriptions() {
             <CardContent className="pt-4 pb-4">
               <p className="font-medium text-sm">¿Qué cuenta como un "trato"?</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Un trato es cuando pasas un referido (contacto) a otro miembro de CONECTOR y ese contacto se convierte en cliente. Los 2 primeros tratos de cada mes son gratis.
+                Un trato es cuando pasas un referido (contacto) a otro miembro de CONECTOR y ese contacto se convierte en cliente. Tus 2 primeros tratos en total son gratis, sin límite de tiempo.
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4 pb-4">
-              <p className="font-medium text-sm">¿Qué pasa si supero los 2 tratos?</p>
+              <p className="font-medium text-sm">¿Qué pasa después de los 2 tratos gratis?</p>
               <p className="text-sm text-muted-foreground mt-1">
-                A partir del tercer trato necesitarás el plan Premium (99€/mes). Sin Premium, podrás seguir usando la plataforma pero no cerrar nuevos tratos hasta el mes siguiente.
+                A partir del tercer trato necesitarás el plan Premium (99€/mes). Es un pago único que te desbloquea tratos ilimitados para siempre mientras mantengas la suscripción.
               </p>
             </CardContent>
           </Card>
