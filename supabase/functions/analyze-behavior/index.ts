@@ -220,7 +220,7 @@ serve(async (req) => {
         .from('moderation_violations')
         .insert({
           professional_id: professionalId,
-          violation_type: 'payment_evasion_attempt',
+          violation_type: 'behavioral_risk',
           severity: totalRiskScore >= 80 ? 'high' : 'medium',
           reason: `Comportamiento sospechoso detectado automáticamente`,
           categories: riskFactors.map(f => f.type),
