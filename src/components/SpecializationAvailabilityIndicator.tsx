@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Users, CheckCircle2, AlertCircle } from "lucide-react";
+import { MapPin, Users, CheckCircle2, AlertCircle, Clock, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
 
 interface Chapter {
   chapter_id: string;
@@ -37,12 +38,25 @@ export const SpecializationAvailabilityIndicator = ({
   const [availableChapters, setAvailableChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(false);
   const [isCurrentAvailable, setIsCurrentAvailable] = useState<boolean | null>(null);
+  const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
+  const [joiningWaitlist, setJoiningWaitlist] = useState(false);
+  const [currentProfessionalId, setCurrentProfessionalId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadCurrentProf = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase.from("professionals").select("id").eq("user_id", user.id).single();
+        if (data) setCurrentProfessionalId(data.id);
+      }
+    };
+    loadCurrentProf();
+  }, []);
 
   useEffect(() => {
     const loadAvailability = async () => {
       setLoading(true);
       try {
-        // Verificar disponibilidad en el capítulo actual si está definido
         if (currentChapterId) {
           const { data: available, error: availError } = await supabase.rpc(
             "check_specialization_availability",
@@ -55,9 +69,24 @@ export const SpecializationAvailabilityIndicator = ({
           if (!availError) {
             setIsCurrentAvailable(available);
           }
+
+          // Check if already in waitlist
+          if (currentProfessionalId) {
+            const { data: waitEntry } = await supabase
+              .from("chapter_specialization_waitlist")
+              .select("position_in_queue")
+              .eq("professional_id", currentProfessionalId)
+              .eq("chapter_id", currentChapterId)
+              .eq("profession_specialization_id", professionSpecializationId)
+              .eq("status", "waiting")
+              .maybeSingle();
+
+            if (waitEntry) {
+              setWaitlistPosition(waitEntry.position_in_queue);
+            }
+          }
         }
 
-        // Cargar capítulos alternativos con disponibilidad
         if (showAlternatives) {
           const { data, error } = await supabase.rpc(
             "get_available_chapters_for_specialization",
@@ -81,7 +110,49 @@ export const SpecializationAvailabilityIndicator = ({
     if (professionSpecializationId) {
       loadAvailability();
     }
-  }, [professionSpecializationId, currentChapterId, currentState, showAlternatives]);
+  }, [professionSpecializationId, currentChapterId, currentState, showAlternatives, currentProfessionalId]);
+
+  const joinWaitlist = async (chapterId: string) => {
+    if (!currentProfessionalId) return;
+    setJoiningWaitlist(true);
+    try {
+      const { error } = await supabase.from("chapter_specialization_waitlist").insert({
+        professional_id: currentProfessionalId,
+        chapter_id: chapterId,
+        profession_specialization_id: professionSpecializationId,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ En lista de espera",
+        description: "Te notificaremos automáticamente cuando se libere la plaza. Serás asignado directamente.",
+      });
+
+      // Refresh position
+      const { data: waitEntry } = await supabase
+        .from("chapter_specialization_waitlist")
+        .select("position_in_queue")
+        .eq("professional_id", currentProfessionalId)
+        .eq("chapter_id", chapterId)
+        .eq("profession_specialization_id", professionSpecializationId)
+        .eq("status", "waiting")
+        .maybeSingle();
+
+      if (waitEntry) setWaitlistPosition(waitEntry.position_in_queue);
+    } catch (error: any) {
+      console.error("Error joining waitlist:", error);
+      toast({
+        title: "Error",
+        description: error.message?.includes("unique") 
+          ? "Ya estás en la lista de espera para esta plaza."
+          : "No se pudo unir a la lista de espera.",
+        variant: "destructive",
+      });
+    } finally {
+      setJoiningWaitlist(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -117,13 +188,30 @@ export const SpecializationAvailabilityIndicator = ({
               ) : (
                 <>
                   <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
-                  <div>
+                  <div className="flex-1">
                     <p className="font-medium text-destructive">
                       ❌ Ocupada en tu capítulo
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
                       Ya existe un profesional con esta especialización en tu capítulo.
                     </p>
+                    {waitlistPosition ? (
+                      <div className="mt-3 flex items-center gap-2 text-sm bg-muted/50 p-3 rounded-lg">
+                        <Clock className="h-4 w-4 text-primary" />
+                        <span>Estás en la <strong>posición #{waitlistPosition}</strong> de la lista de espera. Te asignaremos automáticamente cuando se libere la plaza.</span>
+                      </div>
+                    ) : currentProfessionalId ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-3"
+                        onClick={() => joinWaitlist(currentChapterId)}
+                        disabled={joiningWaitlist}
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        {joiningWaitlist ? "Uniéndose..." : "Unirme a la lista de espera"}
+                      </Button>
+                    ) : null}
                   </div>
                 </>
               )}
