@@ -317,9 +317,14 @@ export type Database = {
       }
       deals: {
         Row: {
+          commission_amount: number | null
+          commission_due_date: string | null
+          commission_paid_at: string | null
+          commission_status: string
           completed_at: string | null
           created_at: string
           deal_value: number | null
+          declared_profit: number | null
           description: string
           id: string
           receiver_id: string
@@ -328,9 +333,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          commission_amount?: number | null
+          commission_due_date?: string | null
+          commission_paid_at?: string | null
+          commission_status?: string
           completed_at?: string | null
           created_at?: string
           deal_value?: number | null
+          declared_profit?: number | null
           description: string
           id?: string
           receiver_id: string
@@ -339,9 +349,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          commission_amount?: number | null
+          commission_due_date?: string | null
+          commission_paid_at?: string | null
+          commission_status?: string
           completed_at?: string | null
           created_at?: string
           deal_value?: number | null
+          declared_profit?: number | null
           description?: string
           id?: string
           receiver_id?: string
@@ -2992,6 +3007,7 @@ export type Database = {
         Args: { _professional_id: string }
         Returns: boolean
       }
+      check_overdue_commissions: { Args: never; Returns: undefined }
       check_specialization_availability: {
         Args: { _chapter_id: string; _profession_specialization_id: number }
         Returns: boolean

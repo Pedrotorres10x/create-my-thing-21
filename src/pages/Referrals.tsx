@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Share2, Mail, Gift, CheckCircle, Clock, Users, UserPlus, Handshake, ArrowRight } from "lucide-react";
+import { Copy, Share2, Mail, Gift, CheckCircle, Clock, Users, UserPlus, Handshake } from "lucide-react";
+import { DealsList } from "@/components/deals/DealsList";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -336,41 +337,18 @@ const Referrals = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Handshake className="h-5 w-5" />
-                Referir un cliente a un miembro
+                Mis Tratos
               </CardTitle>
               <CardDescription>
-                Pasa un contacto de tu círculo que necesite un servicio a un profesional de tu tribu. Las comisiones se acuerdan directamente entre vosotros.
+                Gestiona las referencias de clientes enviadas y recibidas. Cuando un trato se cierra, el receptor declara su beneficio y se calcula el 10% de comisión.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="bg-muted/50 rounded-lg p-6 text-center space-y-4">
-                <Handshake className="h-12 w-12 mx-auto text-primary" />
-                <div>
-                  <h3 className="font-semibold text-lg">¿Cómo funciona?</h3>
-                  <div className="text-sm text-muted-foreground mt-3 space-y-2 text-left max-w-md mx-auto">
-                    <p className="flex items-start gap-2">
-                      <span className="font-bold text-primary">1.</span>
-                      Un conocido tuyo necesita un servicio (abogado, diseñador, contable...)
-                    </p>
-                    <p className="flex items-start gap-2">
-                      <span className="font-bold text-primary">2.</span>
-                      Miras en tu tribu quién cubre esa profesión
-                    </p>
-                    <p className="flex items-start gap-2">
-                      <span className="font-bold text-primary">3.</span>
-                      Le pasas el contacto al miembro de tu grupo
-                    </p>
-                    <p className="flex items-start gap-2">
-                      <span className="font-bold text-primary">4.</span>
-                      El miembro cierra el trato y te paga tu comisión acordada
-                    </p>
-                  </div>
-                </div>
-                <Button variant="outline" onClick={() => window.location.href = '/chapter'}>
-                  <ArrowRight className="h-4 w-4 mr-2" />
-                  Ir a Mi Tribu para referir
-                </Button>
-              </div>
+              {professional ? (
+                <DealsList professionalId={professional.id} />
+              ) : (
+                <p className="text-center text-muted-foreground py-8">Cargando...</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
