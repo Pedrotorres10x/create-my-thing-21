@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageCircle, Send, Filter } from "lucide-react";
+import { Heart, MessageCircle, Send, Filter, Flag } from "lucide-react";
+import { ReportUserDialog } from "@/components/ReportUserDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -61,6 +62,7 @@ const Feed = () => {
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
   const [currentProfessional, setCurrentProfessional] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ id: string; name: string; postId?: string } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -332,6 +334,20 @@ const Feed = () => {
                     <MessageCircle className="h-4 w-4" />
                     {post.post_comments.length}
                   </Button>
+                  {currentProfessional && post.professional_id !== currentProfessional.id && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-auto text-muted-foreground"
+                      onClick={() => setReportTarget({
+                        id: post.professional_id,
+                        name: post.professionals.full_name,
+                        postId: post.id,
+                      })}
+                    >
+                      <Flag className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
 
                 {showComments[post.id] && (
@@ -399,6 +415,18 @@ const Feed = () => {
           ))
         )}
       </div>
+
+      {currentProfessional && reportTarget && (
+        <ReportUserDialog
+          open={!!reportTarget}
+          onOpenChange={(open) => !open && setReportTarget(null)}
+          reportedId={reportTarget.id}
+          reportedName={reportTarget.name}
+          context="feed_post"
+          contextId={reportTarget.postId}
+          reporterId={currentProfessional.id}
+        />
+      )}
     </div>
   );
 };

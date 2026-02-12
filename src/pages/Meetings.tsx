@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, MapPin, Video, Clock, CheckCircle, XCircle, MessageSquare, Plus } from "lucide-react";
+import { Calendar, MapPin, Video, Clock, CheckCircle, XCircle, MessageSquare, Plus, Flag } from "lucide-react";
+import { ReportUserDialog } from "@/components/ReportUserDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -46,6 +47,7 @@ const Meetings = () => {
   const [loading, setLoading] = useState(true);
   const [myProfessionalId, setMyProfessionalId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ id: string; name: string } | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -387,6 +389,17 @@ const Meetings = () => {
                           </div>
                           {getStatusBadge(meeting.status)}
                         </div>
+                        {meeting.status === 'completed' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted-foreground mt-2"
+                            onClick={() => setReportTarget({ id: other.id, name: other.full_name })}
+                          >
+                            <Flag className="h-4 w-4 mr-1" />
+                            Reportar
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -402,6 +415,17 @@ const Meetings = () => {
         onOpenChange={setDialogOpen}
         onSuccess={loadData}
       />
+
+      {myProfessionalId && reportTarget && (
+        <ReportUserDialog
+          open={!!reportTarget}
+          onOpenChange={(open) => !open && setReportTarget(null)}
+          reportedId={reportTarget.id}
+          reportedName={reportTarget.name}
+          context="meeting"
+          reporterId={myProfessionalId}
+        />
+      )}
     </div>
   );
 };
