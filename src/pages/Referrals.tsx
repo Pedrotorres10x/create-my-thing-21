@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Copy, Share2, Mail, Gift, CheckCircle, Clock, Users, UserPlus, Handshake } from "lucide-react";
 import { DealsList } from "@/components/deals/DealsList";
+import { MissingSpecsCard } from "@/components/deals/MissingSpecsCard";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -234,6 +235,7 @@ const Referrals = () => {
         </TabsList>
 
         <TabsContent value="invite" className="space-y-4">
+          {professional && <MissingSpecsCard professionalId={professional.id} />}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
