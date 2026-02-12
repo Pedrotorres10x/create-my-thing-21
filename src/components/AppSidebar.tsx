@@ -18,19 +18,19 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainItems = [
-  { title: "Mi Radar", url: "/dashboard", icon: Home },
-  { title: "Mi Brújula", url: "/tutorials", icon: BookOpen },
-  { title: "Sobre Mí", url: "/profile", icon: UserCircle },
-  { title: "Mi Motor", url: "/subscriptions", icon: CreditCard },
-  { title: "Mis Aliados", url: "/referrals", icon: Handshake },
-  { title: "Mi Tribu", url: "/chapter", icon: Users },
+  { title: "Mi Tablero", url: "/dashboard", icon: Home },
+  { title: "El Manual", url: "/tutorials", icon: BookOpen },
+  { title: "Mi Marca", url: "/profile", icon: UserCircle },
+  { title: "Mi Apuesta", url: "/subscriptions", icon: CreditCard },
+  { title: "Mi Red", url: "/referrals", icon: Handshake },
+  { title: "Mi Trinchera", url: "/chapter", icon: Users },
 ];
 
 const communityItems = [
-  { title: "Mi Esfera", url: "/mi-esfera", icon: Globe },
-  { title: "Cafés 1:1", url: "/meetings", icon: Calendar },
-  { title: "La Plaza", url: "/feed", icon: MessageSquare },
-  { title: "El Podio", url: "/rankings", icon: Trophy },
+  { title: "Mi Terreno", url: "/mi-esfera", icon: Globe },
+  { title: "Cara a Cara", url: "/meetings", icon: Calendar },
+  { title: "La Calle", url: "/feed", icon: MessageSquare },
+  { title: "La Liga", url: "/rankings", icon: Trophy },
 ];
 
 export function AppSidebar() {
@@ -46,7 +46,7 @@ export function AppSidebar() {
     <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Mi Mundo</SidebarGroupLabel>
+          <SidebarGroupLabel>Mi Juego</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
@@ -69,7 +69,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>La Comunidad</SidebarGroupLabel>
+          <SidebarGroupLabel>Mi Gente</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {communityItems.map((item) => (
