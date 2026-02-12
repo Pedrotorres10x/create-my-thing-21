@@ -84,16 +84,19 @@ export default function MyBusinessSphere() {
   if (!sphereInfo) {
     return (
       <div className="container py-8">
-        <Card className="p-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">No tienes una esfera asignada</h2>
-          <p className="text-muted-foreground mb-6">
-            Completa tu perfil para ser asignado a una esfera de negocio.
+        <Card className="p-8 text-center space-y-4">
+          <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <Users className="h-8 w-8 text-primary" />
+          </div>
+          <h2 className="text-xl font-bold">Tu Aldea te espera</h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Alic.ia te ayudará a elegir tu esfera de negocio y conectar con profesionales complementarios. Ve a tu Refugio y habla con ella.
           </p>
           <button
-            onClick={() => navigate("/profile")}
-            className="btn btn-primary"
+            onClick={() => navigate("/dashboard")}
+            className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            Completar Perfil
+            Ir a Mi Refugio
           </button>
         </Card>
       </div>

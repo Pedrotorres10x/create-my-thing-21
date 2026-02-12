@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Calendar, Loader2, AlertCircle } from "lucide-react";
+import { Users, Calendar, Loader2 } from "lucide-react";
+import { ProfileForm } from "@/components/ProfileForm";
 import { useNavigate } from "react-router-dom";
 import { AIChat } from "@/components/AIChat";
 import { AchievementModal } from "@/components/gamification/AchievementModal";
@@ -162,19 +163,10 @@ const Dashboard = () => {
         <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      ) : !stats ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Completa tu perfil</h3>
-            <p className="text-sm text-muted-foreground mb-6 max-w-md">
-              Para comenzar a usar CONECTOR, primero necesitas completar tu perfil profesional.
-            </p>
-            <Button onClick={() => navigate('/profile')}>
-              Ir a Mi Tótem
-            </Button>
-          </CardContent>
-        </Card>
+      ) : !professional ? (
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <ProfileForm />
+        </div>
       ) : (
         <>
           {/* Dynamic Greeting */}
