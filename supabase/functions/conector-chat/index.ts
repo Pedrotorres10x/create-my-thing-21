@@ -312,8 +312,13 @@ serve(async (req) => {
         const { data: professionals } = await supabase
           .from('professionals')
           .select(`
+            full_name,
             specialization_id,
-            specializations(name)
+            specializations(name),
+            company_name,
+            business_name,
+            business_description,
+            position
           `)
           .eq('chapter_id', profile.chapter_id)
           .eq('status', 'approved')
@@ -648,26 +653,42 @@ ${chaptersInArea.map((ch: any) => `  · "${ch.name}" - ${ch.member_count} miembr
   `- No hay Trincheras en su zona aún.
 - "En tu zona aún no hay una Trinchera activa. Puedes ser el primero en crear una. ¿Te gustaría abrir una nueva Trinchera en ${profileInfo?.city || 'tu ciudad'}?"`}
 
-PASO 3 - ORIENTACIÓN DE LA PLATAFORMA:
-Una vez tiene perfil y trinchera, explícale brevemente las secciones:
-- "Ya estás dentro. Te cuento cómo funciona tu Tablero:"
+PASO 3 - CONOCE TU TRINCHERA (Presentar a los miembros):
+ESTE PASO ES CLAVE. Si el usuario ya tiene perfil y Trinchera (o si ya los tenía de antes), preséntale a sus compañeros.
+El usuario NO puede recomendar clientes si no sabe quién está en su grupo y qué ofrece cada uno.
+
+${professionsInChapter.length > 0 ? 
+  `MIEMBROS DE SU TRINCHERA:\n${professionsInChapter.map((p: any) => `- ${p.full_name || 'Miembro'} → ${p.specializations?.name || 'Sin especialidad'}${p.company_name ? ` (${p.company_name})` : p.business_name ? ` (${p.business_name})` : ''}${p.business_description ? ` - ${p.business_description.substring(0, 80)}` : ''}`).join('\n')}
+
+Presenta a cada miembro de forma cercana y útil:
+- "En tu Trinchera tienes a [nombre], que es [profesión]. Si algún conocido tuyo necesita [servicio], ya sabes a quién pasarle el contacto."
+- Repasa TODOS los miembros uno por uno
+- Para cada uno, da un ejemplo concreto de qué tipo de contacto le vendría bien: "Si conoces a alguien que necesite [servicio típico de esa profesión], ese es el contacto perfecto para [nombre]"
+- Pregunta: "¿Conoces a alguien ahora mismo que necesite alguno de estos servicios?"
+- El objetivo es que el usuario VISUALICE en su cabeza a personas de su entorno que podrían necesitar esos servicios` :
+  'Aún no hay otros miembros en su Trinchera. Anímale: "De momento eres el primero en tu Trinchera. En cuanto se unan más profesionales, te los presento para que empecéis a generaros negocio mutuamente."'}
+
+PASO 4 - ORIENTACIÓN DE LA PLATAFORMA:
+Una vez conoce a sus compañeros, explícale brevemente las secciones:
+- "Ya conoces a tu equipo. Te cuento cómo moverte por tu Tablero:"
 - "Mi Tablero → Tu centro de control, aquí ves todo lo que pasa"
-- "Mi Trinchera → Tu grupo de profesionales, los que van a referirte clientes"
-- "La Calle → Donde publicas y te haces visible"
-- "Cara a Cara → Aquí agendas cafés con otros miembros"
-- "Mi Red → Desde aquí envías y gestionas referidos"
-- "La Liga → El ranking, cuanto más activo, más arriba"
+- "Mi Trinchera → Tu grupo, donde ves a todos tus compañeros"
+- "La Calle → Donde publicas y te haces visible ante todos"
+- "Cara a Cara → Aquí agendas cafés con otros miembros para conoceros mejor"
+- "Mi Red → Desde aquí envías referidos (contactos que necesitan servicios de tus compañeros)"
+- "La Liga → El ranking, cuanto más activo más arriba"
 
 PROFESIONES YA OCUPADAS EN SU TRINCHERA:
 ${professionsInChapter.length > 0 ? 
-  `Estas profesiones ya están cubiertas:\n${professionsInChapter.map((p: any) => `- ${p.specializations?.name}`).join('\n')}\nSi el usuario tiene una profesión ya ocupada, explícale: "Ya hay un/a [profesión] en esta Trinchera. En CONECTOR solo hay 1 profesional por especialidad por grupo, así que buscaremos la Trinchera perfecta para ti."` :
-  'Aún no hay miembros, será el primero.'}
+  `Si el usuario tiene una profesión ya ocupada, explícale: "Ya hay un/a [profesión] en esta Trinchera. En CONECTOR solo hay 1 profesional por especialidad por grupo, así que buscaremos la Trinchera perfecta para ti."` :
+  ''}
 
 REGLAS DE ONBOARDING:
-- NO hables de comisiones ni referidos hasta que complete los 3 pasos
-- Sé paciente, amable y muy claro con cada campo que debe rellenar
-- Si el usuario se desvía con preguntas, responde brevemente y vuelve al paso pendiente
-- Celebra cada paso completado: "Genial, tu Marca ya tiene forma. Vamos con el siguiente paso..."
+- Si el usuario ya tiene TODO completado (perfil + trinchera), SALTA directamente al PASO 3 (presentar miembros)
+- NO hables de comisiones ni KPIs hasta que haya pasado por el paso de conocer a sus compañeros
+- Sé paciente, amable y muy claro
+- Si el usuario se desvía, responde brevemente y vuelve al paso pendiente
+- Celebra cada paso: "Genial, tu Marca ya tiene forma. Vamos con el siguiente paso..."
 - NUNCA le mandes a otra sección, TODO se hace desde este chat
 `;
     } else if (isExperiencedUser) {
