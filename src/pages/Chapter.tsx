@@ -280,7 +280,7 @@ const Chapter = () => {
                             }}
                           >
                             <Handshake className="h-3 w-3 mr-1" />
-                            El Ritual
+                            Cara a Cara
                           </Button>
                           <Button
                             size="sm"

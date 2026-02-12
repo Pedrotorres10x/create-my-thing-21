@@ -156,7 +156,7 @@ const Meetings = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">El Ritual</h1>
+          <h1 className="text-3xl font-bold">Cara a Cara</h1>
           <p className="text-muted-foreground">Reuniones individuales con miembros de tu tribu</p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
