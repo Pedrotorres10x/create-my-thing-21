@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Users, Calendar, Award } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MapPin, Users, Calendar, Award, Handshake, UserPlus } from "lucide-react";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
-
+import { RequestMeetingDialog } from "@/components/meetings/RequestMeetingDialog";
+import { useNavigate } from "react-router-dom";
 
 interface Chapter {
   id: string;
@@ -27,6 +29,7 @@ interface ChapterMember {
   company_name: string | null;
   photo_url: string | null;
   total_points: number;
+  bio: string | null;
   sector_catalog: {
     name: string;
   } | null;
@@ -37,6 +40,8 @@ const Chapter = () => {
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [members, setMembers] = useState<ChapterMember[]>([]);
   const [myProfessionalId, setMyProfessionalId] = useState<string | null>(null);
+  const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadChapterData();
@@ -47,7 +52,6 @@ const Chapter = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Get current user's professional profile
       const { data: professional } = await supabase
         .from('professionals')
         .select('id, chapter_id')
@@ -67,7 +71,6 @@ const Chapter = () => {
         return;
       }
 
-      // Get chapter details
       const { data: chapterData } = await supabase
         .from('chapters')
         .select('*')
@@ -77,7 +80,6 @@ const Chapter = () => {
       if (chapterData) {
         setChapter(chapterData);
 
-        // Get chapter members
         // @ts-expect-error - Complex nested select causes type instantiation issues
         const { data: membersData } = await supabase
           .from('professionals')
@@ -88,6 +90,7 @@ const Chapter = () => {
             company_name,
             photo_url,
             total_points,
+            bio,
             sector_catalog (
               name
             )
@@ -123,7 +126,6 @@ const Chapter = () => {
           <h1 className="text-3xl font-bold">Mi Trinchera</h1>
           <p className="text-muted-foreground">Miembros y actividades de tu trinchera</p>
         </div>
-
         <Card>
           <CardHeader>
             <CardTitle>Sin Trinchera Asignada</CardTitle>
@@ -141,12 +143,18 @@ const Chapter = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">{chapter.name}</h1>
-        <p className="text-muted-foreground flex items-center gap-2 mt-2">
-          <MapPin className="h-4 w-4" />
-          {chapter.city}, {chapter.state}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">{chapter.name}</h1>
+          <p className="text-muted-foreground flex items-center gap-2 mt-2">
+            <MapPin className="h-4 w-4" />
+            {chapter.city}, {chapter.state}
+          </p>
+        </div>
+        <Button onClick={() => navigate('/referrals')} variant="outline">
+          <UserPlus className="h-4 w-4 mr-2" />
+          Invitar Profesional
+        </Button>
       </div>
 
       {/* Chapter Info */}
@@ -211,10 +219,10 @@ const Chapter = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Miembros del Capítulo
+            Miembros de la Trinchera
           </CardTitle>
           <CardDescription>
-            Conecta con otros profesionales de tu área
+            Conecta con otros profesionales de tu grupo
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -248,13 +256,37 @@ const Chapter = () => {
                         <p className="text-xs text-muted-foreground truncate">{member.company_name}</p>
                       )}
                       {member.sector_catalog && (
-                        <Badge variant="secondary" className="text-xs mt-2">
+                        <Badge variant="secondary" className="text-xs mt-1">
                           {member.sector_catalog.name}
                         </Badge>
                       )}
                       <div className="mt-2">
                         <PointsLevelBadge points={member.total_points} size="sm" />
                       </div>
+                      
+                      {/* Action buttons - only for other members */}
+                      {member.id !== myProfessionalId && (
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 px-2"
+                            onClick={() => setMeetingDialogOpen(true)}
+                          >
+                            <Handshake className="h-3 w-3 mr-1" />
+                            Cara a Cara
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-xs h-7 px-2"
+                            onClick={() => navigate('/referrals')}
+                          >
+                            <UserPlus className="h-3 w-3 mr-1" />
+                            Referir
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -263,6 +295,12 @@ const Chapter = () => {
           </div>
         </CardContent>
       </Card>
+
+      <RequestMeetingDialog
+        open={meetingDialogOpen}
+        onOpenChange={setMeetingDialogOpen}
+        onSuccess={loadChapterData}
+      />
     </div>
   );
 };
