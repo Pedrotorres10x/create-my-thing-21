@@ -25,7 +25,7 @@ const coreItems = [
 ];
 
 const expandedMainItems = [
-  { title: "Mis Senderos", url: "/referrals", icon: Handshake },
+  { title: "Mis Fichajes", url: "/referrals", icon: Handshake },
   { title: "Mi Tribu", url: "/chapter", icon: Users },
 ];
 
