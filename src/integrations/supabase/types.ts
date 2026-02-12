@@ -1448,7 +1448,7 @@ export type Database = {
           business_sphere_id: number | null
           business_verified: boolean | null
           chapter_id: string | null
-          city: string
+          city: string | null
           company_address: string | null
           company_cif: string | null
           company_name: string | null
@@ -1476,9 +1476,9 @@ export type Database = {
           referral_code: string | null
           referred_by_code: string | null
           registration_type: string | null
-          sector_id: number
-          specialization_id: number
-          state: string
+          sector_id: number | null
+          specialization_id: number | null
+          state: string | null
           status: Database["public"]["Enums"]["professional_status"]
           subscription_ends_at: string | null
           subscription_plan_id: string | null
@@ -1504,7 +1504,7 @@ export type Database = {
           business_sphere_id?: number | null
           business_verified?: boolean | null
           chapter_id?: string | null
-          city: string
+          city?: string | null
           company_address?: string | null
           company_cif?: string | null
           company_name?: string | null
@@ -1532,9 +1532,9 @@ export type Database = {
           referral_code?: string | null
           referred_by_code?: string | null
           registration_type?: string | null
-          sector_id: number
-          specialization_id: number
-          state: string
+          sector_id?: number | null
+          specialization_id?: number | null
+          state?: string | null
           status?: Database["public"]["Enums"]["professional_status"]
           subscription_ends_at?: string | null
           subscription_plan_id?: string | null
@@ -1560,7 +1560,7 @@ export type Database = {
           business_sphere_id?: number | null
           business_verified?: boolean | null
           chapter_id?: string | null
-          city?: string
+          city?: string | null
           company_address?: string | null
           company_cif?: string | null
           company_name?: string | null
@@ -1588,9 +1588,9 @@ export type Database = {
           referral_code?: string | null
           referred_by_code?: string | null
           registration_type?: string | null
-          sector_id?: number
-          specialization_id?: number
-          state?: string
+          sector_id?: number | null
+          specialization_id?: number | null
+          state?: string | null
           status?: Database["public"]["Enums"]["professional_status"]
           subscription_ends_at?: string | null
           subscription_plan_id?: string | null
