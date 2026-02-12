@@ -110,7 +110,7 @@ export default function MyBusinessSphere() {
           <span className="text-2xl">🌐</span>
         </div>
         <div>
-          <h1 className="text-3xl font-bold">Mi Terreno: {sphereInfo.name}</h1>
+          <h1 className="text-3xl font-bold">Mi Aldea: {sphereInfo.name}</h1>
           <p className="text-muted-foreground">
             Conecta y colabora con profesionales complementarios
           </p>

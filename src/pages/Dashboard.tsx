@@ -171,7 +171,7 @@ const Dashboard = () => {
               Para comenzar a usar CONECTOR, primero necesitas completar tu perfil profesional.
             </p>
             <Button onClick={() => navigate('/profile')}>
-              Ir a Mi Marca
+              Ir a Mi Tótem
             </Button>
           </CardContent>
         </Card>
@@ -217,7 +217,7 @@ const Dashboard = () => {
             
             <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/meetings')}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Cara a Cara</CardTitle>
+                <CardTitle className="text-sm font-medium">El Ritual</CardTitle>
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>

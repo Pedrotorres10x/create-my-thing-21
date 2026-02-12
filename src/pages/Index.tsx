@@ -28,22 +28,22 @@ const Index = () => {
   const pillars = [
     {
       icon: Users,
-      title: "Tu Trinchera",
+      title: "Tu Tribu",
       description: "Un grupo local de profesionales que no compiten entre sí. Cada uno cubre una profesión distinta. Sin duplicados, sin conflictos."
     },
     {
       icon: Handshake,
-      title: "Referidos que Pagan",
+      title: "Mis Senderos",
       description: "Pasas clientes de tu círculo a miembros de tu grupo. Ellos cierran el trato. Tú cobras tu comisión. Así de directo."
     },
     {
       icon: DollarSign,
       title: "Más Miembros, Más Dinero",
-      description: "Cuantas más profesiones cubra tu trinchera, más servicios puedes referir. Cada hueco vacío es dinero que se queda en la mesa."
+      description: "Cuantas más profesiones cubra tu tribu, más servicios puedes referir. Cada hueco vacío es dinero que se queda en la mesa."
     },
     {
       icon: Shield,
-      title: "Cara a Cara",
+      title: "El Ritual",
       description: "Reuniones 1-a-1 con cada miembro de tu grupo. Conoces su negocio, él conoce el tuyo. La confianza se construye en persona."
     }
   ];

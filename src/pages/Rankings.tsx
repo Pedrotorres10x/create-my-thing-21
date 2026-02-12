@@ -182,7 +182,7 @@ const Rankings = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">La Liga</h1>
+        <h1 className="text-3xl font-bold">La Cumbre</h1>
         <p className="text-muted-foreground">Clasificación de miembros por puntos</p>
       </div>
 

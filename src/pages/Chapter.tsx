@@ -123,17 +123,17 @@ const Chapter = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Mi Trinchera</h1>
-          <p className="text-muted-foreground">Miembros y actividades de tu trinchera</p>
+          <h1 className="text-3xl font-bold">Mi Tribu</h1>
+          <p className="text-muted-foreground">Miembros y actividades de tu tribu</p>
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Sin Trinchera Asignada</CardTitle>
-            <CardDescription>Aún no has sido asignado a una trinchera</CardDescription>
+            <CardTitle>Sin Tribu Asignada</CardTitle>
+            <CardDescription>Aún no has sido asignado a una tribu</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Serás asignado a una trinchera según tu ubicación. Contacta con el administrador para más información.
+              Serás asignado a una tribu según tu ubicación. Contacta con el administrador para más información.
             </p>
           </CardContent>
         </Card>
@@ -161,7 +161,7 @@ const Chapter = () => {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Información de la Trinchera</CardTitle>
+            <CardTitle>Información de la Tribu</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {chapter.description && (
@@ -197,7 +197,7 @@ const Chapter = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Estadísticas de la Trinchera</CardTitle>
+            <CardTitle>Estadísticas de la Tribu</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
@@ -219,7 +219,7 @@ const Chapter = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Miembros de la Trinchera
+            Miembros de la Tribu
           </CardTitle>
           <CardDescription>
             Conecta con otros profesionales de tu grupo
@@ -274,7 +274,7 @@ const Chapter = () => {
                             onClick={() => setMeetingDialogOpen(true)}
                           >
                             <Handshake className="h-3 w-3 mr-1" />
-                            Cara a Cara
+                            El Ritual
                           </Button>
                           <Button
                             size="sm"

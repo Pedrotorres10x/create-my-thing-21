@@ -31,7 +31,7 @@ const Profile = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Mi Marca</h1>
+        <h1 className="text-3xl font-bold">Mi Tótem</h1>
         <p className="text-muted-foreground">Completa tu información profesional</p>
       </div>
 
