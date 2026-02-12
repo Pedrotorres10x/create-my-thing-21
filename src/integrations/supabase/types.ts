@@ -315,6 +315,71 @@ export type Database = {
           },
         ]
       }
+      deals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          deal_value: number | null
+          description: string
+          id: string
+          receiver_id: string
+          referrer_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          deal_value?: number | null
+          description: string
+          id?: string
+          receiver_id: string
+          referrer_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          deal_value?: number | null
+          description?: string
+          id?: string
+          receiver_id?: string
+          referrer_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ethics_committee_decisions: {
         Row: {
           created_at: string | null
@@ -1457,6 +1522,7 @@ export type Database = {
           contact_person_position: string | null
           country: string | null
           created_at: string
+          deals_completed: number
           email: string
           email_verified: boolean | null
           full_name: string
@@ -1484,6 +1550,7 @@ export type Database = {
           subscription_plan_id: string | null
           subscription_starts_at: string | null
           subscription_status: string | null
+          total_deal_value: number
           total_points: number
           updated_at: string
           user_id: string
@@ -1513,6 +1580,7 @@ export type Database = {
           contact_person_position?: string | null
           country?: string | null
           created_at?: string
+          deals_completed?: number
           email: string
           email_verified?: boolean | null
           full_name: string
@@ -1540,6 +1608,7 @@ export type Database = {
           subscription_plan_id?: string | null
           subscription_starts_at?: string | null
           subscription_status?: string | null
+          total_deal_value?: number
           total_points?: number
           updated_at?: string
           user_id: string
@@ -1569,6 +1638,7 @@ export type Database = {
           contact_person_position?: string | null
           country?: string | null
           created_at?: string
+          deals_completed?: number
           email?: string
           email_verified?: boolean | null
           full_name?: string
@@ -1596,6 +1666,7 @@ export type Database = {
           subscription_plan_id?: string | null
           subscription_starts_at?: string | null
           subscription_status?: string | null
+          total_deal_value?: number
           total_points?: number
           updated_at?: string
           user_id?: string

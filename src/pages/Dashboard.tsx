@@ -15,6 +15,8 @@ import { DynamicGreeting } from "@/components/dashboard/DynamicGreeting";
 import { SmartSuggestions } from "@/components/dashboard/SmartSuggestions";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { AliciaWelcomeModal } from "@/components/AliciaWelcomeModal";
+import { DealLimitBanner } from "@/components/subscription/DealLimitBanner";
+import { DealUpgradePrompt } from "@/components/subscription/DealUpgradePrompt";
 
 interface DashboardStats {
   referralsSent: number;
@@ -36,6 +38,8 @@ interface UpcomingMeeting {
   recipient: { full_name: string };
 }
 
+const MAX_FREE_DEALS = 2;
+
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -45,6 +49,7 @@ const Dashboard = () => {
   const [professional, setProfessional] = useState<any>(null);
   const { achievement, clearAchievement } = useAchievements();
   const chatRef = useRef<HTMLDivElement>(null);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   
   const { goals } = useWeeklyGoals(professional?.id || null);
 
@@ -62,6 +67,10 @@ const Dashboard = () => {
             status,
             chapter_id,
             business_sphere_id,
+            deals_completed,
+            total_deal_value,
+            subscription_plan_id,
+            subscription_plans (slug),
             business_spheres (
               name,
               icon,
@@ -77,6 +86,15 @@ const Dashboard = () => {
         }
 
         setProfessional(professionalData);
+
+        // Check if user just hit 2 deals and should see upgrade prompt
+        const isPremium = (professionalData as any).subscription_plans?.slug === 'premium';
+        if (professionalData.deals_completed >= MAX_FREE_DEALS && !isPremium) {
+          const dismissed = sessionStorage.getItem('upgrade-prompt-dismissed');
+          if (!dismissed) {
+            setShowUpgradePrompt(true);
+          }
+        }
 
         const { data: referrals } = await supabase
           .from("referrals")
@@ -142,6 +160,11 @@ const Dashboard = () => {
     fetchDashboardData();
   }, [user]);
 
+  const handleUpgradeDismiss = () => {
+    sessionStorage.setItem('upgrade-prompt-dismissed', 'true');
+    setShowUpgradePrompt(false);
+  };
+
   return (
     <div className="space-y-6">
       {professional?.id && (
@@ -153,6 +176,14 @@ const Dashboard = () => {
           }}
         />
       )}
+
+      {/* Upgrade prompt - only shows when 2+ deals completed */}
+      <DealUpgradePrompt
+        totalEarnings={professional?.total_deal_value || 0}
+        dealsCompleted={professional?.deals_completed || 0}
+        open={showUpgradePrompt}
+        onClose={handleUpgradeDismiss}
+      />
       
       <AchievementModal 
         achievement={achievement}
@@ -178,22 +209,30 @@ const Dashboard = () => {
             meetingsCompleted={upcomingMeetings.length}
           />
 
-          {/* Alic.ia Chat - MÁXIMA PROMINENCIA */}
+          {/* Subtle deal limit banner */}
+          <DealLimitBanner
+            dealsCompleted={professional?.deals_completed || 0}
+            maxFreeDeals={MAX_FREE_DEALS}
+            totalEarnings={professional?.total_deal_value || 0}
+            onUpgrade={() => setShowUpgradePrompt(true)}
+          />
+
+          {/* Alic.ia Chat */}
           <div ref={chatRef} className="w-full">
             <AIChat />
           </div>
           
-          {/* Smart Suggestions - 1 acción clave */}
+          {/* Smart Suggestions */}
           <SmartSuggestions goals={goals} />
 
-          {/* 3 KPIs compactas */}
+          {/* 3 KPIs */}
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
             <RankingCard 
-              ranking={stats.ranking}
-              totalPoints={stats.totalPoints}
+              ranking={stats?.ranking || 0}
+              totalPoints={stats?.totalPoints || 0}
               level={{
-                name: stats.level.name,
-                color: stats.level.color
+                name: stats?.level.name || "Bronce",
+                color: stats?.level.color || "#CD7F32"
               }}
             />
             
@@ -203,9 +242,9 @@ const Dashboard = () => {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.referralsSent}</div>
+                <div className="text-2xl font-bold">{stats?.referralsSent || 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats.referralsCompleted} completadas
+                  {stats?.referralsCompleted || 0} completadas
                 </p>
               </CardContent>
             </Card>
@@ -223,7 +262,6 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
-
         </>
       )}
     </div>
