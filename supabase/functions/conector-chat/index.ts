@@ -100,6 +100,7 @@ serve(async (req) => {
     let userContextStr = '';
     let profileInfo: any = null;
     let isNewUser = false;
+    let activeConversationId: string | null = conversationId || null;
     let isExperiencedUser = false;
     let chaptersInArea: any[] = [];
     let professionsInChapter: any[] = [];
@@ -337,23 +338,52 @@ serve(async (req) => {
         .single();
       
       if (contextData?.context_data) {
-        userContextStr = `\n\nCONTEXTO DEL USUARIO:\n${JSON.stringify(contextData.context_data, null, 2)}`;
+        userContextStr += `\n\nMEMORIA DE ALIC.IA (recuerda esto de sesiones anteriores):\n${JSON.stringify(contextData.context_data, null, 2)}`;
       }
 
-      // Get conversation history for better context
-      if (conversationId) {
+      // ===== CONVERSATION PERSISTENCE =====
+      // Find or create conversation for this user
+      let activeConversationId = conversationId;
+      
+      if (!activeConversationId) {
+        // Find most recent conversation
+        const { data: existingConv } = await supabase
+          .from('chat_conversations')
+          .select('id')
+          .eq('professional_id', professionalId)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .single();
+        
+        if (existingConv) {
+          activeConversationId = existingConv.id;
+        } else {
+          // Create new conversation
+          const { data: newConv } = await supabase
+            .from('chat_conversations')
+            .insert({ professional_id: professionalId, title: 'Conversación con Alic.ia' })
+            .select('id')
+            .single();
+          if (newConv) activeConversationId = newConv.id;
+        }
+      }
+
+      // Load last 20 messages from conversation history (cross-session memory)
+      if (activeConversationId) {
         const { data: historyData } = await supabase
           .from('chat_messages')
           .select('role, content')
-          .eq('conversation_id', conversationId)
-          .order('created_at', { ascending: true })
-          .limit(10);
+          .eq('conversation_id', activeConversationId)
+          .order('created_at', { ascending: false })
+          .limit(20);
         
         if (historyData && historyData.length > 0) {
-          userContextStr += `\n\nHISTORIAL RECIENTE DE CONVERSACIÓN:\n`;
-          historyData.forEach((msg: any) => {
-            userContextStr += `${msg.role}: ${msg.content.substring(0, 200)}\n`;
+          const reversedHistory = historyData.reverse();
+          userContextStr += `\n\nHISTORIAL DE CONVERSACIONES ANTERIORES (memoria entre sesiones):\n`;
+          reversedHistory.forEach((msg: any) => {
+            userContextStr += `${msg.role === 'user' ? 'USUARIO' : 'ALIC.IA'}: ${msg.content.substring(0, 300)}\n`;
           });
+          userContextStr += `\nUSA ESTE HISTORIAL para recordar de qué habéis hablado, qué compromisos tiene el usuario, en qué paso del onboarding está, y qué metas se propuso. NO repitas lo mismo que ya dijiste.\n`;
         }
       }
 
@@ -763,6 +793,25 @@ NUNCA uses los nombres antiguos (capítulo, perfil, feed, etc.). USA SIEMPRE las
 
 `;
 
+    systemPrompt += `\n━━━ MEMORIA Y ROADMAP ━━━
+TIENES MEMORIA ENTRE SESIONES. Usas el historial de conversaciones anteriores y el contexto guardado para:
+1. RECORDAR en qué paso del onboarding está el usuario (no repitas pasos ya completados)
+2. RECORDAR compromisos que el usuario hizo ("voy a referir a mi primo", "quedo con Juan el martes")
+3. HACER SEGUIMIENTO: Si el usuario dijo que haría algo, PREGÚNTALE si lo hizo
+4. EVOLUCIONAR la conversación: cada sesión debe avanzar, no empezar de cero
+5. CELEBRAR progreso: si los KPIs mejoraron desde la última sesión, díselo
+
+ROADMAP DEL USUARIO (sigue esta secuencia natural):
+Fase 1: Onboarding → Completar perfil, unirse a Tribu, conocer miembros
+Fase 2: Primeras acciones → Primer referido, primer Ritual, primer post
+Fase 3: Hábito → 1 referido/semana, 1 Ritual/semana, actividad constante
+Fase 4: Crecimiento → Estrategias avanzadas, ampliar Tribu, Mi Aldea
+Fase 5: Liderazgo → Mentor de nuevos, referente en La Cumbre
+
+DETECTA en qué fase está el usuario por sus KPIs y actúa en consecuencia.
+NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
+`;
+
     systemPrompt += userContextStr;
 
     // Moderate user input before processing (for new users providing registration data)
@@ -809,27 +858,61 @@ NUNCA uses los nombres antiguos (capítulo, perfil, feed, etc.). USA SIEMPRE las
       }
     }
 
-    // Update user context after interaction
+    // ===== PERSIST MESSAGES & UPDATE CONTEXT =====
     if (professionalId && messages.length > 0) {
       const lastUserMessage = messages[messages.length - 1];
+      
+      // Build rich roadmap context
+      const existingContext = (await supabase
+        .from('user_ai_context')
+        .select('context_data')
+        .eq('professional_id', professionalId)
+        .single())?.data?.context_data as Record<string, any> || {};
+      
+      const sessionCount = (existingContext.session_count || 0) + (lastUserMessage.content === '[INICIO_SESION]' ? 1 : 0);
+      
       const updatedContext = {
-        last_topic: lastUserMessage.content.substring(0, 200),
-        interaction_count: (profileInfo?.total_points || 0) > 0 ? 'active' : 'new',
-        timestamp: new Date().toISOString()
+        ...existingContext,
+        last_topic: lastUserMessage.content === '[INICIO_SESION]' ? existingContext.last_topic : lastUserMessage.content.substring(0, 300),
+        session_count: sessionCount,
+        last_session: new Date().toISOString(),
+        onboarding_completed: !isNewUser,
+        has_chapter: !!profileInfo?.chapter_id,
+        has_specialization: !!profileInfo?.specialization_id,
+        has_sphere: !!profileInfo?.business_sphere_id,
+        total_messages_sent: (existingContext.total_messages_sent || 0) + (lastUserMessage.content === '[INICIO_SESION]' ? 0 : 1),
+        kpis_snapshot: {
+          referrals: activityMetrics.referralsThisMonth,
+          meetings: activityMetrics.meetingsThisMonth,
+          sphere_refs: activityMetrics.sphereReferencesSent,
+          posts: activityMetrics.postsThisMonth,
+          days_inactive: activityMetrics.daysInactive,
+        },
+        // Track what goals were discussed (AI can update these via conversation)
+        active_goals: existingContext.active_goals || [],
+        milestones: existingContext.milestones || [],
       };
       
-      const { error: contextError } = await supabase
+      await supabase
         .from('user_ai_context')
         .upsert({
           professional_id: professionalId,
           context_data: updatedContext,
           last_interaction: new Date().toISOString()
-        }, {
-          onConflict: 'professional_id'
+        }, { onConflict: 'professional_id' });
+
+      // Persist user message to chat_messages for cross-session memory
+      if (activeConversationId && lastUserMessage.content !== '[INICIO_SESION]') {
+        await supabase.from('chat_messages').insert({
+          conversation_id: activeConversationId,
+          role: 'user',
+          content: lastUserMessage.content.substring(0, 5000),
         });
-      
-      if (contextError) {
-        console.log('Error updating context:', contextError);
+        // Update conversation timestamp
+        await supabase
+          .from('chat_conversations')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', activeConversationId);
       }
     }
 
@@ -870,7 +953,50 @@ NUNCA uses los nombres antiguos (capítulo, perfil, feed, etc.). USA SIEMPRE las
       });
     }
 
-    return new Response(response.body, {
+    // Stream response and capture AI output for persistence
+    const reader = response.body!.getReader();
+    let aiResponseContent = '';
+    
+    const stream = new ReadableStream({
+      async start(controller) {
+        const decoder = new TextDecoder();
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            controller.enqueue(value);
+            
+            // Parse SSE to capture AI content
+            const text = decoder.decode(value, { stream: true });
+            for (const line of text.split('\n')) {
+              if (!line.startsWith('data: ')) continue;
+              const jsonStr = line.slice(6).trim();
+              if (jsonStr === '[DONE]') continue;
+              try {
+                const parsed = JSON.parse(jsonStr);
+                const content = parsed.choices?.[0]?.delta?.content;
+                if (content) aiResponseContent += content;
+              } catch {}
+            }
+          }
+          controller.close();
+          
+          // Save AI response to chat_messages after stream completes
+          if (activeConversationId && aiResponseContent.length > 0) {
+            const supabaseBg = createClient(supabaseUrl, supabaseServiceKey);
+            await supabaseBg.from('chat_messages').insert({
+              conversation_id: activeConversationId,
+              role: 'assistant',
+              content: aiResponseContent.substring(0, 5000),
+            });
+          }
+        } catch (err) {
+          controller.error(err);
+        }
+      }
+    });
+
+    return new Response(stream, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (e) {
