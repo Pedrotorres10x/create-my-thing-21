@@ -40,7 +40,7 @@ export default function Subscriptions() {
       {/* Header */}
       <div className="text-center space-y-4 max-w-2xl mx-auto">
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
-          Empieza gratis, crece sin límites
+          Mi Apuesta
         </h1>
         <p className="text-base sm:text-lg text-muted-foreground">
           Tus <span className="text-primary font-semibold">2 primeros tratos son totalmente gratis</span>. 

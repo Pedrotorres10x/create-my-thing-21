@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RequestMeetingDialog } from "@/components/meetings/RequestMeetingDialog";
 import { format, isPast } from "date-fns";
 import { es } from "date-fns/locale";
-import { PremiumBanner } from "@/components/advertising/PremiumBanner";
+
 
 interface Meeting {
   id: string;
@@ -154,8 +154,8 @@ const Meetings = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">One-to-Ones</h1>
-          <p className="text-muted-foreground">Reuniones individuales con miembros de tu capítulo</p>
+          <h1 className="text-3xl font-bold">Cara a Cara</h1>
+          <p className="text-muted-foreground">Reuniones individuales con miembros de tu trinchera</p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
@@ -163,8 +163,8 @@ const Meetings = () => {
         </Button>
       </div>
 
-      {/* Premium Banner */}
-      <PremiumBanner location="dashboard" size="horizontal_large" />
+
+
 
       <Tabs defaultValue="upcoming" className="space-y-4">
         <TabsList>

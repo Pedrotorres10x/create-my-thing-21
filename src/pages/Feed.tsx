@@ -151,7 +151,7 @@ const Feed = () => {
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold">Comunidad</h1>
+        <h1 className="text-3xl font-bold">La Calle</h1>
         <p className="text-muted-foreground">
           Comparte logros, recursos y conecta con otros miembros
         </p>

@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Medal, TrendingUp } from "lucide-react";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
 import { PodiumDisplay } from "@/components/gamification/PodiumDisplay";
-import { PremiumBanner } from "@/components/advertising/PremiumBanner";
+
 import {
   Select,
   SelectContent,
@@ -182,7 +182,7 @@ const Rankings = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Rankings</h1>
+        <h1 className="text-3xl font-bold">La Liga</h1>
         <p className="text-muted-foreground">Clasificación de miembros por puntos</p>
       </div>
 
@@ -211,9 +211,6 @@ const Rankings = () => {
           </CardContent>
         </Card>
       )}
-
-      {/* Premium Banner */}
-      <PremiumBanner location="dashboard" size="horizontal_large" />
 
       {/* Filters */}
       <Card>
