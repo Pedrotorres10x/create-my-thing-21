@@ -18,19 +18,18 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainItems = [
-  { title: "Tu Home", url: "/dashboard", icon: Home },
-  { title: "Guías", url: "/tutorials", icon: BookOpen },
-  { title: "Tu Carta", url: "/profile", icon: UserCircle },
-  { title: "Tu Plan", url: "/subscriptions", icon: CreditCard },
-  { title: "Tus Aliados", url: "/referrals", icon: Handshake },
-  { title: "Mi Chapter", url: "/chapter", icon: Users },
+  { title: "Mi Radar", url: "/dashboard", icon: Home },
+  { title: "Mi Brújula", url: "/tutorials", icon: BookOpen },
+  { title: "Sobre Mí", url: "/profile", icon: UserCircle },
+  { title: "Mi Motor", url: "/subscriptions", icon: CreditCard },
+  { title: "Mis Aliados", url: "/referrals", icon: Handshake },
+  { title: "Mi Tribu", url: "/chapter", icon: Users },
 ];
 
 const communityItems = [
   { title: "Mi Esfera", url: "/mi-esfera", icon: Globe },
   { title: "Cafés 1:1", url: "/meetings", icon: Calendar },
-  
-  { title: "El Feed", url: "/feed", icon: MessageSquare },
+  { title: "La Plaza", url: "/feed", icon: MessageSquare },
   { title: "El Podio", url: "/rankings", icon: Trophy },
 ];
 
@@ -47,7 +46,7 @@ export function AppSidebar() {
     <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Tu Base</SidebarGroupLabel>
+          <SidebarGroupLabel>Mi Mundo</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
@@ -70,7 +69,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Tu Crew</SidebarGroupLabel>
+          <SidebarGroupLabel>La Comunidad</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {communityItems.map((item) => (
