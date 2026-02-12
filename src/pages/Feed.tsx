@@ -189,9 +189,9 @@ const Feed = () => {
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold">La Calle</h1>
+        <h1 className="text-3xl font-bold">La Fogata</h1>
         <p className="text-muted-foreground">
-          Comparte logros, oportunidades y conecta con tu trinchera
+          Comparte logros, oportunidades y conecta con tu tribu
         </p>
       </div>
 

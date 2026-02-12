@@ -173,7 +173,7 @@ const Referrals = () => {
           <CardHeader>
             <CardTitle>Completa tu perfil</CardTitle>
             <CardDescription>
-              Necesitas completar tu perfil profesional para acceder a Mi Red
+              Necesitas completar tu perfil profesional para acceder a Mis Senderos
             </CardDescription>
           </CardHeader>
         </Card>
@@ -184,8 +184,8 @@ const Referrals = () => {
   return (
     <div className="p-8 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Mi Red</h1>
-        <p className="text-muted-foreground">Haz crecer tu trinchera e intercambia clientes con tu grupo</p>
+        <h1 className="text-3xl font-bold mb-2">Mis Senderos</h1>
+        <p className="text-muted-foreground">Haz crecer tu tribu e intercambia clientes con tu grupo</p>
       </div>
 
       {/* Stats Cards */}
@@ -237,7 +237,7 @@ const Referrals = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserPlus className="h-5 w-5" />
-                Invita a un profesional a tu Trinchera
+                Invita a un profesional a tu Tribu
               </CardTitle>
               <CardDescription>
                 Cuantas más profesiones cubra tu grupo, más clientes puedes referir y más comisiones recibes. Cada hueco sin cubrir es dinero que se pierde.
@@ -300,7 +300,7 @@ const Referrals = () => {
             <CardContent>
               {referrals.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  Aún no has invitado a ningún profesional. ¡Empieza a hacer crecer tu trinchera!
+                  Aún no has invitado a ningún profesional. ¡Empieza a hacer crecer tu tribu!
                 </p>
               ) : (
                 <div className="space-y-4">
@@ -339,7 +339,7 @@ const Referrals = () => {
                 Referir un cliente a un miembro
               </CardTitle>
               <CardDescription>
-                Pasa un contacto de tu círculo que necesite un servicio a un profesional de tu trinchera. Las comisiones se acuerdan directamente entre vosotros.
+                Pasa un contacto de tu círculo que necesite un servicio a un profesional de tu tribu. Las comisiones se acuerdan directamente entre vosotros.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -354,7 +354,7 @@ const Referrals = () => {
                     </p>
                     <p className="flex items-start gap-2">
                       <span className="font-bold text-primary">2.</span>
-                      Miras en tu trinchera quién cubre esa profesión
+                      Miras en tu tribu quién cubre esa profesión
                     </p>
                     <p className="flex items-start gap-2">
                       <span className="font-bold text-primary">3.</span>
@@ -368,7 +368,7 @@ const Referrals = () => {
                 </div>
                 <Button variant="outline" onClick={() => window.location.href = '/chapter'}>
                   <ArrowRight className="h-4 w-4 mr-2" />
-                  Ir a Mi Trinchera para referir
+                  Ir a Mi Tribu para referir
                 </Button>
               </div>
             </CardContent>
