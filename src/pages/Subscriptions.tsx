@@ -1,173 +1,190 @@
 import { useSubscription } from "@/hooks/useSubscription";
-import { SubscriptionPlanCard } from "@/components/subscription/SubscriptionPlanCard";
-import { AIUsageIndicator } from "@/components/subscription/AIUsageIndicator";
-import { PlanComparison } from "@/components/subscription/PlanComparison";
-import { SocialProof } from "@/components/subscription/SocialProof";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Check, Zap, Star, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { PremiumBanner } from "@/components/advertising/PremiumBanner";
 
 export default function Subscriptions() {
   const { plans, plansLoading, currentSubscription, subscriptionLoading } = useSubscription();
+
+  const freePlan = plans?.find(p => p.slug === 'free');
+  const premiumPlan = plans?.find(p => p.slug === 'premium');
 
   const handleSelectPlan = (planSlug: string) => {
     if (planSlug === 'free') {
       toast.info("Ya estás en el plan gratuito");
       return;
     }
-    
-    // TODO: Integrate with Stripe payment
     toast.info("Próximamente: Integración con pagos");
   };
 
   if (plansLoading || subscriptionLoading) {
     return (
       <div className="container mx-auto p-6 space-y-6">
-        <Skeleton className="h-12 w-64" />
-        <Skeleton className="h-24 w-full" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-[400px]" />
-          ))}
+        <Skeleton className="h-12 w-64 mx-auto" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <Skeleton className="h-[400px]" />
+          <Skeleton className="h-[400px]" />
         </div>
       </div>
     );
   }
 
+  const isCurrentFree = currentSubscription?.plan?.slug === 'free';
+  const isCurrentPremium = currentSubscription?.plan?.slug === 'premium';
+
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
-      <div className="text-center space-y-3 sm:space-y-4">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-2">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-          </span>
-          +500 pros activos en la red
-        </div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">Elige tu Plan 🚀</h1>
-        <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-          Cada contacto puede abrirte puertas de miles de euros. <br className="hidden sm:block" />
-          <span className="text-primary font-medium">¿Hasta dónde quieres llegar? 💼</span>
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+      {/* Header */}
+      <div className="text-center space-y-4 max-w-2xl mx-auto">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
+          Empieza gratis, crece sin límites
+        </h1>
+        <p className="text-base sm:text-lg text-muted-foreground">
+          Tus primeros <span className="text-primary font-semibold">2 tratos al mes son gratis</span>. 
+          Cuando quieras más, desbloquea todo por 99€/mes.
         </p>
       </div>
 
-      {currentSubscription && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Tu Plan Actual: {currentSubscription.plan.name}</CardTitle>
-            <CardDescription>
-              {currentSubscription.status === 'active' ? 'Plan activo' : 'Plan inactivo'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AIUsageIndicator />
+      {/* How it works */}
+      <div className="max-w-3xl mx-auto">
+        <Card className="border-dashed">
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-center">
+              <div className="flex flex-col items-center gap-2">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold text-primary">1</div>
+                <p className="text-sm font-medium">Te registras gratis</p>
+              </div>
+              <ArrowRight className="h-5 w-5 text-muted-foreground hidden sm:block" />
+              <div className="flex flex-col items-center gap-2">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold text-primary">2</div>
+                <p className="text-sm font-medium">2 tratos gratis/mes</p>
+              </div>
+              <ArrowRight className="h-5 w-5 text-muted-foreground hidden sm:block" />
+              <div className="flex flex-col items-center gap-2">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold text-primary">3</div>
+                <p className="text-sm font-medium">¿Quieres más? → Premium</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      )}
+      </div>
 
-      {/* Premium Banner */}
-      <PremiumBanner location="dashboard" size="horizontal_large" />
-
-      <Tabs defaultValue="monthly" className="w-full">
-        <div className="flex justify-center mb-8">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="monthly">Mensual</TabsTrigger>
-            <TabsTrigger value="yearly" className="relative">
-              Anual
-              <Badge className="absolute -top-2 -right-2 text-xs bg-primary">-17%</Badge>
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        <TabsContent value="monthly" className="mt-6 sm:mt-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-            {plans?.map((plan) => (
-              <SubscriptionPlanCard
-                key={plan.id}
-                name={plan.name}
-                description={plan.description}
-                priceMonthly={plan.price_monthly}
-                priceYearly={plan.price_yearly}
-                features={plan.features || []}
-                isCurrentPlan={currentSubscription?.plan.id === plan.id}
-                isRecommended={plan.slug === 'regional'}
-                onSelect={() => handleSelectPlan(plan.slug)}
-              />
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="yearly" className="mt-6 sm:mt-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-            {plans?.map((plan) => (
-              <SubscriptionPlanCard
-                key={plan.id}
-                name={plan.name}
-                description={plan.description}
-                priceMonthly={plan.price_yearly ? plan.price_yearly / 12 : plan.price_monthly}
-                priceYearly={plan.price_yearly}
-                features={plan.features || []}
-                isCurrentPlan={currentSubscription?.plan.id === plan.id}
-                isRecommended={plan.slug === 'regional'}
-                onSelect={() => handleSelectPlan(plan.slug)}
-              />
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      <SocialProof />
-      
-      <PlanComparison />
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+      {/* Plans */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        {/* Free Plan */}
+        <Card className={`relative flex flex-col ${isCurrentFree ? 'ring-2 ring-primary/30' : ''}`}>
+          {isCurrentFree && (
+            <Badge className="absolute -top-3 left-1/2 -translate-x-1/2" variant="outline">
+              Tu plan actual
+            </Badge>
+          )}
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              🚀 El Todoterreno: Tu Pase VIP
+            <CardTitle className="text-2xl">Gratis</CardTitle>
+            <CardDescription>{freePlan?.description || 'Empieza sin compromiso'}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1 space-y-6">
+            <div>
+              <span className="text-4xl font-bold">0€</span>
+              <span className="text-muted-foreground ml-1">/mes</span>
+            </div>
+            <ul className="space-y-3">
+              {(freePlan?.features || ['2 tratos gratis al mes', 'Acceso a tu capítulo local', 'Perfil profesional', 'Feed de publicaciones']).map((feature: string, i: number) => (
+                <li key={i} className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <span className="text-sm">{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+          <CardFooter>
+            <Button
+              className="w-full"
+              variant="outline"
+              disabled={isCurrentFree}
+              onClick={() => handleSelectPlan('free')}
+            >
+              {isCurrentFree ? "Plan actual" : "Comenzar gratis"}
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Premium Plan */}
+        <Card className={`relative flex flex-col border-primary shadow-lg ring-2 ring-primary/20 ${isCurrentPremium ? '' : ''}`}>
+          <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground shadow-md">
+            <Star className="w-3 h-3 mr-1" />
+            {isCurrentPremium ? "Tu plan actual" : "Recomendado"}
+          </Badge>
+          <CardHeader>
+            <CardTitle className="text-2xl flex items-center gap-2">
+              Premium <Zap className="h-5 w-5 text-primary" />
             </CardTitle>
+            <CardDescription>{premiumPlan?.description || 'Tratos ilimitados y acceso total'}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">🗺️</span>
-              <div>
-                <p className="font-medium">España entera es tu playground</p>
-                <p className="text-sm text-muted-foreground">Las 17 comunidades sin límites. Cero fronteras</p>
-              </div>
+          <CardContent className="flex-1 space-y-6">
+            <div>
+              <span className="text-4xl font-bold">99€</span>
+              <span className="text-muted-foreground ml-1">/mes</span>
             </div>
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">💰</span>
-              <div>
-                <p className="font-medium">Cada región = Más oportunidades</p>
-                <p className="text-sm text-muted-foreground">Multiplica x17 tus posibilidades de cerrar negocios</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">📊</span>
-              <div>
-                <p className="font-medium">ROI del bueno</p>
-                <p className="text-sm text-muted-foreground">Nuestros miembros recuperan 3.5x la inversión en 6 meses</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            <ul className="space-y-3">
+              {(premiumPlan?.features || ['Tratos ilimitados', 'Acceso a todos los capítulos de España', 'IA sin límites', 'Soporte prioritario', 'Eventos exclusivos', 'Marketplace premium']).map((feature: string, i: number) => (
+                <li key={i} className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <span className="text-sm">{feature}</span>
+                </li>
+              ))}
+            </ul>
 
-        <Card className="bg-primary/5 border-primary/20">
-          <CardHeader>
-            <CardTitle>¿Tu empresa va a otro nivel? 🏢</CardTitle>
-            <CardDescription>
-              Si necesitas algo a medida para tu organización, hablamos.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              Soluciones enterprise con soporte dedicado, integraciones custom y todo lo que necesites.
-            </p>
+            <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+              <p className="text-sm font-medium text-primary">
+                💡 1 solo trato puede cubrir la cuota de todo el año
+              </p>
+            </div>
           </CardContent>
+          <CardFooter>
+            <Button
+              className="w-full"
+              size="lg"
+              disabled={isCurrentPremium}
+              onClick={() => handleSelectPlan('premium')}
+            >
+              {isCurrentPremium ? "Plan actual" : "Desbloquear Premium 🚀"}
+            </Button>
+          </CardFooter>
         </Card>
+      </div>
+
+      {/* FAQ */}
+      <div className="max-w-2xl mx-auto space-y-4">
+        <h2 className="text-xl font-semibold text-center">Preguntas frecuentes</h2>
+        <div className="space-y-3">
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <p className="font-medium text-sm">¿Qué cuenta como un "trato"?</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Un trato es cuando pasas un referido (contacto) a otro miembro de CONECTOR y ese contacto se convierte en cliente. Los 2 primeros tratos de cada mes son gratis.
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <p className="font-medium text-sm">¿Qué pasa si supero los 2 tratos?</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                A partir del tercer trato necesitarás el plan Premium (99€/mes). Sin Premium, podrás seguir usando la plataforma pero no cerrar nuevos tratos hasta el mes siguiente.
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <p className="font-medium text-sm">¿Puedo cancelar en cualquier momento?</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Sí, sin permanencia. Cancelas y vuelves al plan gratuito con 2 tratos/mes.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
