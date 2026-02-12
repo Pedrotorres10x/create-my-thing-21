@@ -31,28 +31,28 @@ const WARNING_STAGES: WarningConfig[] = [
     level: 1,
     type: "first_warning",
     message:
-      "Llevas 3 meses sin dar un referido a tu Trinchera. Recuerda que el sistema funciona con reciprocidad: cuanto más das, más recibes. Si no generas actividad en los próximos 3 meses, tu caso será revisado por El Consejo.",
+      "Llevas 3 meses sin pasar un referido a tu Trinchera. Tu plaza es única — solo hay una por especialización — y hay profesionales esperando para ocuparla. Reactívate: un solo 1-a-1 esta semana puede cambiar el rumbo.",
   },
   {
     months: 4,
     level: 2,
     type: "second_warning",
     message:
-      "Segundo aviso: llevas 4 meses sin dar referidos. Tu Trinchera te necesita activo. Te quedan 2 meses antes de que tu caso sea elevado a El Consejo.",
+      "Segundo aviso: 4 meses sin dar referidos. Tu sitio en la Trinchera es valioso y hay profesionales en lista de espera que darían lo que fuera por él. Demuestra que lo mereces. Te quedan 2 meses antes de que tu caso llegue a El Consejo.",
   },
   {
     months: 5,
     level: 3,
     type: "final_warning",
     message:
-      "⚠️ ÚLTIMO AVISO: Llevas 5 meses sin dar ningún referido. Si en 30 días no generas actividad, tu caso será enviado a El Consejo para que decidan sobre tu permanencia.",
+      "⚠️ ÚLTIMO AVISO: 5 meses sin actividad. Hay profesionales de tu misma especialización esperando tu plaza. En 30 días, si no generas al menos un referido, tu caso será enviado a El Consejo. Tu Trinchera te necesita activo.",
   },
   {
     months: 6,
     level: 4,
     type: "council_review",
     message:
-      "Tu caso ha sido elevado a El Consejo por inactividad prolongada (6 meses sin dar referidos). Los 3 miembros con mayor ranking decidirán sobre tu permanencia.",
+      "Tu caso ha sido elevado a El Consejo por 6 meses de inactividad. Los 3 miembros con mayor ranking decidirán si mantienes tu plaza o se asigna al siguiente profesional en lista de espera.",
   },
 ];
 
