@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Users, Calendar, Award, Handshake, UserPlus } from "lucide-react";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
 import { RequestMeetingDialog } from "@/components/meetings/RequestMeetingDialog";
+import { CreateDealDialog } from "@/components/deals/CreateDealDialog";
 import { useNavigate } from "react-router-dom";
 
 interface Chapter {
@@ -41,6 +42,8 @@ const Chapter = () => {
   const [members, setMembers] = useState<ChapterMember[]>([]);
   const [myProfessionalId, setMyProfessionalId] = useState<string | null>(null);
   const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
+  const [dealDialogOpen, setDealDialogOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<ChapterMember | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -271,7 +274,10 @@ const Chapter = () => {
                             size="sm"
                             variant="outline"
                             className="text-xs h-7 px-2"
-                            onClick={() => setMeetingDialogOpen(true)}
+                            onClick={() => {
+                              setSelectedMember(member);
+                              setMeetingDialogOpen(true);
+                            }}
                           >
                             <Handshake className="h-3 w-3 mr-1" />
                             El Ritual
@@ -280,7 +286,10 @@ const Chapter = () => {
                             size="sm"
                             variant="ghost"
                             className="text-xs h-7 px-2"
-                            onClick={() => navigate('/referrals')}
+                            onClick={() => {
+                              setSelectedMember(member);
+                              setDealDialogOpen(true);
+                            }}
                           >
                             <UserPlus className="h-3 w-3 mr-1" />
                             Referir
@@ -301,6 +310,17 @@ const Chapter = () => {
         onOpenChange={setMeetingDialogOpen}
         onSuccess={loadChapterData}
       />
+
+      {selectedMember && myProfessionalId && (
+        <CreateDealDialog
+          open={dealDialogOpen}
+          onOpenChange={setDealDialogOpen}
+          receiverId={selectedMember.id}
+          receiverName={selectedMember.full_name}
+          referrerId={myProfessionalId}
+          onSuccess={loadChapterData}
+        />
+      )}
     </div>
   );
 };
