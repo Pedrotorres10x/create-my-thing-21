@@ -91,7 +91,7 @@ export default function Subscriptions() {
               <span className="text-muted-foreground ml-1">/mes</span>
             </div>
             <ul className="space-y-3">
-              {(freePlan?.features || ['2 primeros tratos GRATIS', 'Acceso a tu capítulo local', 'Perfil profesional', 'Feed de publicaciones']).map((feature: string, i: number) => (
+              {(freePlan?.features || ['2 primeros tratos GRATIS', 'Acceso completo a la app', 'Perfil profesional', 'Feed y comunidad', 'Después del 2º trato: solo visualización']).map((feature: string, i: number) => (
                 <li key={i} className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <span className="text-sm">{feature}</span>
@@ -164,7 +164,7 @@ export default function Subscriptions() {
             <CardContent className="pt-4 pb-4">
               <p className="font-medium text-sm">¿Qué cuenta como un "trato"?</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Un trato es cuando pasas un referido (contacto) a otro miembro de CONECTOR y ese contacto se convierte en cliente. Tus 2 primeros tratos en total son gratis, sin límite de tiempo.
+                Un trato es pasar el contacto de alguien que conoces a un miembro de CONECTOR. Ejemplo: tu primo quiere vender su casa → pasas su contacto al inmobiliario del grupo. Cuando se cierra, ambos ganáis.
               </p>
             </CardContent>
           </Card>
@@ -172,7 +172,7 @@ export default function Subscriptions() {
             <CardContent className="pt-4 pb-4">
               <p className="font-medium text-sm">¿Qué pasa después de los 2 tratos gratis?</p>
               <p className="text-sm text-muted-foreground mt-1">
-                A partir del tercer trato necesitarás el plan Premium (99€/mes). Es un pago único que te desbloquea tratos ilimitados para siempre mientras mantengas la suscripción.
+                Sigues usando la app con normalidad: ves el feed, las recomendaciones, las oportunidades... pero no puedes lanzar ni recibir nuevos tratos. Para desbloquear tratos ilimitados → Premium 99€/mes.
               </p>
             </CardContent>
           </Card>
@@ -180,7 +180,7 @@ export default function Subscriptions() {
             <CardContent className="pt-4 pb-4">
               <p className="font-medium text-sm">¿Puedo cancelar en cualquier momento?</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Sí, sin permanencia. Cancelas y vuelves al plan gratuito con 2 tratos/mes.
+                Sí, sin permanencia. Cancelas y sigues usando la app, pero sin poder hacer tratos.
               </p>
             </CardContent>
           </Card>
