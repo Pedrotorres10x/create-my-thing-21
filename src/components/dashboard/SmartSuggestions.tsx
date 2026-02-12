@@ -157,16 +157,6 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
     }
 
     // 5. EXPLORAR MARKETPLACE
-    suggestions.push({
-      id: 'marketplace-explore',
-      type: 'recommended',
-      priority: 5,
-      title: '🎯 Descubre oportunidades',
-      description: 'Explora la plaza premium y encuentra servicios que pueden impulsar tu negocio.',
-      action: 'Ver plaza premium',
-      actionRoute: '/premium-marketplace',
-      icon: TrendingUp
-    });
 
     // Limitar sugerencias según urgencia
     const urgentCount = suggestions.filter(s => s.type === 'urgent').length;

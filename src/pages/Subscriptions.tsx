@@ -129,7 +129,7 @@ export default function Subscriptions() {
               <span className="text-muted-foreground ml-1">/mes</span>
             </div>
             <ul className="space-y-3">
-              {(premiumPlan?.features || ['Tratos ilimitados', 'Acceso a todos los capítulos de España', 'IA sin límites', 'Soporte prioritario', 'Eventos exclusivos', 'Marketplace premium']).map((feature: string, i: number) => (
+              {(premiumPlan?.features || ['Tratos ilimitados', 'Acceso a todos los capítulos de España', 'IA sin límites', 'Soporte prioritario', 'Eventos exclusivos']).map((feature: string, i: number) => (
                 <li key={i} className="flex items-start gap-3">
                   <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <span className="text-sm">{feature}</span>

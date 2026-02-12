@@ -31,7 +31,7 @@ import { SectorDistributionChart } from "@/components/admin/SectorDistributionCh
 import { RegistrationTrendChart } from "@/components/admin/RegistrationTrendChart";
 import { ChapterManagement } from "@/components/admin/ChapterManagement";
 import { EngagementAnalytics } from "@/components/admin/EngagementAnalytics";
-import PremiumSlotsManagement from "@/components/admin/PremiumSlotsManagement";
+
 import { BannerManagement } from "@/components/admin/BannerManagement";
 import { LovableEmotionalDashboard } from "@/components/admin/LovableEmotionalDashboard";
 import { BarChart3 } from "lucide-react";
@@ -492,7 +492,7 @@ const Admin = () => {
           </TabsTrigger>
           <TabsTrigger value="professionals">Profesionales</TabsTrigger>
           <TabsTrigger value="chapters">Capítulos</TabsTrigger>
-          <TabsTrigger value="premium-slots">Plaza Premium</TabsTrigger>
+          
           <TabsTrigger value="banners">Publicidad Premium</TabsTrigger>
           <TabsTrigger value="referrals">Referidos</TabsTrigger>
         </TabsList>
@@ -837,9 +837,6 @@ const Admin = () => {
           <ChapterManagement />
         </TabsContent>
 
-        <TabsContent value="premium-slots" className="space-y-4">
-          <PremiumSlotsManagement />
-        </TabsContent>
 
         <TabsContent value="referrals" className="space-y-4">
           <Card>
