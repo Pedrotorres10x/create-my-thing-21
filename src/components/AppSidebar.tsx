@@ -31,7 +31,7 @@ const expandedMainItems = [
 
 const communityItems = [
   { title: "Mi Esfera", url: "/mi-esfera", icon: Globe },
-  { title: "El Ritual", url: "/meetings", icon: Calendar },
+  { title: "Cara a Cara", url: "/meetings", icon: Calendar },
   { title: "La Fogata", url: "/feed", icon: MessageSquare },
   { title: "La Cumbre", url: "/rankings", icon: Trophy },
 ];

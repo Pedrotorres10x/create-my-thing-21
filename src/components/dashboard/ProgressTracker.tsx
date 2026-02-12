@@ -31,7 +31,7 @@ export const ProgressTracker = ({ goals }: ProgressTrackerProps) => {
 
   const referralComplete = currentGoals.referrals_this_week >= 1;
   const meetingComplete = currentGoals.meetings_this_month >= 1;
-  const chapterComplete = currentGoals.chapter_member_count >= 25;
+  const chapterComplete = currentGoals.chapter_member_count >= 50;
 
   return (
     <Card className="border-l-4 border-l-primary">
@@ -120,11 +120,11 @@ export const ProgressTracker = ({ goals }: ProgressTrackerProps) => {
                 "text-sm font-semibold",
                 chapterComplete ? "text-green-600" : "text-muted-foreground"
               )}>
-                {currentGoals.chapter_member_count}/25
+                {currentGoals.chapter_member_count}/50
               </span>
             </div>
             <Progress 
-              value={(currentGoals.chapter_member_count / 25) * 100} 
+              value={(currentGoals.chapter_member_count / 50) * 100} 
               className="h-2"
             />
             {chapterComplete && (

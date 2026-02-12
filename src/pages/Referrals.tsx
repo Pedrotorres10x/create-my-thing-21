@@ -243,7 +243,7 @@ const Referrals = () => {
                 Invita a un profesional a tu Tribu
               </CardTitle>
               <CardDescription>
-                Cuantas más profesiones cubra tu grupo, más clientes puedes referir y más comisiones recibes. Cada hueco sin cubrir es dinero que se pierde.
+                Cuantas más profesiones cubra tu grupo, más clientes puedes referir y recibir. Cada hueco sin cubrir es dinero que se escapa.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -342,7 +342,7 @@ const Referrals = () => {
                 Mis Tratos
               </CardTitle>
               <CardDescription>
-                Gestiona las referencias de clientes enviadas y recibidas. Cuando un trato se cierra, el receptor declara su beneficio y se calcula el 10% de comisión.
+                Gestiona las referencias de clientes enviadas y recibidas. Cuando un trato se cierra, ambos ganáis.
               </CardDescription>
             </CardHeader>
             <CardContent>
