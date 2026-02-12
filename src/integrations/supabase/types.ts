@@ -217,6 +217,77 @@ export type Database = {
         }
         Relationships: []
       }
+      chapter_specialization_waitlist: {
+        Row: {
+          assigned_at: string | null
+          chapter_id: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          notified_at: string | null
+          position_in_queue: number
+          profession_specialization_id: number
+          professional_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          chapter_id: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notified_at?: string | null
+          position_in_queue?: number
+          profession_specialization_id: number
+          professional_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string | null
+          chapter_id?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notified_at?: string | null
+          position_in_queue?: number
+          profession_specialization_id?: number
+          professional_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_specialization_waitli_profession_specialization_id_fkey"
+            columns: ["profession_specialization_id"]
+            isOneToOne: false
+            referencedRelation: "profession_specializations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chapter_specialization_waitlist_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chapter_specialization_waitlist_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chapter_specialization_waitlist_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chapters: {
         Row: {
           city: string
