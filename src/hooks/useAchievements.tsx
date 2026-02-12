@@ -12,6 +12,19 @@ interface UserState {
   meetings: number;
 }
 
+const BADGE_ICON_TO_ACHIEVEMENT: Record<string, Achievement["icon"]> = {
+  star: "star",
+  handshake: "award",
+  network: "users",
+  lock: "trophy",
+  shield: "award",
+  medal: "trophy",
+  crown: "trophy",
+  diamond: "trophy",
+  "book-open": "award",
+  coins: "zap",
+};
+
 export const useAchievements = () => {
   const { user } = useAuth();
   const [achievement, setAchievement] = useState<Achievement | null>(null);
@@ -21,14 +34,16 @@ export const useAchievements = () => {
 
     const checkAchievements = async () => {
       try {
-        // Get professional data
         const { data: professional } = await supabase
           .from("professionals")
-          .select("id, total_points")
+          .select("id, total_points, total_deal_value, deals_completed, created_at")
           .eq("user_id", user.id)
           .single();
 
         if (!professional) return;
+
+        // Check badge unlocks
+        await checkBadgeUnlocks(professional);
 
         // Get level
         const { data: level } = await supabase
@@ -65,7 +80,6 @@ export const useAchievements = () => {
         if (storedState) {
           const lastState: UserState = JSON.parse(storedState);
 
-          // Check for level up
           if (currentState.level !== lastState.level && currentState.points > lastState.points) {
             setAchievement({
               title: "¡Nuevo Nivel Desbloqueado!",
@@ -75,9 +89,7 @@ export const useAchievements = () => {
               level: currentState.level,
               points: currentState.points - lastState.points,
             });
-          }
-          // Check for points milestone
-          else if (currentState.points > lastState.points) {
+          } else if (currentState.points > lastState.points) {
             const pointsGained = currentState.points - lastState.points;
             if (pointsGained >= 50) {
               setAchievement({
@@ -88,14 +100,11 @@ export const useAchievements = () => {
                 points: pointsGained,
               });
             }
-          }
-          // Check for referral achievement
-          else if (currentState.referrals > lastState.referrals) {
-            const milestoneMet = 
-              (currentState.referrals === 1) ||
-              (currentState.referrals === 5) ||
-              (currentState.referrals % 10 === 0);
-              
+          } else if (currentState.referrals > lastState.referrals) {
+            const milestoneMet =
+              currentState.referrals === 1 ||
+              currentState.referrals === 5 ||
+              currentState.referrals % 10 === 0;
             if (milestoneMet) {
               setAchievement({
                 title: "¡Maestro de Referidos!",
@@ -104,15 +113,12 @@ export const useAchievements = () => {
                 icon: "users",
               });
             }
-          }
-          // Check for meeting achievement
-          else if (currentState.meetings > lastState.meetings) {
-            const milestoneMet = 
-              (currentState.meetings === 1) ||
-              (currentState.meetings === 5) ||
-              (currentState.meetings === 10) ||
-              (currentState.meetings % 20 === 0);
-              
+          } else if (currentState.meetings > lastState.meetings) {
+            const milestoneMet =
+              currentState.meetings === 1 ||
+              currentState.meetings === 5 ||
+              currentState.meetings === 10 ||
+              currentState.meetings % 20 === 0;
             if (milestoneMet) {
               setAchievement({
                 title: "¡Networker Profesional!",
@@ -124,16 +130,105 @@ export const useAchievements = () => {
           }
         }
 
-        // Save current state
         localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
       } catch (error) {
         console.error("Error checking achievements:", error);
       }
     };
 
+    const checkBadgeUnlocks = async (professional: any) => {
+      try {
+        // Get all badges and already unlocked
+        const [badgesRes, unlockedRes] = await Promise.all([
+          supabase.from("badges").select("*"),
+          supabase
+            .from("professional_badges")
+            .select("badge_id")
+            .eq("professional_id", professional.id),
+        ]);
+
+        if (!badgesRes.data) return;
+        const unlockedIds = new Set((unlockedRes.data || []).map((b) => b.badge_id));
+        const lockedBadges = badgesRes.data.filter((b) => !unlockedIds.has(b.id));
+        if (lockedBadges.length === 0) return;
+
+        // Gather stats
+        const { count: referrals } = await supabase
+          .from("referrals")
+          .select("*", { count: "exact", head: true })
+          .eq("referrer_id", professional.id)
+          .eq("status", "completed");
+
+        const { count: meetings } = await supabase
+          .from("meetings")
+          .select("*", { count: "exact", head: true })
+          .or(`requester_id.eq.${professional.id},recipient_id.eq.${professional.id}`)
+          .eq("status", "completed");
+
+        const { data: levelData } = await supabase
+          .from("point_levels")
+          .select("name")
+          .lte("min_points", professional.total_points)
+          .order("min_points", { ascending: false })
+          .limit(1)
+          .single();
+
+        for (const badge of lockedBadges) {
+          const condition = badge.unlock_condition as any;
+          let shouldUnlock = false;
+
+          switch (condition.type) {
+            case "referrals":
+              shouldUnlock = (referrals || 0) >= condition.count;
+              break;
+            case "meetings":
+              shouldUnlock = (meetings || 0) >= condition.count;
+              break;
+            case "deals":
+              shouldUnlock = professional.deals_completed >= condition.count;
+              break;
+            case "deal_value":
+              shouldUnlock = professional.total_deal_value >= condition.amount;
+              break;
+            case "level":
+              shouldUnlock = levelData?.name === condition.name;
+              break;
+            case "active_months": {
+              const createdAt = new Date(professional.created_at);
+              const monthsActive = Math.floor(
+                (Date.now() - createdAt.getTime()) / (30 * 24 * 60 * 60 * 1000)
+              );
+              shouldUnlock = monthsActive >= condition.count;
+              break;
+            }
+          }
+
+          if (shouldUnlock) {
+            const { error } = await supabase
+              .from("professional_badges")
+              .insert({
+                professional_id: professional.id,
+                badge_id: badge.id,
+              });
+
+            if (!error) {
+              setAchievement({
+                title: `¡Insignia Desbloqueada!`,
+                description: `Has conseguido "${badge.name}": ${badge.description}`,
+                type: "streak",
+                icon: BADGE_ICON_TO_ACHIEVEMENT[badge.icon] || "trophy",
+              });
+              break; // Show one at a time
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error checking badge unlocks:", err);
+      }
+    };
+
     checkAchievements();
 
-    // Set up real-time subscription for point changes
     const channel = supabase
       .channel("achievement_updates")
       .on(

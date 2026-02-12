@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Medal, TrendingUp } from "lucide-react";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
 import { PodiumDisplay } from "@/components/gamification/PodiumDisplay";
+import { BadgeIcon } from "@/components/gamification/BadgeIcon";
 
 import {
   Select,
@@ -62,6 +63,14 @@ interface BusinessSphere {
   name: string;
 }
 
+interface BadgeData {
+  id: string;
+  icon: string;
+  name: string;
+  description: string;
+  category: string;
+}
+
 const Rankings = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -72,6 +81,7 @@ const Rankings = () => {
   const [chapterFilter, setChapterFilter] = useState<string>("all");
   const [sectorFilter, setSectorFilter] = useState<string>("all");
   const [sphereFilter, setSphereFilter] = useState<string>("all");
+  const [profBadges, setProfBadges] = useState<Record<string, BadgeData[]>>({});
 
   useEffect(() => {
     loadData();
@@ -139,6 +149,20 @@ const Rankings = () => {
       if (chaptersRes.data) setChapters(chaptersRes.data);
       if (sectorsRes.data) setSectors(sectorsRes.data);
       if (spheresRes.data) setBusinessSpheres(spheresRes.data);
+
+      // Load badges for all professionals
+      const { data: allProfBadges } = await supabase
+        .from("professional_badges")
+        .select("professional_id, badges(id, icon, name, description, category)");
+      
+      if (allProfBadges) {
+        const grouped: Record<string, BadgeData[]> = {};
+        for (const pb of allProfBadges as any[]) {
+          if (!grouped[pb.professional_id]) grouped[pb.professional_id] = [];
+          if (pb.badges) grouped[pb.professional_id].push(pb.badges);
+        }
+        setProfBadges(grouped);
+      }
     } catch (error) {
       console.error('Error loading rankings:', error);
     } finally {
@@ -332,6 +356,17 @@ const Rankings = () => {
                           {prof.id === myProfessionalId && (
                             <Badge variant="outline" className="text-xs">Tú</Badge>
                           )}
+                          {profBadges[prof.id]?.slice(0, 3).map((b) => (
+                            <BadgeIcon
+                              key={b.id}
+                              icon={b.icon}
+                              name={b.name}
+                              description={b.description}
+                              category={b.category}
+                              unlocked={true}
+                              size="sm"
+                            />
+                          ))}
                         </div>
                         {prof.position && (
                           <p className="text-sm text-muted-foreground truncate">
