@@ -8,10 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useSearchParams } from "react-router-dom";
+import Subscriptions from "./Subscriptions";
 
 const Profile = () => {
   const { user } = useAuth();
   const [professional, setProfessional] = useState<any>(null);
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get("tab") || "profile";
 
   useEffect(() => {
     if (user) {
@@ -32,16 +36,17 @@ const Profile = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Mi Tótem</h1>
-        <p className="text-muted-foreground">Completa tu información profesional</p>
+        <p className="text-muted-foreground">Tu marca profesional en CONECTOR</p>
       </div>
 
       {professional && (
         <UserPenaltiesAlert professionalId={professional.id} />
       )}
 
-      <Tabs defaultValue="profile" className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="profile">Perfil</TabsTrigger>
+          <TabsTrigger value="plan">Mi Plan</TabsTrigger>
           <TabsTrigger value="appeals">Apelaciones</TabsTrigger>
         </TabsList>
 
@@ -70,6 +75,10 @@ const Profile = () => {
               )}
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="plan">
+          <Subscriptions />
         </TabsContent>
 
         <TabsContent value="appeals">
