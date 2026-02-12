@@ -1,10 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
-import { Users, Trophy, Handshake, Store, ArrowRight, Sparkles, Target, Rocket } from "lucide-react";
+import { Users, Handshake, DollarSign, ArrowRight, Shield } from "lucide-react";
 import { BackgroundImage } from "@/components/ui/background-image";
 import heroBg from "@/assets/hero-background.jpg";
 
@@ -26,100 +25,92 @@ const Index = () => {
     );
   }
 
-  const features = [
+  const pillars = [
     {
       icon: Users,
-      title: "Tu Crew Profesional",
-      description: "Conecta con pros de tu rollo en toda España"
-    },
-    {
-      icon: Trophy,
-      title: "Gamificación que Funciona",
-      description: "Consigue puntos, desbloquea logros y llega al top"
+      title: "Tu Trinchera",
+      description: "Un grupo local de profesionales que no compiten entre sí. Cada uno cubre una profesión distinta. Sin duplicados, sin conflictos."
     },
     {
       icon: Handshake,
-      title: "Cafés que Cierran Negocios",
-      description: "Matches 1:1 con gente que suma de verdad"
+      title: "Referidos que Pagan",
+      description: "Pasas clientes de tu círculo a miembros de tu grupo. Ellos cierran el trato. Tú cobras tu comisión. Así de directo."
     },
     {
-      icon: Store,
-      title: "Tu Plaza de Oportunidades",
-      description: "Comparte y encuentra lo que necesitas"
+      icon: DollarSign,
+      title: "Más Miembros, Más Dinero",
+      description: "Cuantas más profesiones cubra tu trinchera, más servicios puedes referir. Cada hueco vacío es dinero que se queda en la mesa."
+    },
+    {
+      icon: Shield,
+      title: "Cara a Cara",
+      description: "Reuniones 1-a-1 con cada miembro de tu grupo. Conoces su negocio, él conoce el tuyo. La confianza se construye en persona."
     }
   ];
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section with Background */}
+      {/* Hero */}
       <BackgroundImage
         imageUrl={heroBg}
-        alt="Dynamic networking hero"
-        overlayOpacity={0.65}
+        alt="CONECTOR networking"
+        overlayOpacity={0.7}
         overlayColor="hsl(222 47% 11%)"
         className="relative"
       >
-        <div className="container mx-auto px-4 pt-20 pb-12">
-        <div className="text-center space-y-8 max-w-4xl mx-auto">
-          <Badge className="text-sm px-4 py-2" variant="secondary">
-            <Sparkles className="w-3 h-3 mr-2" />
-            Networking que Funciona 🚀
-          </Badge>
-          
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
-            Bienvenido a{" "}
-            <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+        <div className="container mx-auto px-4 pt-24 pb-16">
+          <div className="max-w-3xl mx-auto text-center space-y-8">
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
               CONECTOR
-            </span>
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            La red donde <strong>conectar</strong> es estratégico, <strong>crecer</strong> es el objetivo y <strong>ganar</strong> es la norma
-          </p>
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              No es networking. Es un sistema para que otros profesionales te traigan clientes. Y tú a ellos.
+            </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <Button 
-              size="lg" 
-              onClick={() => navigate("/auth")}
-              className="text-lg px-8 py-6 group"
-            >
-              Comenzar Ahora
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => navigate("/auth")}
-              className="text-lg px-8 py-6"
-            >
-              Iniciar Sesión
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+              <Button 
+                size="lg" 
+                onClick={() => navigate("/auth")}
+                className="text-lg px-8 py-6 group"
+              >
+                Entrar
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={() => navigate("/auth")}
+                className="text-lg px-8 py-6"
+              >
+                Ya tengo cuenta
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
       </BackgroundImage>
 
-      {/* Features Grid */}
-      <div className="container mx-auto px-4 py-16 bg-gradient-to-b from-background to-muted/20">
-        <div className="text-center mb-12">
+      {/* Pillars */}
+      <div className="container mx-auto px-4 py-20">
+        <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            ¿Qué te espera aquí dentro?
+            Cómo funciona
           </h2>
-          <p className="text-muted-foreground text-lg">
-            Tu toolkit completo para hacer crecer tu network (y tu negocio)
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+            Un grupo cerrado donde cada miembro es tu comercial. Y tú eres el suyo.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
-            <Card key={index} className="border-2 hover:shadow-lg transition-all hover:scale-105">
-              <CardContent className="pt-6 text-center space-y-4">
-                <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-                  <feature.icon className="w-8 h-8 text-primary" />
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {pillars.map((pillar, index) => (
+            <Card key={index} className="border-2 hover:shadow-lg transition-all">
+              <CardContent className="pt-8 pb-8 px-8 space-y-4">
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                  <pillar.icon className="w-7 h-7 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {feature.description}
+                <h3 className="text-xl font-bold">{pillar.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {pillar.description}
                 </p>
               </CardContent>
             </Card>
@@ -127,58 +118,21 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Benefits Section */}
-      <div className="container mx-auto px-4 py-16">
-        <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-          <CardContent className="p-8 md:p-12">
-            <div className="grid md:grid-cols-3 gap-8 text-center">
-              <div className="space-y-3">
-                <div className="w-12 h-12 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-                  <Target className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-2xl font-bold">Level Up</h3>
-                <p className="text-muted-foreground">
-                  Tu red crece, tu negocio crece. Es así de simple
-                </p>
-              </div>
-              <div className="space-y-3">
-                <div className="w-12 h-12 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-                  <Trophy className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-2xl font-bold">Activa tu Red</h3>
-                <p className="text-muted-foreground">
-                  Puntos, logros, premios reales. Networking gamificado
-                </p>
-              </div>
-              <div className="space-y-3">
-                <div className="w-12 h-12 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-                  <Rocket className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-2xl font-bold">Vibe Check ✓</h3>
-                <p className="text-muted-foreground">
-                  Solo gente con la que da gusto hacer negocios
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* CTA Final */}
+      {/* CTA */}
       <div className="container mx-auto px-4 py-16 text-center">
         <div className="max-w-2xl mx-auto space-y-6">
           <h2 className="text-3xl md:text-4xl font-bold">
-            ¿Te unes a la party? 🎉
+            Tu red ya está generando dinero para otros.
           </h2>
           <p className="text-lg text-muted-foreground">
-            Más de 500 profesionales ya están haciendo crecer su network (y su facturación)
+            La pregunta es si tú estás dentro o fuera.
           </p>
           <Button 
             size="lg" 
             onClick={() => navigate("/auth")}
             className="text-lg px-12 py-6"
           >
-            Quiero Entrar
+            Quiero entrar
           </Button>
         </div>
       </div>
