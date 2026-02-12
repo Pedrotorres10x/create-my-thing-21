@@ -379,56 +379,59 @@ async function generatePersonalizedMessage(
       
       // ❤️ ESTADO 3 — EN RIESGO (AR)
       active_at_risk: {
-        title: "Estamos aquí para ti",
+        title: "Tu plaza te necesita",
         examples: [
-          "¿Sabes lo que más me gusta de ti? Cuando vuelves, vuelves fuerte.",
-          "Si hoy solo hicieras una acción, esta sería perfecta para ti.",
-          "A veces el mejor avance es un pequeño paso."
+          "Tu plaza en la Trinchera es única. Solo hay una por especialización. No la dejes escapar.",
+          "Hay profesionales esperando por un hueco como el tuyo. Una acción esta semana lo cambia todo.",
+          "A veces el mejor avance es un pequeño paso. Un 1-a-1 esta semana puede reactivar tu flujo."
         ],
         prompt: `Genera un mensaje para un usuario EN RIESGO que ha bajado su actividad.
         Usuario: ${prof.full_name}
         Días sin actividad: ${snapshot.daysSinceLastActivity}
         
-        INSTRUCCIÓN: Debe sentirse apoyado, NO juzgado. Ofrece una acción simple.
-        Recuérdale suavemente un logro reciente.
-        TONO: comprensivo, amable, humano. NUNCA culpabilizador.
+        INSTRUCCIÓN: Debe sentirse apoyado, NO juzgado. Recuérdale con elegancia que su plaza es única (solo hay una por especialización en cada capítulo) y que hay profesionales en lista de espera.
+        No como amenaza, sino como motivación: su sitio es valioso.
+        Sugiérele una acción simple como un 1-a-1 esta semana.
+        TONO: comprensivo, motivador, estratégico. NUNCA culpabilizador.
         MÁXIMO: 2 frases.`
       },
       
       // ❤️ ESTADO 4 — DESCONECTADO LEVE (DL)
       disconnected_light: {
-        title: "Tu capítulo te echa de menos",
+        title: "Tu Trinchera te echa de menos",
         examples: [
-          "Tu capítulo te ha echado de menos estos días.",
-          "No pasa nada. Vuelve cuando estés listo. Estamos aquí.",
-          "Te dejo esto listo para que recuperes el ritmo fácil."
+          "Tu Trinchera te ha echado de menos. Y tu plaza sigue ahí... por ahora.",
+          "Solo hay un profesional de tu especialización por capítulo. Ese eres tú. No lo pierdas.",
+          "Vuelve cuando estés listo, pero recuerda: hay quien espera tu plaza si no la ocupas."
         ],
         prompt: `Genera un mensaje para un usuario DESCONECTADO LEVE con ausencia reciente.
         Usuario: ${prof.full_name}
         Días sin conexión: ${snapshot.daysSinceLastActivity}
         
-        INSTRUCCIÓN: Debe sentir que se le aprecia y que no pasa nada por haberse ausentado.
-        Invítalo a volver con cariño.
-        TONO: nostálgico, positivo, afectuoso. Sin presión.
+        INSTRUCCIÓN: Hazle sentir apreciado y recuérdale con elegancia que su plaza es exclusiva (una por especialización) y que existe lista de espera.
+        El tono debe ser cálido pero con un sutil sentido de urgencia.
+        TONO: nostálgico, motivador, elegante. Sin presión agresiva.
         MÁXIMO: 2 frases.`
       },
       
       // ❤️ ESTADO 5 — DESCONECTADO CRÍTICO (DC)
       disconnected_critical: {
-        title: "Siempre tendrás un hueco aquí",
+        title: "Tu plaza está en juego",
         examples: [
-          "Me preocupa perder tu talento. ¿Te ayudo a retomar el camino?",
-          "Tienes hueco aquí. Siempre.",
-          "Antes de que desaparezcas, quiero recordarte algo importante: tu impacto en otros fue real."
+          "Tu talento es real. Pero tu plaza también la quieren otros. No dejes que se la lleven.",
+          "Hay profesionales en lista de espera para tu especialización. Tu sitio es tuyo, pero hay que defenderlo.",
+          "Antes de que sea tarde: una sola acción esta semana puede cambiarlo todo."
         ],
         prompt: `Genera un mensaje para un usuario DESCONECTADO CRÍTICO con riesgo de abandono.
         Usuario: ${prof.full_name}
         Días sin conexión: ${snapshot.daysSinceLastActivity}
         Puntos acumulados: ${prof.total_points}
         
-        INSTRUCCIÓN: Mensaje emocional, personal. Hazle sentir que su talento importa.
-        TONO: cálido, preocupado genuinamente, esperanzador.
-        PROHIBIDO: presionar o hacer sentir culpa.
+        INSTRUCCIÓN: Mensaje emocional y estratégico. Hazle sentir que su talento importa PERO que su plaza es codiciada.
+        Menciona con elegancia que hay lista de espera de profesionales de su misma especialización.
+        No amenazar, sino motivar con urgencia elegante.
+        TONO: cálido, directo, con sentido de urgencia controlada.
+        PROHIBIDO: culpabilizar.
         MÁXIMO: 2 frases.`
       },
       
