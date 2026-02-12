@@ -48,15 +48,23 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
     const hasCompanions = goals.chapter_member_count > 1;
     const memberCount = goals.chapter_member_count;
 
-    // === EARLY ADOPTER PHASE: Solo o con muy pocos (1-4 miembros) ===
+    // Semáforo de salud del grupo:
+    // 🔴 <10 = peligro de desaparición
+    // 🟡 10-19 = cuidado
+    // 🟢 20+ = sano (ideal 50)
+    const isRedZone = memberCount < 10;
+    const isAmberZone = memberCount >= 10 && memberCount < 20;
+    const remaining50 = 50 - memberCount;
+
+    // === SOLO: sin compañeros ===
     if (!hasCompanions) {
       return [
         {
           id: 'founder-mission',
           type: 'opportunity',
           priority: 1,
-          title: '🏗️ Estás construyendo algo grande',
-          description: 'Eres el fundador de esta Tribu. Los primeros 5 miembros son los más importantes: ellos definirán la cultura del grupo. ¿A quién quieres a tu lado?',
+          title: '🔴 Tu Tribu necesita miembros para sobrevivir',
+          description: 'Un grupo con menos de 10 profesionales está en peligro de desaparecer. Eres el fundador: los primeros que invites definirán el futuro de esta red.',
           action: 'Invitar profesional',
           actionRoute: '/referrals',
           icon: UserPlus,
@@ -66,7 +74,7 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
           type: 'growth',
           priority: 2,
           title: 'Presenta tu negocio en La Calle',
-          description: 'Que la comunidad sepa quién eres y qué haces. Una publicación tuya hoy puede atraer a futuros compañeros.',
+          description: 'Que la comunidad sepa quién eres. Una publicación tuya hoy puede atraer a futuros compañeros.',
           action: 'Publicar',
           actionRoute: '/feed',
           icon: MessageSquare,
@@ -74,42 +82,42 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
       ];
     }
 
-    // === GROWING PHASE: 2-5 miembros, aún pequeño ===
-    if (memberCount <= 5) {
+    // === ZONA ROJA: 2-9 miembros — peligro de desaparición ===
+    if (isRedZone) {
       const suggestions: Suggestion[] = [];
-      const remaining = 25 - memberCount;
+      const toSafe = 10 - memberCount;
 
       suggestions.push({
-        id: 'early-growth',
+        id: 'red-zone-growth',
         type: 'opportunity',
         priority: 1,
-        title: `💪 Ya son ${memberCount}. El impulso no puede parar`,
-        description: `Cada profesional nuevo es un servicio más que tu red puede ofrecer a sus clientes. Faltan ${remaining} para completar la Tribu.`,
-        action: 'Invitar más',
+        title: `🔴 Alerta: tu Tribu necesita ${toSafe} miembros más para salir de peligro`,
+        description: `Con ${memberCount} miembros, tu grupo puede desaparecer. Los grupos que llegan a 10 sobreviven. Cada invitación cuenta.`,
+        action: 'Invitar ahora',
         actionRoute: '/referrals',
         icon: UserPlus,
       });
 
       if (goals.meetings_this_month === 0) {
         suggestions.push({
-          id: 'early-meeting',
+          id: 'red-zone-meeting',
           type: 'momentum',
           priority: 2,
-          title: 'Conoce a tus compañeros: agenda un Cara a Cara',
-          description: 'La confianza se construye en persona. Un café de 30 minutos hoy puede ser tu próximo cliente mañana.',
+          title: 'Fortalece los lazos: agenda un Cara a Cara',
+          description: 'En grupos pequeños, cada relación importa el doble. Conoce bien a tus compañeros para referir con confianza.',
           action: 'Agendar reunión',
           actionRoute: '/meetings',
           icon: Calendar,
         });
       }
 
-      if (goals.referrals_this_week === 0) {
+      if (goals.referrals_this_week === 0 && memberCount >= 3) {
         suggestions.push({
-          id: 'first-referral-small',
+          id: 'red-zone-referral',
           type: 'momentum',
           priority: 3,
           title: '¿Conoces a alguien que necesite un servicio de tu Tribu?',
-          description: 'No esperes a ser 25. Con que pienses en UNA persona de tu círculo que necesite lo que ofrece un compañero, ya estás moviendo la red.',
+          description: 'No esperes a ser más. Con que pienses en UNA persona de tu círculo, ya estás activando la red.',
           action: 'Referir contacto',
           actionRoute: '/referrals',
           icon: Handshake,
@@ -119,7 +127,65 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
       return suggestions.slice(0, 2);
     }
 
-    // === ESTABLISHED PHASE: 6+ miembros, flujo normal ===
+    // === ZONA ÁMBAR: 10-19 miembros — cuidado ===
+    if (isAmberZone) {
+      const suggestions: Suggestion[] = [];
+      const toGreen = 20 - memberCount;
+
+      suggestions.push({
+        id: 'amber-zone-growth',
+        type: 'growth',
+        priority: 1,
+        title: `🟡 Faltan ${toGreen} miembros para que tu Tribu sea un grupo sano`,
+        description: `Con ${memberCount} miembros vais por buen camino, pero un grupo sólido necesita al menos 20. Más profesiones = más intercambio.`,
+        action: 'Invitar más',
+        actionRoute: '/referrals',
+        icon: UserPlus,
+      });
+
+      if (goals.referrals_this_week === 0) {
+        suggestions.push({
+          id: 'amber-referral',
+          type: 'opportunity',
+          priority: 2,
+          title: 'Esta semana aún no has referido a nadie',
+          description: `Cada referencia activa la reciprocidad. Quedan ${goals.days_until_week_end} días.`,
+          action: 'Referir contacto',
+          actionRoute: '/referrals',
+          icon: Handshake,
+        });
+      }
+
+      if (goals.meetings_this_month === 0 && goals.days_until_month_end <= 10) {
+        suggestions.push({
+          id: 'amber-meeting',
+          type: 'momentum',
+          priority: 3,
+          title: 'Agenda un Cara a Cara este mes',
+          description: 'Los miembros que hacen reuniones reciben 3x más referencias.',
+          action: 'Agendar reunión',
+          actionRoute: '/meetings',
+          icon: Calendar,
+        });
+      }
+
+      if (goals.posts_this_week === 0 && goals.comments_this_week === 0) {
+        suggestions.push({
+          id: 'amber-visibility',
+          type: 'growth',
+          priority: 4,
+          title: 'Hazte visible en La Calle',
+          description: 'Los que publican reciben más referencias.',
+          action: 'Publicar',
+          actionRoute: '/feed',
+          icon: MessageSquare,
+        });
+      }
+
+      return suggestions.sort((a, b) => a.priority - b.priority).slice(0, 2);
+    }
+
+    // === ZONA VERDE: 20+ miembros — grupo sano ===
     const suggestions: Suggestion[] = [];
 
     if (goals.referrals_this_week === 0) {
@@ -128,7 +194,7 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
         type: 'opportunity',
         priority: 1,
         title: 'Esta semana aún no has referido a nadie',
-        description: `Cada referencia que envías activa la reciprocidad. Si tú mueves, ellos mueven. Quedan ${goals.days_until_week_end} días.`,
+        description: `Cada referencia que envías activa la reciprocidad. Quedan ${goals.days_until_week_end} días.`,
         action: 'Referir contacto',
         actionRoute: '/referrals',
         icon: Handshake,
@@ -141,21 +207,20 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
         type: 'momentum',
         priority: 2,
         title: 'Un 1-a-1 este mes marca la diferencia',
-        description: 'Los miembros que hacen reuniones reciben 3x más referencias. Quedan pocos días.',
+        description: 'Los miembros que hacen reuniones reciben 3x más referencias.',
         action: 'Agendar reunión',
         actionRoute: '/meetings',
         icon: Calendar,
       });
     }
 
-    if (memberCount < 25) {
-      const remaining = 25 - memberCount;
+    if (memberCount < 50) {
       suggestions.push({
         id: 'grow-chapter',
         type: 'growth',
         priority: 3,
-        title: `Faltan ${remaining} profesiones por cubrir en tu Tribu`,
-        description: 'Cada profesión nueva es un servicio más que tu red puede ofrecer. Más servicios = más clientes que circulan.',
+        title: `🟢 Tribu sana — faltan ${remaining50} para el ideal de 50`,
+        description: 'Más profesiones = más clientes que circulan. Sigue invitando para maximizar el intercambio.',
         action: 'Ver mi Tribu',
         actionRoute: '/chapter',
         icon: Users,
@@ -168,7 +233,7 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
         type: 'growth',
         priority: 4,
         title: 'Hazte visible en La Calle',
-        description: 'Los que publican reciben más referencias. No hace falta escribir un libro: una frase sobre tu trabajo basta.',
+        description: 'Los que publican reciben más referencias.',
         action: 'Publicar',
         actionRoute: '/feed',
         icon: MessageSquare,
