@@ -219,10 +219,14 @@ export function useEthicsCommittee() {
       reportId,
       decision,
       resolutionNotes,
+      severity,
+      reportedId,
     }: {
       reportId: string;
       decision: "resolved" | "escalate" | "dismiss";
       resolutionNotes: string;
+      severity?: "light" | "serious" | "very_serious";
+      reportedId?: string;
     }) => {
       if (!professionalId) throw new Error("No professional ID");
       const { error: decisionError } = await supabase
@@ -256,11 +260,57 @@ export function useEthicsCommittee() {
         .update(updateData)
         .eq("id", reportId);
       if (updateError) throw updateError;
+
+      // Apply sanction if resolved with severity
+      if (decision === "resolved" && severity && reportedId) {
+        const severityConfig: Record<string, { points: number; days: number; label: string }> = {
+          light: { points: 20, days: 0, label: "Leve" },
+          serious: { points: 50, days: 7, label: "Grave" },
+          very_serious: { points: 100, days: 30, label: "Muy grave" },
+        };
+        const config = severityConfig[severity];
+
+        // Create penalty
+        const restrictionUntil = config.days > 0
+          ? new Date(Date.now() + config.days * 24 * 60 * 60 * 1000).toISOString()
+          : null;
+
+        await supabase.from("user_penalties").insert({
+          professional_id: reportedId,
+          penalty_type: "ethics_sanction",
+          severity,
+          reason: `Sanción del Consejo (${config.label}): ${resolutionNotes}`,
+          points_deducted: config.points,
+          restriction_until: restrictionUntil,
+          created_by: professionalId,
+          is_active: true,
+        });
+
+        // Deduct points
+        await supabase
+          .from("professionals")
+          .update({
+            total_points: Math.max(0, (await supabase
+              .from("professionals")
+              .select("total_points")
+              .eq("id", reportedId)
+              .single()
+              .then(r => r.data?.total_points || 0)) - config.points),
+          })
+          .eq("id", reportedId);
+
+        // Record point transaction
+        await supabase.from("point_transactions").insert({
+          professional_id: reportedId,
+          points: -config.points,
+          reason: `Sanción del Consejo: ${config.label} - ${resolutionNotes.slice(0, 100)}`,
+        });
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["ethics-committee-reports"] });
       const actionText = variables.decision === "resolved"
-        ? "resuelto"
+        ? "sancionado"
         : variables.decision === "escalate"
         ? "escalado al administrador"
         : "desestimado";

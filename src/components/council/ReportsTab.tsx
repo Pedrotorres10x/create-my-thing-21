@@ -3,8 +3,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, CheckCircle, XCircle, ArrowUpCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, XCircle, ArrowUpCircle, Gavel } from "lucide-react";
 import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface EthicsReport {
   id: string;
@@ -13,6 +15,7 @@ interface EthicsReport {
   status: string;
   context: string | null;
   created_at: string;
+  reported_id: string;
   reporter: { full_name: string; email: string };
   reported: { full_name: string; email: string };
 }
@@ -21,28 +24,49 @@ interface ReportsTabProps {
   reports: EthicsReport[];
   loading: boolean;
   statusFilter: string;
-  onResolve: (params: { reportId: string; decision: "resolved" | "escalate" | "dismiss"; resolutionNotes: string }, options: any) => void;
+  onResolve: (params: {
+    reportId: string;
+    decision: "resolved" | "escalate" | "dismiss";
+    resolutionNotes: string;
+    severity?: "light" | "serious" | "very_serious";
+    reportedId?: string;
+  }, options: any) => void;
   isResolving: boolean;
 }
+
+const SEVERITY_CONFIG = {
+  light: { label: "Leve", points: 20, days: 0, description: "-20 puntos" },
+  serious: { label: "Grave", points: 50, days: 7, description: "-50 puntos + 7 días suspensión" },
+  very_serious: { label: "Muy grave", points: 100, days: 30, description: "-100 puntos + 30 días suspensión" },
+};
 
 export function ReportsTab({ reports, loading, statusFilter, onResolve, isResolving }: ReportsTabProps) {
   const [activeReportId, setActiveReportId] = useState<string | null>(null);
   const [resolution, setResolution] = useState("");
+  const [severity, setSeverity] = useState<"light" | "serious" | "very_serious">("light");
 
   const filtered = reports.filter(r => r.status === statusFilter);
 
-  const handleResolve = (reportId: string, decision: "resolved" | "escalate" | "dismiss") => {
+  const handleResolve = (report: EthicsReport, decision: "resolved" | "escalate" | "dismiss") => {
     if (!resolution.trim()) return;
     onResolve(
-      { reportId, decision, resolutionNotes: resolution },
-      { onSuccess: () => { setActiveReportId(null); setResolution(""); } }
+      {
+        reportId: report.id,
+        decision,
+        resolutionNotes: resolution,
+        severity: decision === "resolved" ? severity : undefined,
+        reportedId: decision === "resolved" ? report.reported_id : undefined,
+      },
+      { onSuccess: () => { setActiveReportId(null); setResolution(""); setSeverity("light"); } }
     );
   };
 
   const reportTypeLabels: Record<string, string> = {
-    inappropriate_content: "Contenido inapropiado",
-    spam: "Spam",
+    spam: "Spam o publicidad",
+    inappropriate_contact: "Contacto inapropiado",
+    fraud: "Fraude o estafa",
     harassment: "Acoso",
+    fake_profile: "Perfil falso",
     other: "Otro",
   };
 
@@ -101,23 +125,39 @@ export function ReportsTab({ reports, loading, statusFilter, onResolve, isResolv
               </div>
             )}
             {activeReportId === report.id ? (
-              <div className="space-y-3 pt-3 border-t">
+              <div className="space-y-4 pt-3 border-t">
+                <div className="space-y-2">
+                  <Label>Gravedad de la falta</Label>
+                  <Select value={severity} onValueChange={(v: any) => setSeverity(v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(SEVERITY_CONFIG).map(([key, config]) => (
+                        <SelectItem key={key} value={key}>
+                          <span className="font-medium">{config.label}</span>
+                          <span className="text-muted-foreground ml-2">— {config.description}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Textarea
                   placeholder="Escribe tu resolución o notas..."
                   value={resolution}
                   onChange={(e) => setResolution(e.target.value)}
                   rows={4}
                 />
-                <div className="flex gap-2">
-                  <Button variant="default" onClick={() => handleResolve(report.id, "resolved")} disabled={!resolution.trim() || isResolving}>
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Resolver
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="default" onClick={() => handleResolve(report, "resolved")} disabled={!resolution.trim() || isResolving}>
+                    <Gavel className="w-4 h-4 mr-2" />
+                    Sancionar ({SEVERITY_CONFIG[severity].description})
                   </Button>
-                  <Button variant="secondary" onClick={() => handleResolve(report.id, "escalate")} disabled={!resolution.trim() || isResolving}>
+                  <Button variant="secondary" onClick={() => handleResolve(report, "escalate")} disabled={!resolution.trim() || isResolving}>
                     <ArrowUpCircle className="w-4 h-4 mr-2" />
                     Escalar a Admin
                   </Button>
-                  <Button variant="outline" onClick={() => handleResolve(report.id, "dismiss")} disabled={!resolution.trim() || isResolving}>
+                  <Button variant="outline" onClick={() => handleResolve(report, "dismiss")} disabled={!resolution.trim() || isResolving}>
                     <XCircle className="w-4 h-4 mr-2" />
                     Desestimar
                   </Button>

@@ -4,7 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Mail, Calendar, Eye, Briefcase, Award } from "lucide-react";
+import { Mail, Calendar, Eye, Briefcase, Award, Flag } from "lucide-react";
+import { ReportUserDialog } from "@/components/ReportUserDialog";
 import { useNavigate } from "react-router-dom";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,7 +35,20 @@ export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) =
   const [specializations, setSpecializations] = useState<Array<{ id: number; name: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState<SearchFilters>({ query: "", specializationId: null });
+  const [reportTarget, setReportTarget] = useState<{ id: string; name: string } | null>(null);
+  const [currentProfessionalId, setCurrentProfessionalId] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadCurrentProf = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase.from("professionals").select("id").eq("user_id", user.id).single();
+        if (data) setCurrentProfessionalId(data.id);
+      }
+    };
+    loadCurrentProf();
+  }, []);
 
   useEffect(() => {
     loadProfessionals();
@@ -130,6 +144,7 @@ export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) =
   }
 
   return (
+    <>
     <div className="space-y-4">
       <SphereSearch 
         onSearch={handleSearch}
@@ -229,6 +244,16 @@ export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) =
                     <Calendar className="h-4 w-4 mr-1" />
                     Reunión
                   </Button>
+                  {currentProfessionalId && currentProfessionalId !== professional.id && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground"
+                      onClick={() => setReportTarget({ id: professional.id, name: professional.full_name })}
+                    >
+                      <Flag className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -239,5 +264,17 @@ export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) =
         </>
       )}
     </div>
+
+      {currentProfessionalId && reportTarget && (
+        <ReportUserDialog
+          open={!!reportTarget}
+          onOpenChange={(open) => !open && setReportTarget(null)}
+          reportedId={reportTarget.id}
+          reportedName={reportTarget.name}
+          context="sphere_directory"
+          reporterId={currentProfessionalId}
+        />
+      )}
+    </>
   );
 };
