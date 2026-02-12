@@ -34,70 +34,95 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
   const calculateSuggestions = (): Suggestion[] => {
     if (!goals) {
       return [{
-        id: 'welcome',
+        id: 'welcome-founder',
         type: 'opportunity',
         priority: 1,
-        title: 'Tu primer paso: invita a un profesional',
-        description: 'Cada persona que invitas es alguien que puede referirte clientes de su círculo. Empieza con uno.',
-        action: 'Invitar',
+        title: '🚀 Eres pionero: tu Tribu empieza contigo',
+        description: 'Los que llegan primero construyen las bases. Invita a un profesional de confianza y empieza a formar tu red de intercambio.',
+        action: 'Invitar al primero',
         actionRoute: '/referrals',
         icon: UserPlus,
       }];
     }
 
-    // A user alone (0 or 1 members = just themselves) can't send referrals
     const hasCompanions = goals.chapter_member_count > 1;
+    const memberCount = goals.chapter_member_count;
 
-    const isNewUser = goals.referrals_this_week === 0 && 
-                      goals.meetings_this_month === 0 && 
-                      goals.posts_this_week === 0;
-
-    if (isNewUser) {
-      if (!hasCompanions) {
-        // No companions → priority is to invite, not refer
-        return [{
-          id: 'first-invite',
+    // === EARLY ADOPTER PHASE: Solo o con muy pocos (1-4 miembros) ===
+    if (!hasCompanions) {
+      return [
+        {
+          id: 'founder-mission',
           type: 'opportunity',
           priority: 1,
-          title: 'Invita a tu primer compañero',
-          description: 'Todavía no tienes compañeros en tu Tribu. Para poder intercambiar referencias, primero necesitas profesionales a quienes referir clientes.',
+          title: '🏗️ Estás construyendo algo grande',
+          description: 'Eres el fundador de esta Tribu. Los primeros 5 miembros son los más importantes: ellos definirán la cultura del grupo. ¿A quién quieres a tu lado?',
           action: 'Invitar profesional',
           actionRoute: '/referrals',
           icon: UserPlus,
-        }];
-      }
+        },
+        {
+          id: 'founder-visibility',
+          type: 'growth',
+          priority: 2,
+          title: 'Presenta tu negocio en La Calle',
+          description: 'Que la comunidad sepa quién eres y qué haces. Una publicación tuya hoy puede atraer a futuros compañeros.',
+          action: 'Publicar',
+          actionRoute: '/feed',
+          icon: MessageSquare,
+        },
+      ];
+    }
 
-      if (goals.referrals_this_week === 0) {
-        return [{
-          id: 'first-referral',
-          type: 'opportunity',
-          priority: 1,
-          title: '¿A quién de tus contactos le vendría bien un compañero tuyo?',
-          description: 'Piensa en tu círculo: amigos, clientes, conocidos. ¿Alguno necesita un servicio que ofrece alguien de tu Tribu?',
-          action: 'Referir contacto',
-          actionRoute: '/referrals',
-          icon: Handshake,
-        }];
-      }
+    // === GROWING PHASE: 2-5 miembros, aún pequeño ===
+    if (memberCount <= 5) {
+      const suggestions: Suggestion[] = [];
+      const remaining = 25 - memberCount;
+
+      suggestions.push({
+        id: 'early-growth',
+        type: 'opportunity',
+        priority: 1,
+        title: `💪 Ya son ${memberCount}. El impulso no puede parar`,
+        description: `Cada profesional nuevo es un servicio más que tu red puede ofrecer a sus clientes. Faltan ${remaining} para completar la Tribu.`,
+        action: 'Invitar más',
+        actionRoute: '/referrals',
+        icon: UserPlus,
+      });
 
       if (goals.meetings_this_month === 0) {
-        return [{
-          id: 'first-meeting',
+        suggestions.push({
+          id: 'early-meeting',
           type: 'momentum',
-          priority: 1,
-          title: 'Agenda tu primer Cara a Cara',
+          priority: 2,
+          title: 'Conoce a tus compañeros: agenda un Cara a Cara',
           description: 'La confianza se construye en persona. Un café de 30 minutos hoy puede ser tu próximo cliente mañana.',
           action: 'Agendar reunión',
           actionRoute: '/meetings',
           icon: Calendar,
-        }];
+        });
       }
+
+      if (goals.referrals_this_week === 0) {
+        suggestions.push({
+          id: 'first-referral-small',
+          type: 'momentum',
+          priority: 3,
+          title: '¿Conoces a alguien que necesite un servicio de tu Tribu?',
+          description: 'No esperes a ser 25. Con que pienses en UNA persona de tu círculo que necesite lo que ofrece un compañero, ya estás moviendo la red.',
+          action: 'Referir contacto',
+          actionRoute: '/referrals',
+          icon: Handshake,
+        });
+      }
+
+      return suggestions.slice(0, 2);
     }
 
+    // === ESTABLISHED PHASE: 6+ miembros, flujo normal ===
     const suggestions: Suggestion[] = [];
 
-    // Only suggest referrals if the user has companions to refer TO
-    if (goals.referrals_this_week === 0 && hasCompanions) {
+    if (goals.referrals_this_week === 0) {
       suggestions.push({
         id: 'weekly-referral',
         type: 'opportunity',
@@ -110,21 +135,7 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
       });
     }
 
-    // No companions → always push invite as top suggestion
-    if (!hasCompanions) {
-      suggestions.push({
-        id: 'grow-invite',
-        type: 'opportunity',
-        priority: 1,
-        title: 'Tu Tribu te necesita: invita profesionales',
-        description: 'Sin compañeros no hay intercambio de referencias. Cada profesional que invites amplía la red para todos.',
-        action: 'Invitar',
-        actionRoute: '/referrals',
-        icon: UserPlus,
-      });
-    }
-
-    if (goals.meetings_this_month === 0 && goals.days_until_month_end <= 10 && hasCompanions) {
+    if (goals.meetings_this_month === 0 && goals.days_until_month_end <= 10) {
       suggestions.push({
         id: 'monthly-meeting',
         type: 'momentum',
@@ -137,8 +148,8 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
       });
     }
 
-    if (hasCompanions && goals.chapter_member_count < 25) {
-      const remaining = 25 - goals.chapter_member_count;
+    if (memberCount < 25) {
+      const remaining = 25 - memberCount;
       suggestions.push({
         id: 'grow-chapter',
         type: 'growth',
@@ -156,7 +167,7 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
         id: 'visibility',
         type: 'growth',
         priority: 4,
-        title: 'Hazte visible en La Fogata',
+        title: 'Hazte visible en La Calle',
         description: 'Los que publican reciben más referencias. No hace falta escribir un libro: una frase sobre tu trabajo basta.',
         action: 'Publicar',
         actionRoute: '/feed',
