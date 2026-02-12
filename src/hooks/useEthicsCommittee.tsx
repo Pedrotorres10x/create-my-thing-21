@@ -119,6 +119,26 @@ export function useEthicsCommittee() {
     enabled: isCommitteeMember,
   });
 
+  // Resolved reports history
+  const { data: resolvedReports = [], isLoading: loadingHistory } = useQuery({
+    queryKey: ["ethics-committee-history"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_reports")
+        .select(`
+          *,
+          reporter:professionals!user_reports_reporter_id_fkey(full_name, email),
+          reported:professionals!user_reports_reported_id_fkey(full_name, email)
+        `)
+        .in("status", ["resolved_by_ethics", "dismissed", "escalated"])
+        .order("ethics_committee_reviewed_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return (data || []) as EthicsReport[];
+    },
+    enabled: isCommitteeMember,
+  });
+
   // Expulsion reviews
   const { data: expulsionReviews = [], isLoading: loadingExpulsions } = useQuery({
     queryKey: ["expulsion-reviews"],
@@ -152,20 +172,20 @@ export function useEthicsCommittee() {
     enabled: isCommitteeMember && expulsionReviews.length > 0,
   });
 
-  // Report votes
+  // Report votes (for both pending and resolved reports)
   const { data: reportVotes = [] } = useQuery({
-    queryKey: ["report-votes"],
+    queryKey: ["report-votes", pendingReports.length, resolvedReports.length],
     queryFn: async () => {
-      const reportIds = pendingReports.map(r => r.id);
-      if (reportIds.length === 0) return [];
+      const allIds = [...pendingReports.map(r => r.id), ...resolvedReports.map(r => r.id)];
+      if (allIds.length === 0) return [];
       const { data, error } = await supabase
         .from("report_votes")
         .select("*")
-        .in("report_id", reportIds);
+        .in("report_id", allIds);
       if (error) throw error;
       return (data || []) as { id: string; report_id: string; voter_id: string; vote: string; severity: string | null; reasoning: string; created_at: string }[];
     },
-    enabled: isCommitteeMember && pendingReports.length > 0,
+    enabled: isCommitteeMember && (pendingReports.length > 0 || resolvedReports.length > 0),
   });
 
   // Reentry requests
@@ -394,6 +414,8 @@ export function useEthicsCommittee() {
     loadingMembers,
     pendingReports,
     loadingReports,
+    resolvedReports,
+    loadingHistory,
     resolveReport: resolveReport.mutate,
     resolvingReport: resolveReport.isPending,
     expulsionReviews,

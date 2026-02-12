@@ -3,11 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Shield, Crown, Eye, Scale } from "lucide-react";
+import { Shield, Crown, Eye, Scale, History } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExpulsionReviewsTab } from "@/components/council/ExpulsionReviewsTab";
 import { ReentryRequestsTab } from "@/components/council/ReentryRequestsTab";
 import { ReportsTab } from "@/components/council/ReportsTab";
+import { DecisionHistoryTab } from "@/components/council/DecisionHistoryTab";
 
 const COUNCIL_TITLES = [
   { title: "El Estratega", icon: Crown, description: "Líder del Consejo" },
@@ -23,6 +24,8 @@ export default function EthicsCommittee() {
     committeeMembers,
     pendingReports,
     loadingReports,
+    resolvedReports,
+    loadingHistory,
     expulsionReviews,
     loadingExpulsions,
     expulsionVotes,
@@ -125,7 +128,7 @@ export default function EthicsCommittee() {
 
       {/* Tabs */}
       <Tabs defaultValue="expulsions" className="w-full">
-        <TabsList className="grid grid-cols-4 w-full">
+        <TabsList className="grid grid-cols-5 w-full">
           <TabsTrigger value="expulsions">
             Expulsiones {pendingExpulsions > 0 && `(${pendingExpulsions})`}
           </TabsTrigger>
@@ -137,6 +140,10 @@ export default function EthicsCommittee() {
           </TabsTrigger>
           <TabsTrigger value="reviewing">
             En revisión
+          </TabsTrigger>
+          <TabsTrigger value="history">
+            <History className="h-4 w-4 mr-1" />
+            Historial
           </TabsTrigger>
         </TabsList>
 
@@ -179,6 +186,15 @@ export default function EthicsCommittee() {
             isCastingVote={castingReportVote}
             reportVotes={reportVotes}
             currentProfessionalId={professionalId}
+            committeeMembers={committeeMembers}
+          />
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-4">
+          <DecisionHistoryTab
+            reports={resolvedReports as any}
+            loading={loadingHistory}
+            reportVotes={reportVotes}
             committeeMembers={committeeMembers}
           />
         </TabsContent>
