@@ -1,4 +1,4 @@
-import { Home, Users, Handshake, Calendar, MessageSquare, Trophy, UserCircle, Shield, AlertTriangle, CreditCard, Scale, Globe } from "lucide-react";
+import { Home, Users, Handshake, Calendar, MessageSquare, Trophy, UserCircle, Shield, AlertTriangle, Scale, Globe } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -25,7 +25,6 @@ const coreItems = [
 ];
 
 const expandedMainItems = [
-  { title: "Mi Pacto", url: "/subscriptions", icon: CreditCard },
   { title: "Mis Senderos", url: "/referrals", icon: Handshake },
   { title: "Mi Tribu", url: "/chapter", icon: Users },
 ];
