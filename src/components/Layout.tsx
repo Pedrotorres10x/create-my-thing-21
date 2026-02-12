@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SphereNotifications } from "./sphere/SphereNotifications";
+import { PushNotificationToggle } from "./PushNotificationToggle";
 
 interface LayoutProps {
   children: ReactNode;
@@ -54,6 +55,7 @@ export function Layout({ children }: LayoutProps) {
             </div>
             
             <div className="flex items-center gap-1">
+              <PushNotificationToggle professionalId={professional?.id || null} />
               {professional?.business_sphere_id && professional?.id && (
                 <SphereNotifications professionalId={professional.id} />
               )}
