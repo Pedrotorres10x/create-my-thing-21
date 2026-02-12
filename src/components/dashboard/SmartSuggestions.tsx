@@ -45,21 +45,38 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
       }];
     }
 
+    // A user alone (0 or 1 members = just themselves) can't send referrals
+    const hasCompanions = goals.chapter_member_count > 1;
+
     const isNewUser = goals.referrals_this_week === 0 && 
                       goals.meetings_this_month === 0 && 
                       goals.posts_this_week === 0;
 
     if (isNewUser) {
-      if (goals.referrals_this_week === 0) {
+      if (!hasCompanions) {
+        // No companions → priority is to invite, not refer
         return [{
           id: 'first-invite',
           type: 'opportunity',
           priority: 1,
-          title: 'Invita a tu primer profesional',
-          description: 'Imagina que un fontanero, un abogado y un diseñador te recomiendan a sus clientes. Eso empieza invitando a uno.',
-          action: 'Invitar ahora',
+          title: 'Invita a tu primer compañero',
+          description: 'Todavía no tienes compañeros en tu Tribu. Para poder intercambiar referencias, primero necesitas profesionales a quienes referir clientes.',
+          action: 'Invitar profesional',
           actionRoute: '/referrals',
           icon: UserPlus,
+        }];
+      }
+
+      if (goals.referrals_this_week === 0) {
+        return [{
+          id: 'first-referral',
+          type: 'opportunity',
+          priority: 1,
+          title: '¿A quién de tus contactos le vendría bien un compañero tuyo?',
+          description: 'Piensa en tu círculo: amigos, clientes, conocidos. ¿Alguno necesita un servicio que ofrece alguien de tu Tribu?',
+          action: 'Referir contacto',
+          actionRoute: '/referrals',
+          icon: Handshake,
         }];
       }
 
@@ -79,7 +96,8 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
 
     const suggestions: Suggestion[] = [];
 
-    if (goals.referrals_this_week === 0) {
+    // Only suggest referrals if the user has companions to refer TO
+    if (goals.referrals_this_week === 0 && hasCompanions) {
       suggestions.push({
         id: 'weekly-referral',
         type: 'opportunity',
@@ -92,7 +110,21 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
       });
     }
 
-    if (goals.meetings_this_month === 0 && goals.days_until_month_end <= 10) {
+    // No companions → always push invite as top suggestion
+    if (!hasCompanions) {
+      suggestions.push({
+        id: 'grow-invite',
+        type: 'opportunity',
+        priority: 1,
+        title: 'Tu Tribu te necesita: invita profesionales',
+        description: 'Sin compañeros no hay intercambio de referencias. Cada profesional que invites amplía la red para todos.',
+        action: 'Invitar',
+        actionRoute: '/referrals',
+        icon: UserPlus,
+      });
+    }
+
+    if (goals.meetings_this_month === 0 && goals.days_until_month_end <= 10 && hasCompanions) {
       suggestions.push({
         id: 'monthly-meeting',
         type: 'momentum',
@@ -105,7 +137,7 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
       });
     }
 
-    if (goals.chapter_member_count > 0 && goals.chapter_member_count < 25) {
+    if (hasCompanions && goals.chapter_member_count < 25) {
       const remaining = 25 - goals.chapter_member_count;
       suggestions.push({
         id: 'grow-chapter',

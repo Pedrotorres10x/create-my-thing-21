@@ -117,42 +117,56 @@ serve(async (req) => {
 
     // 4. Generar sugerencias priorizadas
     const suggestions = [];
+    const chapterMemberCount = professionalDetails?.chapters?.member_count || 0;
+    const hasCompanions = chapterMemberCount > 1;
 
     if (goals) {
-      // Referido semanal
-      if (goals.referrals_this_week === 0 && goals.days_until_week_end <= 3) {
+      // If no companions, priority is ALWAYS invite — never suggest referrals
+      if (!hasCompanions) {
+        suggestions.push({
+          type: 'important',
+          priority: 1,
+          title: 'Invita a tu primer compañero',
+          description: 'Sin compañeros en tu Tribu, no puedes intercambiar referencias. Invita a un profesional de tu círculo.',
+          action: 'Invitar profesional',
+          actionRoute: '/referrals',
+        });
+      }
+
+      // Only suggest referrals if there are companions
+      if (goals.referrals_this_week === 0 && goals.days_until_week_end <= 3 && hasCompanions) {
         suggestions.push({
           type: goals.days_until_week_end <= 1 ? 'urgent' : 'important',
           priority: 1,
-          title: goals.days_until_week_end <= 1 ? '¡Invita a tu referido HOY!' : 'Invita a tu referido semanal',
-          description: `Quedan ${goals.days_until_week_end} días para cumplir tu objetivo`,
-          action: 'Invitar ahora',
+          title: goals.days_until_week_end <= 1 ? '¡Refiere un contacto HOY!' : 'Refiere un contacto esta semana',
+          description: `Piensa en tu círculo: ¿alguien necesita un servicio de tus compañeros? Quedan ${goals.days_until_week_end} días.`,
+          action: 'Referir ahora',
           actionRoute: '/referrals',
           deadline: `Quedan ${goals.days_until_week_end} días`
         });
       }
 
-      // Reunión mensual
-      if (goals.meetings_this_month === 0 && goals.days_until_month_end <= 7) {
+      // Reunión mensual — only if has companions
+      if (goals.meetings_this_month === 0 && goals.days_until_month_end <= 7 && hasCompanions) {
         suggestions.push({
           type: 'urgent',
           priority: 2,
-          title: 'Solicita tu reunión mensual',
-          description: `Ya estamos a fin de mes, quedan ${goals.days_until_month_end} días`,
-          action: 'Buscar profesionales',
+          title: 'Agenda un Cara a Cara este mes',
+          description: `Conocer mejor a tus compañeros = más referencias. Quedan ${goals.days_until_month_end} días.`,
+          action: 'Agendar reunión',
           actionRoute: '/meetings',
           deadline: `Quedan ${goals.days_until_month_end} días`
         });
       }
 
       // Capítulo pequeño
-      if (goals.chapter_member_count < 25 && goals.chapter_member_count > 0) {
+      if (chapterMemberCount < 25 && hasCompanions) {
         suggestions.push({
           type: 'important',
           priority: 3,
-          title: 'Ayuda a crecer tu capítulo',
-          description: `Tu capítulo tiene ${goals.chapter_member_count}/25 miembros`,
-          action: 'Ver capítulo',
+          title: 'Ayuda a crecer tu Tribu',
+          description: `Tu Tribu tiene ${chapterMemberCount}/25 miembros. Más profesiones = más intercambio.`,
+          action: 'Ver Tribu',
           actionRoute: '/chapter'
         });
       }
@@ -162,9 +176,9 @@ serve(async (req) => {
         suggestions.push({
           type: 'recommended',
           priority: 4,
-          title: 'Participa en la comunidad',
-          description: 'Comparte o comenta para aumentar tu visibilidad',
-          action: 'Ir al Feed',
+          title: 'Hazte visible en La Fogata',
+          description: 'Los que publican reciben más referencias.',
+          action: 'Ir a La Fogata',
           actionRoute: '/feed'
         });
       }
