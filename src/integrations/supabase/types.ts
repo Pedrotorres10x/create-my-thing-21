@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges: {
+        Row: {
+          category: string
+          code: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          unlock_condition: Json
+        }
+        Insert: {
+          category?: string
+          code: string
+          created_at?: string
+          description: string
+          icon: string
+          id?: string
+          name: string
+          unlock_condition?: Json
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          unlock_condition?: Json
+        }
+        Relationships: []
+      }
       banner_clicks: {
         Row: {
           banner_id: string
@@ -311,6 +344,82 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cross_chapter_requests: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          matched_professional_id: string | null
+          requested_profession_specialization_id: number | null
+          requested_specialization_id: number | null
+          requester_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          matched_professional_id?: string | null
+          requested_profession_specialization_id?: number | null
+          requested_specialization_id?: number | null
+          requester_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          matched_professional_id?: string | null
+          requested_profession_specialization_id?: number | null
+          requested_specialization_id?: number | null
+          requester_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cross_chapter_requests_matched_professional_id_fkey"
+            columns: ["matched_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cross_chapter_requests_matched_professional_id_fkey"
+            columns: ["matched_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cross_chapter_requests_requested_profession_specialization_fkey"
+            columns: ["requested_profession_specialization_id"]
+            isOneToOne: false
+            referencedRelation: "profession_specializations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cross_chapter_requests_requested_specialization_id_fkey"
+            columns: ["requested_specialization_id"]
+            isOneToOne: false
+            referencedRelation: "specializations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cross_chapter_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cross_chapter_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1669,6 +1778,49 @@ export type Database = {
             columns: ["specialization_id"]
             isOneToOne: false
             referencedRelation: "specializations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      professional_badges: {
+        Row: {
+          badge_id: string
+          id: string
+          professional_id: string
+          unlocked_at: string
+        }
+        Insert: {
+          badge_id: string
+          id?: string
+          professional_id: string
+          unlocked_at?: string
+        }
+        Update: {
+          badge_id?: string
+          id?: string
+          professional_id?: string
+          unlocked_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_badges_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_badges_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
             referencedColumns: ["id"]
           },
         ]
@@ -3468,6 +3620,26 @@ export type Database = {
       determine_reengagement_stage: {
         Args: { _activity_score: number; _inactivity_days: number }
         Returns: string
+      }
+      find_top_professionals_by_specialization: {
+        Args: {
+          p_exclude_chapter_id?: string
+          p_profession_specialization_id?: number
+          p_specialization_id?: number
+        }
+        Returns: {
+          chapter_city: string
+          chapter_name: string
+          professional_chapter_id: string
+          professional_company: string
+          professional_id: string
+          professional_name: string
+          professional_photo: string
+          professional_points: number
+          professional_position: string
+          rank_in_chapter: number
+          specialization_name: string
+        }[]
       }
       generate_referral_code: { Args: never; Returns: string }
       get_available_chapters_for_specialization: {

@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SphereSearch, SearchFilters } from "./SphereSearch";
+import { CrossChapterRecommendation } from "./CrossChapterRecommendation";
 
 interface Professional {
   id: string;
@@ -32,6 +33,7 @@ export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) =
   const [filteredProfessionals, setFilteredProfessionals] = useState<Professional[]>([]);
   const [specializations, setSpecializations] = useState<Array<{ id: number; name: string }>>([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilters, setActiveFilters] = useState<SearchFilters>({ query: "", specializationId: null });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -90,6 +92,7 @@ export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) =
   };
 
   const handleSearch = (filters: SearchFilters) => {
+    setActiveFilters(filters);
     let filtered = [...professionals];
 
     if (filters.query) {
@@ -150,13 +153,22 @@ export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) =
           </div>
 
           {filteredProfessionals.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <p className="text-muted-foreground">
-                  No se encontraron profesionales con los filtros seleccionados.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="space-y-4">
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <p className="text-muted-foreground">
+                    No se encontraron profesionales con los filtros seleccionados.
+                  </p>
+                </CardContent>
+              </Card>
+              {activeFilters.specializationId && (
+                <CrossChapterRecommendation
+                  professionSpecializationId={activeFilters.specializationId}
+                  excludeChapterId={chapterId}
+                  searchTerm={activeFilters.query || specializations.find(s => s.id === activeFilters.specializationId)?.name}
+                />
+              )}
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredProfessionals.map((professional) => (
