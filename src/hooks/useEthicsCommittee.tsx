@@ -152,6 +152,22 @@ export function useEthicsCommittee() {
     enabled: isCommitteeMember && expulsionReviews.length > 0,
   });
 
+  // Report votes
+  const { data: reportVotes = [] } = useQuery({
+    queryKey: ["report-votes"],
+    queryFn: async () => {
+      const reportIds = pendingReports.map(r => r.id);
+      if (reportIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("report_votes")
+        .select("*")
+        .in("report_id", reportIds);
+      if (error) throw error;
+      return (data || []) as { id: string; report_id: string; voter_id: string; vote: string; severity: string | null; reasoning: string; created_at: string }[];
+    },
+    enabled: isCommitteeMember && pendingReports.length > 0,
+  });
+
   // Reentry requests
   const { data: reentryRequests = [], isLoading: loadingReentries } = useQuery({
     queryKey: ["reentry-requests"],
@@ -207,6 +223,54 @@ export function useEthicsCommittee() {
     onError: (error: any) => {
       console.error("Error casting vote:", error);
       if (error.message?.includes("duplicate")) {
+        toast.error("Ya has votado en este caso");
+      } else {
+        toast.error("Error al registrar el voto");
+      }
+    },
+  });
+
+  // Cast report vote (majority system)
+  const castReportVote = useMutation({
+    mutationFn: async ({
+      reportId,
+      vote,
+      severity,
+      reasoning,
+    }: {
+      reportId: string;
+      vote: "sanction" | "dismiss" | "escalate";
+      severity?: "light" | "serious" | "very_serious";
+      reasoning: string;
+    }) => {
+      if (!professionalId) throw new Error("No professional ID");
+      const { data, error } = await supabase.rpc("cast_report_vote", {
+        _report_id: reportId,
+        _voter_id: professionalId,
+        _vote: vote,
+        _severity: severity || null,
+        _reasoning: reasoning,
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["ethics-committee-reports"] });
+      queryClient.invalidateQueries({ queryKey: ["report-votes"] });
+      if (data?.decision) {
+        const decisionText = data.decision === "sanction"
+          ? `Sancionado (${data.severity})`
+          : data.decision === "dismiss"
+          ? "Desestimado"
+          : "Escalado a admin";
+        toast.success(`Decisión por mayoría: ${decisionText}`);
+      } else {
+        toast.success("Voto registrado. Esperando más votos del Consejo.");
+      }
+    },
+    onError: (error: any) => {
+      console.error("Error casting report vote:", error);
+      if (error.message?.includes("duplicate") || error.message?.includes("unique")) {
         toast.error("Ya has votado en este caso");
       } else {
         toast.error("Error al registrar el voto");
@@ -339,5 +403,8 @@ export function useEthicsCommittee() {
     castingVote: castVote.isPending,
     reentryRequests,
     loadingReentries,
+    reportVotes,
+    castReportVote: castReportVote.mutate,
+    castingReportVote: castReportVote.isPending,
   };
 }

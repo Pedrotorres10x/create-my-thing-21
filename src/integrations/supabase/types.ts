@@ -2415,6 +2415,58 @@ export type Database = {
           },
         ]
       }
+      report_votes: {
+        Row: {
+          created_at: string
+          id: string
+          reasoning: string
+          report_id: string
+          severity: string | null
+          vote: string
+          voter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reasoning: string
+          report_id: string
+          severity?: string | null
+          vote: string
+          voter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reasoning?: string
+          report_id?: string
+          severity?: string | null
+          vote?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_votes_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "user_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_votes_voter_id_fkey"
+            columns: ["voter_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_votes_voter_id_fkey"
+            columns: ["voter_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sector_catalog: {
         Row: {
           created_at: string
@@ -3663,6 +3715,16 @@ export type Database = {
         Args: {
           _reasoning: string
           _review_id: string
+          _vote: string
+          _voter_id: string
+        }
+        Returns: Json
+      }
+      cast_report_vote: {
+        Args: {
+          _reasoning?: string
+          _report_id: string
+          _severity?: string
           _vote: string
           _voter_id: string
         }
