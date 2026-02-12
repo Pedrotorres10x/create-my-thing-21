@@ -88,7 +88,7 @@ export default function MyBusinessSphere() {
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
             <Users className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="text-xl font-bold">Tu Aldea te espera</h2>
+          <h2 className="text-xl font-bold">Tu Esfera te espera</h2>
           <p className="text-muted-foreground max-w-md mx-auto">
             Alic.ia te ayudará a elegir tu esfera de negocio y conectar con profesionales complementarios. Ve a tu Refugio y habla con ella.
           </p>
@@ -113,7 +113,7 @@ export default function MyBusinessSphere() {
           <span className="text-2xl">🌐</span>
         </div>
         <div>
-          <h1 className="text-3xl font-bold">Mi Aldea: {sphereInfo.name}</h1>
+          <h1 className="text-3xl font-bold">Mi Esfera: {sphereInfo.name}</h1>
           <p className="text-muted-foreground">
             Conecta y colabora con profesionales complementarios
           </p>
