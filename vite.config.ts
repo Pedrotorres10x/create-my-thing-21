@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => ({
         navigateFallbackDenylist: [/^\/~oauth/],
         clientsClaim: true,
         skipWaiting: true,
+        importScripts: ["/sw-push.js"],
       },
       manifest: {
         name: "CONECTOR",
