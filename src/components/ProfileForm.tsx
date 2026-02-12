@@ -229,40 +229,58 @@ export function ProfileForm() {
       const validated = profileSchema.parse(formData);
       setLoading(true);
 
-      const { error } = await (supabase as any)
+      const profileData = {
+        user_id: user.id,
+        full_name: validated.full_name,
+        email: formData.email,
+        phone: validated.phone,
+        company_name: validated.company_name,
+        position: validated.position,
+        sector_id: formData.sector_id ? parseInt(formData.sector_id) : null,
+        specialization_id: formData.specialization_id ? parseInt(formData.specialization_id) : null,
+        profession_specialization_id: formData.profession_specialization_id,
+        business_sphere_id: formData.business_sphere_id || null,
+        chapter_id: formData.chapter_id,
+        bio: validated.bio,
+        linkedin_url: validated.linkedin_url,
+        website: validated.website,
+        address: validated.address,
+        city: validated.city,
+        state: validated.state,
+        country: validated.country,
+        postal_code: validated.postal_code,
+        logo_url: formData.logo_url,
+        photo_url: formData.photo_url,
+        video_url: formData.video_url,
+        referred_by_code: formData.referred_by_code || null,
+      };
+
+      // Check if profile already exists to decide insert vs update
+      const { data: existing } = await (supabase as any)
         .from("professionals")
-        .upsert({
-          user_id: user.id,
-          full_name: validated.full_name,
-          email: formData.email,
-          phone: validated.phone,
-          company_name: validated.company_name,
-          position: validated.position,
-          sector_id: formData.sector_id ? parseInt(formData.sector_id) : null,
-          specialization_id: formData.specialization_id ? parseInt(formData.specialization_id) : null,
-          profession_specialization_id: formData.profession_specialization_id,
-          business_sphere_id: formData.business_sphere_id || null,
-          chapter_id: formData.chapter_id,
-          bio: validated.bio,
-          linkedin_url: validated.linkedin_url,
-          website: validated.website,
-          address: validated.address,
-          city: validated.city,
-          state: validated.state,
-          country: validated.country,
-          postal_code: validated.postal_code,
-          logo_url: formData.logo_url,
-          photo_url: formData.photo_url,
-          video_url: formData.video_url,
-          referred_by_code: formData.referred_by_code || null,
-          status: "waiting_approval",
-        });
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      let error;
+      if (existing) {
+        // Update existing profile
+        ({ error } = await (supabase as any)
+          .from("professionals")
+          .update(profileData)
+          .eq("user_id", user.id));
+      } else {
+        // Insert new profile
+        ({ error } = await (supabase as any)
+          .from("professionals")
+          .insert({ ...profileData, status: "waiting_approval" }));
+      }
 
       if (error) throw error;
 
       toast({
         title: "Perfil guardado",
-        description: "Tu perfil ha sido enviado para revisión",
+        description: existing ? "Tu Tótem ha sido actualizado" : "Tu Tótem ha sido enviado para revisión",
       });
 
       navigate("/dashboard");
@@ -501,14 +519,14 @@ export function ProfileForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="chapter_id">Capítulo *</Label>
+        <Label htmlFor="chapter_id">Mi Tribu *</Label>
         <Select 
           value={formData.chapter_id || ""} 
           onValueChange={(value) => setFormData(prev => ({ ...prev, chapter_id: value }))}
           disabled={!formData.state}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Selecciona tu capítulo" />
+            <SelectValue placeholder="Selecciona tu Tribu" />
           </SelectTrigger>
           <SelectContent>
             {filteredChapters.map((chapter) => (
@@ -520,7 +538,7 @@ export function ProfileForm() {
         </Select>
         {!formData.state && (
           <p className="text-sm text-muted-foreground">
-            Primero selecciona tu provincia/estado para ver los capítulos disponibles
+            Primero selecciona tu provincia/estado para ver las Tribus disponibles
           </p>
         )}
       </div>
