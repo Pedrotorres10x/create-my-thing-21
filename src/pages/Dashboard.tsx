@@ -173,6 +173,9 @@ const Dashboard = () => {
           <DynamicGreeting 
             userName={professional?.full_name?.split(' ')[0] || 'Profesional'}
             consecutiveDays={0}
+            chapterSize={stats?.level ? upcomingMeetings.length : 0}
+            referralsSent={stats?.referralsSent || 0}
+            meetingsCompleted={upcomingMeetings.length}
           />
 
           {/* Alic.ia Chat - MÁXIMA PROMINENCIA */}
