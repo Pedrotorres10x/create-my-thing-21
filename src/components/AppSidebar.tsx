@@ -25,7 +25,7 @@ const coreItems = [
 ];
 
 const expandedMainItems = [
-  { title: "Mis Fichajes", url: "/referrals", icon: Handshake },
+  { title: "Mis Invitados", url: "/referrals", icon: Handshake },
   { title: "Mi Tribu", url: "/chapter", icon: Users },
 ];
 
