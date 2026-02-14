@@ -89,25 +89,29 @@ export function AIChat() {
     // Module-level check survives React StrictMode unmount/remount
     if (moduleInitializedForUser === user.id) return;
 
+    // Set SYNCHRONOUSLY before any async work to block StrictMode duplicate
+    moduleInitializedForUser = user.id;
+
+    // Abort any previous in-flight request
+    if (moduleAbortController) {
+      moduleAbortController.abort();
+    }
+    moduleAbortController = new AbortController();
+
     const startChat = async () => {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession?.access_token) return;
+      if (!currentSession?.access_token) {
+        moduleInitializedForUser = null;
+        return;
+      }
       
       const validatedToken = currentSession.access_token;
       if (!isAuthenticatedToken(validatedToken)) {
         console.log('Token not authenticated yet, waiting for auth session');
+        moduleInitializedForUser = null;
         return;
       }
-
-      // Set module-level flag BEFORE any async work
-      moduleInitializedForUser = user.id;
-
-      // Abort any previous in-flight request
-      if (moduleAbortController) {
-        moduleAbortController.abort();
-      }
-      moduleAbortController = new AbortController();
-      const signal = moduleAbortController.signal;
+      const signal = moduleAbortController!.signal;
 
       try {
         const { data: professional } = await supabase
