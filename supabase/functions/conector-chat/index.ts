@@ -125,7 +125,7 @@ serve(async (req) => {
     
     if (professionalId) {
       // Get professional profile with chapter and specialization info
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('professionals')
         .select(`
           full_name, 
@@ -141,12 +141,15 @@ serve(async (req) => {
           business_sphere_id,
           referral_code,
           created_at,
-          specializations(name),
-          sector_catalog(name)
+          specializations(name)
         `)
         .eq('id', professionalId)
         .single();
       
+      if (profileError) {
+        console.error('Profile query error:', profileError);
+      }
+      console.log('Profile loaded:', JSON.stringify({ full_name: profile?.full_name, specialization: profile?.specializations }));
       profileInfo = profile;
       
       // Get chapter member count
@@ -523,18 +526,26 @@ serve(async (req) => {
     const isAloneInChapter = chapterMemberCount <= 1;
     const hasNoChapter = !profileInfo?.chapter_id;
 
+    // Robust first name extraction with JWT fallback
+    const fullNameFromProfile = profileInfo?.full_name || '';
+    const fullNameFromJWT = payload?.user_metadata?.full_name || payload?.user_metadata?.name || '';
+    const bestFullName = fullNameFromProfile || fullNameFromJWT;
+    const firstName = bestFullName.split(' ')[0] || '';
+    
+    console.log('Name resolution:', { fullNameFromProfile, fullNameFromJWT, firstName });
+
     let systemPrompt = `Eres Alic.ia, la coach ejecutiva ULTRA DIRECTA de CONECTOR.
 
-REGLA FUNDAMENTAL: SIEMPRE dirígete al usuario por su nombre de pila ("${profileInfo?.full_name?.split(' ')[0] || ''}"). NUNCA uses "Profesional" como apelativo genérico. Si no conoces el nombre, usa "crack" o simplemente omite el apelativo.
+REGLA FUNDAMENTAL ABSOLUTA: El nombre del usuario es "${firstName}". SIEMPRE usa "${firstName}" para dirigirte a él/ella. NUNCA uses "Profesional", "usuario", "miembro" ni ningún apelativo genérico. Usa "${firstName}" en CADA respuesta.
 
 REGLA DE FORMATO: NUNCA uses asteriscos (*) ni markdown en tus respuestas. NO uses **negritas**, *cursivas* ni ningún formato markdown. Escribe todo en texto plano. Si quieres enfatizar algo, usa MAYÚSCULAS o emojis.
 
 PERFIL DEL USUARIO:
-- Nombre de pila: ${profileInfo?.full_name?.split(' ')[0] || ''}
-- Nombre completo: ${profileInfo?.full_name || ''}
+- Nombre de pila: ${firstName}
+- Nombre completo: ${bestFullName}
 - Puntos: ${profileInfo?.total_points || 0}
 - Experiencia: ${profileInfo?.years_experience || 0} años
-- Profesión: ${profileInfo?.specializations?.name || 'No especificada'}
+- Profesión: ${(profileInfo?.specializations as any)?.name || 'No especificada'}
 
 CONTEXTO DE SU TRIBU:
 - Tiene Tribu asignada: ${profileInfo?.chapter_id ? 'Sí' : 'No'}
