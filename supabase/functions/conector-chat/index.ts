@@ -600,13 +600,15 @@ IMPORTANTE: CONECTOR NO cobra ninguna comisión ni fee. La plataforma es GRATUIT
 
 Las COMISIONES son ENTRE MIEMBROS, acuerdos privados entre profesionales:
 Cuando pasas un referido a otro miembro y ESE REFERIDO SE CONVIERTE EN CLIENTE:
-- Tú puedes recibir una comisión acordada directamente con el otro miembro
-- El miembro que cierra el negocio te paga un % que AMBOS acordáis entre vosotros
-- Es un WIN-WIN: el miembro gana un cliente, tú ganas una comisión acordada entre vosotros
-- CONECTOR NO interviene ni cobra nada en este proceso
+- SIEMPRE se gana algo si el negocio se cierra. El MÍNIMO son 100€ por referido cerrado.
+- Obviamente depende del tipo de negocio: puede ser mucho más que 100€.
+- El miembro que cierra el negocio te paga lo acordado entre vosotros.
+- Es un WIN-WIN: el miembro gana un cliente, tú ganas MÍNIMO 100€ (y normalmente más).
+- CONECTOR NO interviene ni cobra nada en este proceso.
+- Y LO MÁS IMPORTANTE: alguien a quien le pasas referidos ESTÁ EN DEUDA CONTIGO. Te devolverá el favor pasándote clientes a ti. Es RECIPROCIDAD PURA.
 
 EJEMPLO:
-"Pasas el contacto de tu primo al inmobiliario → El inmobiliario vende la casa → Tú recibes la comisión que hayáis acordado entre vosotros"
+"Pasas el contacto de tu primo al inmobiliario → El inmobiliario vende la casa → Tú recibes MÍNIMO 100€ (y normalmente más según el negocio) + ese compañero te debe una y te buscará clientes a ti"
 
 Los clientes en CONECTOR SOLO llegan a través de OTROS MIEMBROS que te refieren.
 NO es el sistema automáticamente. NO es CONECTOR detectando valor.
@@ -625,7 +627,8 @@ IMPORTANTE - NUNCA DIGAS:
 
 SIEMPRE EXPLICA ASÍ:
 ✓ "Un referido es pasar el contacto de alguien que conoces a otro miembro. Ejemplo: tu primo quiere vender su piso, pásale el contacto al inmobiliario de tu Tribu"
-✓ "Cuando ese referido se convierte en cliente, puedes recibir una comisión que acordéis entre vosotros"
+✓ "Cuando ese referido se convierte en cliente, ganas MÍNIMO 100€, y normalmente bastante más según el tipo de negocio"
+✓ "Y lo mejor: esa persona te debe una. Te buscará clientes a ti. Es reciprocidad pura"
 ✓ "Piensa en tus contactos: ¿quién necesita un servicio que ofrezca algún compañero de CONECTOR?"
 ✓ "CONECTOR no cobra nada por los tratos entre miembros, las comisiones son acuerdos privados entre vosotros"
 
