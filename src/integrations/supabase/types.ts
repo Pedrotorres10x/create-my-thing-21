@@ -2871,6 +2871,145 @@ export type Database = {
         }
         Relationships: []
       }
+      specialization_conflict_requests: {
+        Row: {
+          applicant_description: string | null
+          applicant_id: string
+          applicant_specialization: string
+          chapter_id: string
+          created_at: string
+          decided_at: string | null
+          decision_reason: string | null
+          existing_professional_id: string
+          existing_specialization: string
+          id: string
+          status: string
+          updated_at: string
+          votes_approve: number
+          votes_new_chapter: number
+          votes_reject: number
+        }
+        Insert: {
+          applicant_description?: string | null
+          applicant_id: string
+          applicant_specialization: string
+          chapter_id: string
+          created_at?: string
+          decided_at?: string | null
+          decision_reason?: string | null
+          existing_professional_id: string
+          existing_specialization: string
+          id?: string
+          status?: string
+          updated_at?: string
+          votes_approve?: number
+          votes_new_chapter?: number
+          votes_reject?: number
+        }
+        Update: {
+          applicant_description?: string | null
+          applicant_id?: string
+          applicant_specialization?: string
+          chapter_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decision_reason?: string | null
+          existing_professional_id?: string
+          existing_specialization?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          votes_approve?: number
+          votes_new_chapter?: number
+          votes_reject?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "specialization_conflict_requests_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "specialization_conflict_requests_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "specialization_conflict_requests_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "specialization_conflict_requests_existing_professional_id_fkey"
+            columns: ["existing_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "specialization_conflict_requests_existing_professional_id_fkey"
+            columns: ["existing_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      specialization_conflict_votes: {
+        Row: {
+          conflict_request_id: string
+          created_at: string
+          id: string
+          reasoning: string
+          vote: string
+          voter_id: string
+        }
+        Insert: {
+          conflict_request_id: string
+          created_at?: string
+          id?: string
+          reasoning: string
+          vote: string
+          voter_id: string
+        }
+        Update: {
+          conflict_request_id?: string
+          created_at?: string
+          id?: string
+          reasoning?: string
+          vote?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "specialization_conflict_votes_conflict_request_id_fkey"
+            columns: ["conflict_request_id"]
+            isOneToOne: false
+            referencedRelation: "specialization_conflict_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "specialization_conflict_votes_voter_id_fkey"
+            columns: ["voter_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "specialization_conflict_votes_voter_id_fkey"
+            columns: ["voter_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       specializations: {
         Row: {
           created_at: string
