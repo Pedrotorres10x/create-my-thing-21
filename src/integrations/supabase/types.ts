@@ -2187,6 +2187,7 @@ export type Database = {
           position: string | null
           postal_code: string | null
           profession_specialization_id: number | null
+          professional_type: string | null
           referral_code: string | null
           referred_by_code: string | null
           registration_type: string | null
@@ -2248,6 +2249,7 @@ export type Database = {
           position?: string | null
           postal_code?: string | null
           profession_specialization_id?: number | null
+          professional_type?: string | null
           referral_code?: string | null
           referred_by_code?: string | null
           registration_type?: string | null
@@ -2309,6 +2311,7 @@ export type Database = {
           position?: string | null
           postal_code?: string | null
           profession_specialization_id?: number | null
+          professional_type?: string | null
           referral_code?: string | null
           referred_by_code?: string | null
           registration_type?: string | null
