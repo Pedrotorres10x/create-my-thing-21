@@ -412,6 +412,61 @@ export function useEthicsCommittee() {
     },
   });
 
+  // Specialization conflict requests
+  const { data: conflictRequests = [], isLoading: loadingConflicts } = useQuery({
+    queryKey: ["specialization-conflicts", professionalId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("specialization_conflict_requests")
+        .select(`
+          *,
+          applicant:professionals!specialization_conflict_requests_applicant_id_fkey(full_name, email),
+          existing_professional:professionals!specialization_conflict_requests_existing_professional_id_fkey(full_name, email),
+          chapter:chapters!specialization_conflict_requests_chapter_id_fkey(name, city)
+        `)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!professionalId,
+  });
+
+  const { data: conflictVotes = [] } = useQuery({
+    queryKey: ["specialization-conflict-votes", professionalId],
+    queryFn: async () => {
+      const requestIds = conflictRequests.map((r: any) => r.id);
+      if (requestIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("specialization_conflict_votes")
+        .select("*")
+        .in("conflict_request_id", requestIds);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: conflictRequests.length > 0,
+  });
+
+  const castConflictVote = useMutation({
+    mutationFn: async ({ conflictId, vote, reasoning }: { conflictId: string; vote: string; reasoning: string }) => {
+      const { error } = await supabase.from("specialization_conflict_votes").insert({
+        conflict_request_id: conflictId,
+        voter_id: professionalId,
+        vote,
+        reasoning,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["specialization-conflicts"] });
+      queryClient.invalidateQueries({ queryKey: ["specialization-conflict-votes"] });
+      toast.success("Voto registrado correctamente");
+    },
+    onError: (error: any) => {
+      console.error("Error voting:", error);
+      toast.error("Error al votar");
+    },
+  });
+
   return {
     professionalId,
     isCommitteeMember,
@@ -434,5 +489,10 @@ export function useEthicsCommittee() {
     reportVotes,
     castReportVote: castReportVote.mutate,
     castingReportVote: castReportVote.isPending,
+    conflictRequests,
+    loadingConflicts,
+    conflictVotes,
+    castConflictVote: castConflictVote.mutate,
+    castingConflictVote: castConflictVote.isPending,
   };
 }

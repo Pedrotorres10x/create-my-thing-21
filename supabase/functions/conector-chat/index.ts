@@ -356,7 +356,7 @@ serve(async (req) => {
           for (const ch of chaptersInArea) {
             const { data: chapterPros } = await supabase
               .from('professionals')
-              .select('specialization_id, specializations(name), business_description, full_name')
+              .select('id, specialization_id, specializations(name), business_description, full_name')
               .eq('chapter_id', ch.id)
               .eq('status', 'approved');
             (ch as any).existing_professionals = chapterPros || [];
@@ -971,11 +971,19 @@ ${chaptersInArea.map((ch: any) => {
 
 LÓGICA DE CONFLICTO DE PROFESIÓN:
 - Si en una tribu YA existe alguien con la MISMA profesión que el nuevo usuario:
-  1. Pregúntale brevemente en qué se especializa dentro de su profesión para entender si hay diferencia real (ej: "Ya hay un inmobiliaria en esta Tribu: [nombre]. Para ver si encajáis sin pisaros, cuéntame: ¿qué tipo de inmobiliaria haces exactamente? ¿Venta, alquiler, obra nueva...?")
-  2. Con su respuesta, informa que el Comité de Sabios de la Tribu evaluará su entrada: "Perfecto. Tu solicitud se eleva al Comité de Sabios de la Tribu. Ellos revisarán que vuestras líneas de negocio no se pisen y decidirán si entras en esta Tribu o si es mejor que fundes una nueva. Te avisaremos pronto."
-  3. NO le asignes tribu tú. El Comité decide.
-  4. Mientras tanto, sugiérele que complete su perfil y explore la plataforma.
-- Si NO hay conflicto de profesión, asigna directamente sin preguntar más.` :
+  1. Pregúntale brevemente en qué se especializa dentro de su profesión para entender si hay diferencia real (ej: "Ya hay un inmobiliaria en esta Tribu: [nombre]. Para ver si encajáis sin pisaros, cuéntame: ¿qué tipo de inmobiliaria haces exactamente?")
+  2. Cuando el usuario responda con su especialización, incluye EXACTAMENTE este marcador oculto al FINAL de tu mensaje (el sistema lo procesará automáticamente):
+     [CREAR_CONFLICTO:chapter_id=ID_DEL_CHAPTER,existing_id=ID_DEL_PROFESIONAL_EXISTENTE,specialization=LO_QUE_DIJO_EL_USUARIO]
+  3. Tu mensaje visible debe decir: "Perfecto. Tu solicitud se eleva al Comité de Sabios de la Tribu. Ellos revisarán que no os piséis y decidirán. Te avisaremos pronto."
+  4. NO le asignes tribu tú. El Comité decide.
+  5. Mientras tanto, sugiérele que complete su perfil y explore la plataforma.
+- Si NO hay conflicto de profesión, asigna directamente sin preguntar más.
+
+DATOS DE LOS CHAPTERS PARA EL MARCADOR:
+${chaptersInArea.map((ch: any) => {
+  const existingPros = (ch as any).existing_professionals || [];
+  return existingPros.map((p: any) => `Chapter "${ch.name}" (ID: ${ch.id}) tiene a ${p.full_name} (ID: ${p.id}) como ${p.specializations?.name || 'sin especialidad'}`).join('\n');
+}).join('\n')}` :
   `- No hay Tribus en su zona aún.
 - "En tu zona aún no hay Tribu. Puedes ser el primero. ¿Te animas a abrir una?"`}
 
@@ -1254,23 +1262,71 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
     const stream = new ReadableStream({
       async start(controller) {
         const decoder = new TextDecoder();
+        const encoder = new TextEncoder();
+        let markerBuffer = '';
+        
         try {
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            controller.enqueue(value);
             
-            // Parse SSE to capture AI content
+            // Parse SSE to capture AI content and filter out markers
             const text = decoder.decode(value, { stream: true });
+            let filteredText = '';
+            
             for (const line of text.split('\n')) {
-              if (!line.startsWith('data: ')) continue;
+              if (!line.startsWith('data: ')) {
+                filteredText += line + '\n';
+                continue;
+              }
               const jsonStr = line.slice(6).trim();
-              if (jsonStr === '[DONE]') continue;
+              if (jsonStr === '[DONE]') {
+                filteredText += line + '\n';
+                continue;
+              }
               try {
                 const parsed = JSON.parse(jsonStr);
                 const content = parsed.choices?.[0]?.delta?.content;
-                if (content) aiResponseContent += content;
-              } catch {}
+                if (content) {
+                  aiResponseContent += content;
+                  // Buffer potential marker content and strip from output
+                  markerBuffer += content;
+                  if (markerBuffer.includes('[CREAR_CONFLICTO:')) {
+                    const endIdx = markerBuffer.indexOf(']', markerBuffer.indexOf('[CREAR_CONFLICTO:'));
+                    if (endIdx !== -1) {
+                      // Full marker found, strip it
+                      markerBuffer = markerBuffer.replace(/\[CREAR_CONFLICTO:[^\]]*\]/, '');
+                      if (markerBuffer) {
+                        const cleanChunk = { ...parsed, choices: [{ ...parsed.choices[0], delta: { content: markerBuffer } }] };
+                        filteredText += `data: ${JSON.stringify(cleanChunk)}\n`;
+                      }
+                      markerBuffer = '';
+                      continue;
+                    }
+                    // Partial marker, keep buffering (don't send yet)
+                    continue;
+                  }
+                  // No marker, flush buffer
+                  if (markerBuffer && !markerBuffer.includes('[')) {
+                    filteredText += line + '\n';
+                    markerBuffer = '';
+                  } else if (!markerBuffer.includes('[')) {
+                    filteredText += line + '\n';
+                    markerBuffer = '';
+                  } else {
+                    // Might be start of marker, keep buffering
+                    continue;
+                  }
+                } else {
+                  filteredText += line + '\n';
+                }
+              } catch {
+                filteredText += line + '\n';
+              }
+            }
+            
+            if (filteredText) {
+              controller.enqueue(encoder.encode(filteredText));
             }
           }
           controller.close();
@@ -1281,8 +1337,35 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
             await supabaseBg.from('chat_messages').insert({
               conversation_id: activeConversationId,
               role: 'assistant',
-              content: aiResponseContent.substring(0, 5000),
+              content: aiResponseContent.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').substring(0, 5000),
             });
+            
+            // Process conflict creation marker if present
+            const conflictMatch = aiResponseContent.match(/\[CREAR_CONFLICTO:chapter_id=([^,]+),existing_id=([^,]+),specialization=([^\]]+)\]/);
+            if (conflictMatch && professionalId) {
+              const [, chapterId, existingId, specialization] = conflictMatch;
+              try {
+                // Get existing professional's specialization name
+                const { data: existingPro } = await supabaseBg
+                  .from('professionals')
+                  .select('specializations(name)')
+                  .eq('id', existingId)
+                  .single();
+                
+                await supabaseBg.from('specialization_conflict_requests').insert({
+                  applicant_id: professionalId,
+                  chapter_id: chapterId,
+                  existing_professional_id: existingId,
+                  applicant_specialization: specialization.trim(),
+                  applicant_description: specialization.trim(),
+                  existing_specialization: (existingPro as any)?.specializations?.name || 'Sin especificar',
+                  status: 'pending',
+                });
+                console.log('Conflict request created for', professionalId, 'in chapter', chapterId);
+              } catch (conflictErr) {
+                console.error('Error creating conflict request:', conflictErr);
+              }
+            }
           }
         } catch (err) {
           controller.error(err);

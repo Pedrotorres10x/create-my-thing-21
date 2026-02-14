@@ -3,12 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Shield, Crown, Eye, Scale, History } from "lucide-react";
+import { Shield, Crown, Eye, Scale, History, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExpulsionReviewsTab } from "@/components/council/ExpulsionReviewsTab";
 import { ReentryRequestsTab } from "@/components/council/ReentryRequestsTab";
 import { ReportsTab } from "@/components/council/ReportsTab";
 import { DecisionHistoryTab } from "@/components/council/DecisionHistoryTab";
+import { SpecializationConflictsTab } from "@/components/council/SpecializationConflictsTab";
 
 const COUNCIL_TITLES = [
   { title: "El Estratega", icon: Crown, description: "Líder del Consejo" },
@@ -36,6 +37,11 @@ export default function EthicsCommittee() {
     reportVotes,
     castReportVote,
     castingReportVote,
+    conflictRequests,
+    loadingConflicts,
+    conflictVotes,
+    castConflictVote,
+    castingConflictVote,
   } = useEthicsCommittee();
 
   if (checkingMembership) {
@@ -62,6 +68,7 @@ export default function EthicsCommittee() {
   const pendingExpulsions = expulsionReviews.filter(r => r.status === "pending").length;
   const pendingReentries = reentryRequests.filter((r: any) => r.status === "pending").length;
   const pendingReportCount = pendingReports.filter(r => r.status === "pending").length;
+  const pendingConflicts = conflictRequests.filter((c: any) => c.status === "pending").length;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -128,7 +135,11 @@ export default function EthicsCommittee() {
 
       {/* Tabs */}
       <Tabs defaultValue="expulsions" className="w-full">
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-6 w-full">
+          <TabsTrigger value="conflicts">
+            <Users className="h-4 w-4 mr-1" />
+            Conflictos {pendingConflicts > 0 && `(${pendingConflicts})`}
+          </TabsTrigger>
           <TabsTrigger value="expulsions">
             Expulsiones {pendingExpulsions > 0 && `(${pendingExpulsions})`}
           </TabsTrigger>
@@ -146,6 +157,17 @@ export default function EthicsCommittee() {
             Historial
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="conflicts" className="mt-4">
+          <SpecializationConflictsTab
+            conflicts={conflictRequests as any}
+            loading={loadingConflicts}
+            votes={conflictVotes as any}
+            currentProfessionalId={professionalId}
+            onVote={castConflictVote}
+            isVoting={castingConflictVote}
+          />
+        </TabsContent>
 
         <TabsContent value="expulsions" className="mt-4">
           <ExpulsionReviewsTab
