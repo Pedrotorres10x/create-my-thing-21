@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, User, Sparkles, Bot, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import aliciaAvatar from "@/assets/alicia-avatar.png";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
 import { AIUsageIndicator } from "./subscription/AIUsageIndicator";
@@ -371,6 +372,7 @@ export function AIChat() {
           <div className="flex items-center gap-3">
             <div className="relative animate-float">
               <Avatar className="h-12 w-12 md:h-14 md:w-14 border-3 border-white/30 shadow-2xl alicia-shadow ring-2 ring-white/20">
+                <AvatarImage src={aliciaAvatar} alt="Alic.ia" className="object-cover" />
                 <AvatarFallback className="bg-white/90 text-primary text-lg md:text-xl font-bold">
                   <Bot className="h-6 w-6 md:h-7 md:w-7" />
                 </AvatarFallback>
@@ -426,6 +428,7 @@ export function AIChat() {
             >
               {message.role === "assistant" && (
                 <Avatar className="h-9 w-9 border-2 border-primary/30 shadow-lg alicia-shadow flex-shrink-0">
+                  <AvatarImage src={aliciaAvatar} alt="Alic.ia" className="object-cover" />
                   <AvatarFallback className="alicia-gradient text-white text-sm font-bold animate-gradient">
                     <Bot className="h-5 w-5" />
                   </AvatarFallback>
@@ -458,6 +461,7 @@ export function AIChat() {
         {isLoading && (
           <div className="flex gap-3 animate-fade-in">
             <Avatar className="h-9 w-9 border-2 border-primary/30 shadow-lg alicia-shadow flex-shrink-0 animate-pulse-glow">
+              <AvatarImage src={aliciaAvatar} alt="Alic.ia" className="object-cover" />
               <AvatarFallback className="alicia-gradient text-white text-sm font-bold animate-gradient">
                 <Bot className="h-5 w-5" />
               </AvatarFallback>
