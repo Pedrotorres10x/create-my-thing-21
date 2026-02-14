@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, User, Sparkles, Bot, Lock } from "lucide-react";
+import { Send, User, Sparkles, Bot, Lock, Camera, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import aliciaAvatar from "@/assets/alicia-avatar.png";
@@ -30,6 +30,8 @@ export function AIChat() {
   const [initializing, setInitializing] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/conector-chat`;
   const isStreamingRef = useRef(false);
   const hasInitializedRef = useRef(false);
@@ -370,6 +372,149 @@ export function AIChat() {
     }
   };
 
+  const handleChatPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("La imagen no debe superar 5MB");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Solo se permiten imágenes");
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.id}/profile.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('photos')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('photos')
+        .getPublicUrl(filePath);
+
+      const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+
+      // Update professionals table
+      await supabase
+        .from("professionals")
+        .update({ photo_url: urlWithCacheBust })
+        .eq("user_id", user.id);
+
+      toast.success("¡Foto subida! ✅");
+
+      // Send confirmation message to Alic.IA
+      const confirmMsg: Message = { role: "user", content: "[FOTO_SUBIDA]" };
+      setMessages((prev) => [...prev, { role: "user", content: "📸 Foto subida ✅" }]);
+      
+      // Trigger AI response acknowledging the photo
+      setIsLoading(true);
+      isStreamingRef.current = true;
+
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession?.access_token) return;
+
+      const { data: professional } = await supabase
+        .from('professionals')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      let assistantContent = "";
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${currentSession.access_token}`,
+        },
+        body: JSON.stringify({
+          messages: [...messages, confirmMsg],
+          professionalId: professional?.id
+        }),
+      });
+
+      if (resp.ok && resp.body) {
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let textBuffer = "";
+        let pendingDataLines: string[] = [];
+
+        const processChunk = (jsonStr: string) => {
+          if (jsonStr === "[DONE]") return;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantContent += content;
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === "assistant") {
+                  return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantContent } : m);
+                }
+                return [...prev, { role: "assistant", content: assistantContent }];
+              });
+            }
+          } catch {
+            pendingDataLines.push(jsonStr);
+            const combined = pendingDataLines.join("");
+            try {
+              const parsed = JSON.parse(combined);
+              const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+              if (content) {
+                assistantContent += content;
+                setMessages((prev) => {
+                  const last = prev[prev.length - 1];
+                  if (last?.role === "assistant") {
+                    return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantContent } : m);
+                  }
+                  return [...prev, { role: "assistant", content: assistantContent }];
+                });
+              }
+              pendingDataLines = [];
+            } catch { /* wait */ }
+          }
+        };
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          textBuffer += decoder.decode(value, { stream: true });
+          let newlineIndex: number;
+          while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+            let line = textBuffer.slice(0, newlineIndex);
+            textBuffer = textBuffer.slice(newlineIndex + 1);
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            if (pendingDataLines.length > 0) {
+              if (line.trim() === "") { pendingDataLines = []; continue; }
+              const fragment = line.startsWith("data: ") ? line.slice(6) : line;
+              processChunk(fragment);
+              continue;
+            }
+            if (line.startsWith(":") || line.trim() === "") continue;
+            if (!line.startsWith("data: ")) continue;
+            processChunk(line.slice(6).trim());
+          }
+        }
+      }
+
+      setIsLoading(false);
+      isStreamingRef.current = false;
+      scrollToBottomIfNeeded(true);
+    } catch (error: any) {
+      console.error("Photo upload error:", error);
+      toast.error("No se pudo subir la foto");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   return (
     <Card className="w-full flex flex-col shadow-2xl border-none overflow-hidden bg-gradient-to-br from-background via-background to-primary/10 relative">
       {/* Decorative elements */}
@@ -458,9 +603,35 @@ export function AIChat() {
                   __html: message.content
                     .replace(/\[PERFIL:[^\]]*\]/g, '')
                     .replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '')
+                    .replace(/\[PEDIR_FOTO\]/g, '')
                     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*(.+?)\*/g, '<em>$1</em>')
                 }} />
+                {message.role === "assistant" && message.content.includes("[PEDIR_FOTO]") && (
+                  <div className="mt-3">
+                    <input
+                      ref={photoInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleChatPhotoUpload}
+                      className="hidden"
+                      disabled={uploadingPhoto}
+                    />
+                    <Button
+                      onClick={() => photoInputRef.current?.click()}
+                      disabled={uploadingPhoto}
+                      className="alicia-gradient hover:opacity-90 text-white rounded-xl gap-2"
+                      size="sm"
+                    >
+                      {uploadingPhoto ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Camera className="h-4 w-4" />
+                      )}
+                      {uploadingPhoto ? "Subiendo..." : "📸 Subir mi foto"}
+                    </Button>
+                  </div>
+                )}
               </div>
               {message.role === "user" && (
                 <Avatar className="h-9 w-9 border-2 border-primary/30 shadow-lg flex-shrink-0">
