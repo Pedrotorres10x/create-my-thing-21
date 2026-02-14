@@ -175,7 +175,7 @@ const Referrals = () => {
           <CardHeader>
             <CardTitle>Completa tu perfil</CardTitle>
             <CardDescription>
-              Necesitas completar tu perfil profesional para acceder a Mis Fichajes
+              Necesitas completar tu perfil profesional para acceder a Mis Invitados
             </CardDescription>
           </CardHeader>
         </Card>
@@ -186,8 +186,8 @@ const Referrals = () => {
   return (
     <div className="p-8 space-y-6">
       <div>
-         <h1 className="text-3xl font-bold mb-2">Mis Fichajes</h1>
-         <p className="text-muted-foreground">Ficha profesionales para tu tribu e intercambia clientes</p>
+         <h1 className="text-3xl font-bold mb-2">Mis Invitados</h1>
+         <p className="text-muted-foreground">Invita profesionales a tu tribu e intercambia clientes</p>
       </div>
 
       {/* Stats Cards */}

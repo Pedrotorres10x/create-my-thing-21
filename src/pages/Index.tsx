@@ -33,7 +33,7 @@ const Index = () => {
     },
     {
       icon: Handshake,
-       title: "Mis Fichajes",
+       title: "Mis Invitados",
        description: "Pasas clientes de tu círculo a miembros de tu grupo. Ellos cierran el trato. Tú cobras tu comisión. Así de directo."
     },
     {
