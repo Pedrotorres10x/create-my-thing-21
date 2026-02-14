@@ -19,6 +19,10 @@ interface Message {
   content: string;
 }
 
+// Module-level flag to survive React StrictMode unmount/remount cycles
+let moduleInitializedForUser: string | null = null;
+let moduleAbortController: AbortController | null = null;
+
 export function AIChat() {
   const navigate = useNavigate();
   const { user, session, loading: authLoading } = useAuth();
@@ -30,7 +34,6 @@ export function AIChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/conector-chat`;
-  const hasInitialized = useRef(false);
   const isStreamingRef = useRef(false);
 
   // Scroll inteligente: solo si el usuario está cerca del final
@@ -80,31 +83,30 @@ export function AIChat() {
 
   // Generar mensaje inicial proactivo de Alicia cuando el usuario entra
   useEffect(() => {
-    // Wait for auth to be fully ready
-    if (authLoading || !user) {
-      return;
-    }
+    if (authLoading || !user) return;
 
-    // Prevent duplicate calls (including React StrictMode)
-    if (hasInitialized.current) return;
-    hasInitialized.current = true;
+    // Module-level check survives React StrictMode unmount/remount
+    if (moduleInitializedForUser === user.id) return;
 
-    // Get fresh session token inside the effect to avoid session ref changes triggering re-runs
     const startChat = async () => {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession?.access_token) {
-        hasInitialized.current = false;
-        return;
-      }
+      if (!currentSession?.access_token) return;
       
       const validatedToken = currentSession.access_token;
-
-      // Validate token is authenticated user token, not anon key
       if (!isAuthenticatedToken(validatedToken)) {
         console.log('Token not authenticated yet, waiting for auth session');
-        hasInitialized.current = false;
         return;
       }
+
+      // Set module-level flag BEFORE any async work
+      moduleInitializedForUser = user.id;
+
+      // Abort any previous in-flight request
+      if (moduleAbortController) {
+        moduleAbortController.abort();
+      }
+      moduleAbortController = new AbortController();
+      const signal = moduleAbortController.signal;
 
       try {
         const { data: professional } = await supabase
@@ -136,12 +138,15 @@ export function AIChat() {
             messages: [{ role: "user", content: isOnboarding ? "[ONBOARDING]" : "[INICIO_SESION]" }],
             professionalId: professional.id
           }),
+          signal,
         });
+
+        if (signal.aborted) return;
 
         if (!resp.ok) {
           if (resp.status === 401) {
             console.log('Got 401, will retry when session updates');
-            hasInitialized.current = false;
+            moduleInitializedForUser = null;
             isStreamingRef.current = false;
             return;
           }
@@ -163,6 +168,7 @@ export function AIChat() {
         let assistantContent = "";
 
         while (true) {
+          if (signal.aborted) { reader.cancel(); return; }
           const { done, value } = await reader.read();
           if (done) break;
           textBuffer += decoder.decode(value, { stream: true });
@@ -197,6 +203,7 @@ export function AIChat() {
         setInitializing(false);
         scrollToBottomIfNeeded(true);
       } catch (error: any) {
+        if (error.name === 'AbortError') return;
         console.error("Error initializing chat:", error);
         isStreamingRef.current = false;
         setInitializing(false);
@@ -204,6 +211,13 @@ export function AIChat() {
     };
 
     startChat();
+
+    return () => {
+      // Cleanup: abort in-flight request if component unmounts
+      if (moduleAbortController) {
+        moduleAbortController.abort();
+      }
+    };
   }, [authLoading, user?.id, CHAT_URL]);
 
 
