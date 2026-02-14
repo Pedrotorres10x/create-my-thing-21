@@ -60,30 +60,37 @@ export const AliciaWelcomeModal = ({
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullMessage = "";
+        let textBuffer = "";
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
+          textBuffer += decoder.decode(value, { stream: true });
 
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split("\n");
+          let newlineIndex: number;
+          while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+            let line = textBuffer.slice(0, newlineIndex);
+            textBuffer = textBuffer.slice(newlineIndex + 1);
 
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const data = line.slice(6);
-              if (data === "[DONE]") continue;
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            if (line.startsWith(":") || line.trim() === "") continue;
+            if (!line.startsWith("data: ")) continue;
 
-              try {
-                const parsed = JSON.parse(data);
-                const content = parsed.choices?.[0]?.delta?.content;
-                if (content) {
-                  fullMessage += content;
-                  setMessage(fullMessage);
-                  setInitializing(false);
-                }
-              } catch (e) {
-                console.error("Error parsing chunk:", e);
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === "[DONE]") continue;
+
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) {
+                fullMessage += content;
+                setMessage(fullMessage);
+                setInitializing(false);
               }
+            } catch {
+              // Incomplete JSON, put line back in buffer
+              textBuffer = line + "\n" + textBuffer;
+              break;
             }
           }
         }
