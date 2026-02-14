@@ -224,7 +224,15 @@ const Dashboard = () => {
             onUpgrade={() => setShowUpgradePrompt(true)}
           />
 
-          {/* KPI Grid — visual cards */}
+          {/* Alic.ia Chat — protagonista */}
+          <div ref={chatRef} className="w-full">
+            <AIChat />
+          </div>
+
+          {/* Smart Suggestions (invitar, etc.) */}
+          <SmartSuggestions goals={goals} />
+
+          {/* KPI Grid — secondary, al fondo */}
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
             <KPICard
               title="Referencias"
@@ -253,14 +261,6 @@ const Dashboard = () => {
               accentColor="text-accent"
               onClick={() => navigate('/somos-unicos')}
             />
-          </div>
-
-          {/* Smart Suggestions */}
-          <SmartSuggestions goals={goals} />
-
-          {/* Alic.ia Chat */}
-          <div ref={chatRef} className="w-full">
-            <AIChat />
           </div>
         </div>
       )}
