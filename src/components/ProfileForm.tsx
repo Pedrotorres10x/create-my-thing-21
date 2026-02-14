@@ -88,6 +88,9 @@ export function ProfileForm() {
 
       if (error) throw error;
 
+      // Mark as new onboarding so AIChat triggers guided flow
+      sessionStorage.setItem('conector-onboarding', 'true');
+      
       toast({
         title: "¡Bienvenido a CONECTOR!",
         description: "Alic.ia te guiará para completar tu perfil",
