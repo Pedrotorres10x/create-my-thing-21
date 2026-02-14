@@ -236,7 +236,7 @@ const Dashboard = () => {
               onClick={() => navigate('/referrals')}
             />
             <KPICard
-              title="Cara a Cara"
+              title="El Cafelito"
               value={upcomingMeetings.length}
               subtitle="Reuniones confirmadas"
               icon={<Calendar className="h-5 w-5" />}
