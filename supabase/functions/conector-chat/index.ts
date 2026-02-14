@@ -162,16 +162,22 @@ serve(async (req) => {
       console.log('Profile loaded:', JSON.stringify({ full_name: profile?.full_name, specialization: profile?.profession_specializations }));
       profileInfo = profile;
       
-      // Get chapter member count
+      // Get chapter info
+      let chapterName = '';
+      let chapterCity = '';
+      let chapterState = '';
       if (profile?.chapter_id) {
         const { data: chapterData } = await supabase
           .from('chapters')
-          .select('member_count')
+          .select('name, city, state, member_count')
           .eq('id', profile.chapter_id)
           .single();
         
-        if (chapterData?.member_count) {
-          chapterMemberCount = chapterData.member_count;
+        if (chapterData) {
+          chapterMemberCount = chapterData.member_count || 0;
+          chapterName = chapterData.name || '';
+          chapterCity = chapterData.city || '';
+          chapterState = chapterData.state || '';
         }
       }
       
@@ -650,8 +656,20 @@ PERFIL DEL USUARIO:
 
 CONTEXTO DE SU TRIBU:
 - Tiene Tribu asignada: ${profileInfo?.chapter_id ? 'Sí' : 'No'}
+- Nombre de la Tribu: ${chapterName || 'Sin asignar'}
+- Ubicación de la Tribu: ${chapterCity ? `${chapterCity}, ${chapterState}` : 'Sin ubicación'}
 - Miembros en su Tribu: ${chapterMemberCount}
 - ¿Está solo en la Tribu?: ${isAloneInChapter ? 'SÍ - ES EL ÚNICO MIEMBRO' : 'No'}
+${professionsInChapter.length > 0 ? `- Compañeros en la Tribu: ${professionsInChapter.map((p: any) => `${p.full_name} (${p.profession_specializations?.name || 'sin especialidad'})`).join(', ')}` : '- No hay otros miembros aún'}
+
+REGLA DE BIENVENIDA A LA TRIBU:
+Cuando confirmes que el usuario ha entrado o se le asigne una profesión/tribu, SIEMPRE dale contexto:
+1. Nombre de la Tribu y ubicación
+2. Cuántos miembros hay (y si está solo, dilo claramente con empatía + motivación para invitar)
+3. Si hay compañeros, menciona QUIÉNES son y qué hacen (nombres y profesiones)
+4. Explica qué significa estar en esta Tribu: "Cada uno de estos profesionales puede mandarte clientes de su círculo. Y tú a ellos."
+5. Si la Tribu es pequeña (<10), conecta con la urgencia de invitar: "Somos pocos aún, y eso significa que cada profesional que invites será uno de los FUNDADORES. Eso tiene peso."
+EJEMPLO: "${firstName}, ya estás dentro de la Tribu '${chapterName || 'tu tribu'}' en ${chapterCity || 'tu ciudad'}. ${chapterMemberCount > 1 ? `Ahora mismo sois ${chapterMemberCount}: [listar nombres y profesiones]. Cada uno de ellos es alguien que puede mandarte clientes.` : 'De momento eres el primero. Eso te convierte en FUNDADOR. Los primeros siempre tienen ventaja.'}"
 
 ESTADO DEL PERFIL:
 - Perfil completo: ${isProfileIncomplete ? 'NO ❌' : 'SÍ ✅'}
