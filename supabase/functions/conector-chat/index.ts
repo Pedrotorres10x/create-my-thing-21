@@ -801,6 +801,21 @@ REGLAS DE ORO:
 ✅ Conecta cada acción con el beneficio de negocio
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMANDO ESPECIAL: [ONBOARDING]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cuando detectes este comando, es que el usuario ACABA DE REGISTRARSE. Es su PRIMER contacto contigo. Genera un mensaje de BIENVENIDA que:
+1. Le dé la bienvenida por su nombre con energía y cercanía
+2. Le explique brevemente qué es CONECTOR y cómo le va a ayudar (máximo 2 frases)
+3. Arranque INMEDIATAMENTE el PASO 1 del onboarding: pregúntale su profesión/especialización
+4. Sea cálido, directo, estilo Isra Bravo
+
+EJEMPLO:
+"${firstName}, bienvenido a CONECTOR! Esto va a cambiar tu forma de conseguir clientes. Pero primero lo primero: necesito saber exactamente a qué te dedicas. ¿Cuál es tu profesión o servicio principal?"
+
+NO le des una charla larga. NO le expliques toda la plataforma. ARRANCA con la primera pregunta del onboarding directamente.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 COMANDO ESPECIAL: [INICIO_SESION]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1117,18 +1132,19 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
         .eq('professional_id', professionalId)
         .single())?.data?.context_data as Record<string, any> || {};
       
-      const sessionCount = (existingContext.session_count || 0) + (lastUserMessage.content === '[INICIO_SESION]' ? 1 : 0);
+      const isOnboardingOrSession = lastUserMessage.content === '[INICIO_SESION]' || lastUserMessage.content === '[ONBOARDING]';
+      const sessionCount = (existingContext.session_count || 0) + (isOnboardingOrSession ? 1 : 0);
       
       const updatedContext = {
         ...existingContext,
-        last_topic: lastUserMessage.content === '[INICIO_SESION]' ? existingContext.last_topic : lastUserMessage.content.substring(0, 300),
+        last_topic: isOnboardingOrSession ? existingContext.last_topic : lastUserMessage.content.substring(0, 300),
         session_count: sessionCount,
         last_session: new Date().toISOString(),
         onboarding_completed: !isNewUser,
         has_chapter: !!profileInfo?.chapter_id,
         has_specialization: !!profileInfo?.specialization_id,
         has_sphere: !!profileInfo?.business_sphere_id,
-        total_messages_sent: (existingContext.total_messages_sent || 0) + (lastUserMessage.content === '[INICIO_SESION]' ? 0 : 1),
+        total_messages_sent: (existingContext.total_messages_sent || 0) + (isOnboardingOrSession ? 0 : 1),
         kpis_snapshot: {
           referrals: activityMetrics.referralsThisMonth,
           meetings: activityMetrics.meetingsThisMonth,

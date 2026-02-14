@@ -112,6 +112,14 @@ export function AIChat() {
           return;
         }
 
+        // Check if this is a fresh onboarding (just registered)
+        const isOnboarding = sessionStorage.getItem('conector-onboarding') === 'true';
+        if (isOnboarding) {
+          sessionStorage.removeItem('conector-onboarding');
+          // Also suppress the welcome modal since we're going straight to guided chat
+          sessionStorage.setItem('alicia-greeting-shown', 'true');
+        }
+        
         // Use the validated token passed as parameter, not a fresh fetch
         isStreamingRef.current = true;
 
@@ -122,7 +130,7 @@ export function AIChat() {
             Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify({ 
-            messages: [{ role: "user", content: "[INICIO_SESION]" }],
+            messages: [{ role: "user", content: isOnboarding ? "[ONBOARDING]" : "[INICIO_SESION]" }],
             professionalId: professional.id
           }),
         });
