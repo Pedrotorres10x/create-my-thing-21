@@ -106,6 +106,9 @@ serve(async (req) => {
     let professionsInChapter: any[] = [];
     let chapterMemberCount = 0;
     let completedMeetingsCount = 0;
+    let chapterName = '';
+    let chapterCity = '';
+    let chapterState = '';
     
     // ===== NUEVAS MÉTRICAS DE ACTIVIDAD PARA KPIs =====
     let activityMetrics = {
@@ -163,9 +166,6 @@ serve(async (req) => {
       profileInfo = profile;
       
       // Get chapter info
-      let chapterName = '';
-      let chapterCity = '';
-      let chapterState = '';
       if (profile?.chapter_id) {
         const { data: chapterData } = await supabase
           .from('chapters')
