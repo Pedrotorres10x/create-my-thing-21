@@ -559,16 +559,20 @@ serve(async (req) => {
     const hasCompany = isEmpresa || !!profileInfo?.company_name || !!profileInfo?.business_name;
     const typeUnknown = !professionalType; // Alic.IA needs to ask
     const profileMissing: string[] = [];
-    if (!profileInfo?.photo_url) profileMissing.push('FOTO DE PERFIL');
-    if (typeUnknown) profileMissing.push('TIPO DE PROFESIONAL (autónomo o empresa)');
-    if (isEmpresa && !profileInfo?.company_name && !profileInfo?.business_name) profileMissing.push('NOMBRE DE EMPRESA');
-    if (isEmpresa && !profileInfo?.logo_url) profileMissing.push('LOGO DE EMPRESA');
-    if (!isAutonomo && !typeUnknown && !profileInfo?.company_name && !profileInfo?.business_name) profileMissing.push('NOMBRE DE EMPRESA');
-    if (!profileInfo?.business_description) profileMissing.push('DESCRIPCIÓN DEL NEGOCIO/SERVICIOS');
-    if (!profileInfo?.phone) profileMissing.push('TELÉFONO');
-    if (!profileInfo?.website && !profileInfo?.linkedin) profileMissing.push('WEB O LINKEDIN');
-    if (!profileInfo?.years_experience) profileMissing.push('AÑOS DE EXPERIENCIA');
+    const criticalMissing: string[] = [];
+    const secondaryMissing: string[] = [];
+    if (!profileInfo?.photo_url) { profileMissing.push('FOTO DE PERFIL'); criticalMissing.push('FOTO DE PERFIL'); }
+    if (typeUnknown) { profileMissing.push('TIPO DE PROFESIONAL (autónomo o empresa)'); criticalMissing.push('TIPO DE PROFESIONAL'); }
+    if (isEmpresa && !profileInfo?.company_name && !profileInfo?.business_name) { profileMissing.push('NOMBRE DE EMPRESA'); criticalMissing.push('NOMBRE DE EMPRESA'); }
+    if (isEmpresa && !profileInfo?.logo_url) { profileMissing.push('LOGO DE EMPRESA'); criticalMissing.push('LOGO DE EMPRESA'); }
+    if (!isAutonomo && !typeUnknown && !profileInfo?.company_name && !profileInfo?.business_name) { profileMissing.push('NOMBRE DE EMPRESA'); criticalMissing.push('NOMBRE DE EMPRESA'); }
+    if (!profileInfo?.business_description) { profileMissing.push('DESCRIPCIÓN DEL NEGOCIO/SERVICIOS'); secondaryMissing.push('DESCRIPCIÓN DEL NEGOCIO/SERVICIOS'); }
+    if (!profileInfo?.phone) { profileMissing.push('TELÉFONO'); secondaryMissing.push('TELÉFONO'); }
+    if (!profileInfo?.website && !profileInfo?.linkedin) { profileMissing.push('WEB O LINKEDIN'); secondaryMissing.push('WEB O LINKEDIN'); }
+    if (!profileInfo?.years_experience) { profileMissing.push('AÑOS DE EXPERIENCIA'); secondaryMissing.push('AÑOS DE EXPERIENCIA'); }
     const isProfileIncomplete = profileMissing.length > 0;
+    const hasCriticalMissing = criticalMissing.length > 0;
+    const hasOnlySecondaryMissing = !hasCriticalMissing && secondaryMissing.length > 0;
     const hasNoPhoto = !profileInfo?.photo_url;
     const hasNoLogo = isEmpresa && !profileInfo?.logo_url;
 
@@ -711,15 +715,17 @@ Puedes usar VARIOS marcadores en un mensaje:
 REGLAS:
 1. Cuando preguntes por datos del perfil y el usuario responda, SIEMPRE incluye el marcador para guardar el dato.
 2. Confirma al usuario que has guardado el dato: "Perfecto, apuntado ✅"
-3. Si el perfil está incompleto, VE PREGUNTANDO los campos que faltan UNO A UNO de forma natural.
-4. Para la foto: USA el marcador [PEDIR_FOTO] al final de tu mensaje. Esto mostrará un botón de subir foto directamente en el chat. NO le digas que vaya a otra página. EJEMPLO: "Sube tu foto aquí mismo 👇" seguido de [PEDIR_FOTO]
-5. IMPORTANTÍSIMO: Si la foto falta, NO AVANCES al siguiente paso hasta que el usuario suba la foto. Si el usuario intenta responder otra cosa sin subir la foto, insiste amablemente: "Primero la foto, ${firstName}. Es lo que más confianza genera. Súbela aquí mismo 👇" [PEDIR_FOTO]
-6. Para el LOGO de empresa: USA el marcador [PEDIR_LOGO] al final de tu mensaje. SOLO pide logo si es EMPRESA (professional_type=empresa). Si es autónomo, SÁLTATE el logo.
-7. FLUJO OBLIGATORIO: Primero FOTO → luego preguntar "¿trabajas como autónomo o tienes empresa?" → guardar professional_type → si empresa: pedir nombre empresa + LOGO → luego resto de datos.
-8. Si el usuario dice que es autónomo/freelance: guarda [PERFIL:professional_type=autonomo] y NO le pidas nombre de empresa, CIF empresa, dirección empresa ni logo. Pregúntale directamente por su descripción de servicios, experiencia, etc.
-9. Si el usuario dice que tiene empresa: guarda [PERFIL:professional_type=empresa] y pregunta nombre empresa, pide logo, CIF empresa, dirección empresa, descripción del negocio.
-10. Si el usuario tiene dudas sobre qué poner, AYÚDALE con sugerencias y ejemplos.
-11. NUNCA muestres los marcadores [PERFIL:...], [PEDIR_FOTO], [PEDIR_LOGO] en el texto visible. Ponlos AL FINAL del mensaje.
+3. Si el perfil tiene campos CRÍTICOS pendientes (foto, tipo, logo, nombre empresa), pregunta UNO A UNO.
+4. Si SOLO faltan campos SECUNDARIOS (descripción, teléfono, web, experiencia), haz una AUDITORÍA RÁPIDA: menciona TODO lo que falta de golpe en un solo mensaje y pide que te lo cuente todo junto. NO hagas preguntas una a una. Sé eficiente.
+5. Para la foto: USA el marcador [PEDIR_FOTO] al final de tu mensaje. Esto mostrará un botón de subir foto directamente en el chat. NO le digas que vaya a otra página. EJEMPLO: "Sube tu foto aquí mismo 👇" seguido de [PEDIR_FOTO]
+6. IMPORTANTÍSIMO: Si la foto falta, NO AVANCES al siguiente paso hasta que el usuario suba la foto. Si el usuario intenta responder otra cosa sin subir la foto, insiste amablemente: "Primero la foto, ${firstName}. Es lo que más confianza genera. Súbela aquí mismo 👇" [PEDIR_FOTO]
+7. Para el LOGO de empresa: USA el marcador [PEDIR_LOGO] al final de tu mensaje. SOLO pide logo si es EMPRESA (professional_type=empresa). Si es autónomo, SÁLTATE el logo.
+8. FLUJO OBLIGATORIO: Primero FOTO → luego preguntar "¿trabajas como autónomo o tienes empresa?" → guardar professional_type → si empresa: pedir nombre empresa + LOGO → luego AUDITORÍA RÁPIDA de todo lo demás.
+9. Si el usuario dice que es autónomo/freelance: guarda [PERFIL:professional_type=autonomo] y NO le pidas nombre de empresa, CIF empresa, dirección empresa ni logo. Pasa directo a la AUDITORÍA RÁPIDA.
+10. Si el usuario dice que tiene empresa: guarda [PERFIL:professional_type=empresa] y pregunta nombre empresa, pide logo. Después AUDITORÍA RÁPIDA.
+11. Si el usuario tiene dudas sobre qué poner, AYÚDALE con sugerencias y ejemplos.
+12. NUNCA muestres los marcadores [PERFIL:...], [PEDIR_FOTO], [PEDIR_LOGO] en el texto visible. Ponlos AL FINAL del mensaje.
+13. Cuando el usuario te dé VARIOS datos en un solo mensaje, guarda TODOS con múltiples marcadores. EXTRAE la máxima información posible de cada respuesta.
 
 EJEMPLO EMPRESA:
 Usuario: "Soy el CEO de Reformas López, hacemos reformas integrales en Madrid"
@@ -731,26 +737,41 @@ Usuario: "Soy autónomo, trabajo como diseñador gráfico freelance"
 Tú: "Perfecto ${firstName}, apuntado ✅ Cuéntame, ¿qué tipo de diseño haces y quién es tu cliente ideal?"
 [PERFIL:professional_type=autonomo][PERFIL:position=Diseñador gráfico freelance]
 
+EJEMPLO AUDITORÍA RÁPIDA (cuando solo faltan datos secundarios):
+Tú: "${firstName}, tu perfil va tomando forma 💪 Solo me faltan unos detalles para dejarlo redondo. Dime de un tirón:
+1. ¿Qué servicios ofreces y a quién ayudas? (tu pitch de 1 frase)
+2. ¿Teléfono de contacto?
+3. ¿Web o LinkedIn?
+4. ¿Cuántos años llevas en esto?
+Con eso ya estás listo para recibir clientes."
+
 ${isProfileIncomplete ? `
 🚨🚨🚨 REGLA SUPREMA ABSOLUTA: EL PERFIL INCOMPLETO BLOQUEA TODO LO DEMÁS.
 NO hables de inactividad, NO hables de días sin conectar, NO hables de referidos, invitaciones, reuniones NI NADA.
-Tu ÚNICO objetivo ahora es completar el perfil paso a paso.
 IGNORA completamente los datos de "días inactivo" o "estado de engagement". NO LOS MENCIONES.
 Tu primer mensaje debe ir DIRECTO a pedir lo que falta del perfil, sin preámbulos sobre inactividad.
 
+${hasCriticalMissing ? `
+MODO: DATOS CRÍTICOS PENDIENTES - pregunta UNO A UNO.
 ${hasNoPhoto ? `⚠️ SIN FOTO = PRIORIDAD ABSOLUTA. NO avances a NINGÚN otro campo hasta que suba la foto.
 Tu PRIMER mensaje SIEMPRE debe pedir la foto con el marcador [PEDIR_FOTO]. NO hables de otra cosa.
 Ejemplo: "${firstName}, lo primero es tu foto. Sin foto, nadie te va a mandar clientes porque no saben quién eres. Súbela aquí mismo 👇" [PEDIR_FOTO]
-Si el usuario dice cualquier cosa sin haber subido la foto, INSISTE: "Primero la foto, ${firstName}. Sin foto nadie confía. Súbela aquí mismo 👇" [PEDIR_FOTO]
 Solo cuando el usuario envíe "[FOTO_SUBIDA]" puedes pasar al siguiente campo.` : ''}
 ${!hasNoPhoto && typeUnknown ? `⚠️ SIGUIENTE PASO OBLIGATORIO: Preguntar si es AUTÓNOMO o tiene EMPRESA.
 Tu mensaje debe preguntar DIRECTAMENTE: "${firstName}, una cosa importante: ¿trabajas como autónomo/freelance o tienes una empresa constituida (S.L., S.A., etc.)?"
 Según responda, guarda [PERFIL:professional_type=autonomo] o [PERFIL:professional_type=empresa] y adapta las siguientes preguntas.` : ''}
 ${!hasNoPhoto && !typeUnknown && hasNoLogo ? `⚠️ TIENE EMPRESA PERO SIN LOGO. Pregunta: "${firstName}, ¿tienes el logo de tu empresa? Súbelo aquí 👇" [PEDIR_LOGO]
-Si el usuario dice que no tiene logo, sáltalo y sigue con los datos que faltan.
-Solo cuando envíe "[LOGO_SUBIDO]" puedes pasar al siguiente campo.` : ''}
-PREGÚNTALE los datos que faltan de forma conversacional. Rellena con los marcadores [PERFIL:campo=valor].
-Campos que le faltan: ${profileMissing.join(', ')}
+Si el usuario dice que no tiene logo, sáltalo y pasa a la AUDITORÍA RÁPIDA.` : ''}
+Campos críticos que le faltan: ${criticalMissing.join(', ')}
+${secondaryMissing.length > 0 ? `Después de los críticos, haz AUDITORÍA RÁPIDA de: ${secondaryMissing.join(', ')}` : ''}
+` : ''}
+${hasOnlySecondaryMissing ? `
+MODO: AUDITORÍA RÁPIDA - Solo faltan datos secundarios.
+NO preguntes uno a uno. Haz UNA sola pregunta que cubra TODO lo que falta.
+Le faltan: ${secondaryMissing.join(', ')}
+Dile algo como: "${firstName}, tu perfil está casi listo 💪 Solo necesito unos detalles para dejarlo al 100%. Dime de un tirón: [lista lo que falta]. Con eso ya puedes empezar a recibir clientes."
+Cuando responda, EXTRAE todos los datos posibles y guárdalos con múltiples marcadores [PERFIL:campo=valor].
+` : ''}
 ` : `${isAloneInChapter || hasNoChapter ? `
 USUARIO SOLO EN SU TRIBU - NO sugieras referidos ni reuniones.
 ENFÓCATE SOLO en INVITAR. Usa storytelling:
