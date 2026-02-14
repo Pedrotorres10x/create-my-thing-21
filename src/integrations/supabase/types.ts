@@ -47,6 +47,48 @@ export type Database = {
         }
         Relationships: []
       }
+      banned_identifiers: {
+        Row: {
+          banned_at: string
+          id: string
+          identifier_type: string
+          identifier_value: string
+          original_professional_id: string | null
+          reason: string
+        }
+        Insert: {
+          banned_at?: string
+          id?: string
+          identifier_type: string
+          identifier_value: string
+          original_professional_id?: string | null
+          reason?: string
+        }
+        Update: {
+          banned_at?: string
+          id?: string
+          identifier_type?: string
+          identifier_value?: string
+          original_professional_id?: string | null
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banned_identifiers_original_professional_id_fkey"
+            columns: ["original_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "banned_identifiers_original_professional_id_fkey"
+            columns: ["original_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       banner_clicks: {
         Row: {
           banner_id: string
@@ -2677,6 +2719,85 @@ export type Database = {
           },
         ]
       }
+      registration_red_flags: {
+        Row: {
+          created_at: string
+          id: string
+          is_reviewed: boolean | null
+          match_detail: string | null
+          match_type: string
+          matched_professional_id: string | null
+          new_professional_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_reviewed?: boolean | null
+          match_detail?: string | null
+          match_type: string
+          matched_professional_id?: string | null
+          new_professional_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_reviewed?: boolean | null
+          match_detail?: string | null
+          match_type?: string
+          matched_professional_id?: string | null
+          new_professional_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registration_red_flags_matched_professional_id_fkey"
+            columns: ["matched_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registration_red_flags_matched_professional_id_fkey"
+            columns: ["matched_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registration_red_flags_new_professional_id_fkey"
+            columns: ["new_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registration_red_flags_new_professional_id_fkey"
+            columns: ["new_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registration_red_flags_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registration_red_flags_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       report_votes: {
         Row: {
           created_at: string
@@ -4139,6 +4260,10 @@ export type Database = {
         Returns: Json
       }
       check_overdue_commissions: { Args: never; Returns: undefined }
+      check_reentry_eligibility: {
+        Args: { _professional_id: string }
+        Returns: Json
+      }
       check_specialization_availability: {
         Args: { _chapter_id: string; _profession_specialization_id: number }
         Returns: boolean
@@ -4249,6 +4374,10 @@ export type Database = {
       }
       is_ethics_committee_member: {
         Args: { _professional_id: string }
+        Returns: boolean
+      }
+      is_identifier_banned: {
+        Args: { _type: string; _value: string }
         Returns: boolean
       }
       update_waitlist_positions: { Args: never; Returns: undefined }
