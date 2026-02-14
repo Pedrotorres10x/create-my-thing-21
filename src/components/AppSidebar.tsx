@@ -1,4 +1,4 @@
-import { Home, Users, Handshake, Calendar, MessageSquare, Trophy, UserCircle, Shield, AlertTriangle, Scale } from "lucide-react";
+import { Home, Users, Handshake, Calendar, MessageSquare, Trophy, UserCircle, Shield, AlertTriangle, Scale, Send } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -27,6 +27,7 @@ const coreItems = [
 const expandedMainItems = [
   { title: "Mis Invitados", url: "/referrals", icon: Handshake },
   { title: "Mi Tribu", url: "/mi-tribu", icon: Users },
+  { title: "Recomendación", url: "/recomendacion", icon: Send },
 ];
 
 const communityItems = [

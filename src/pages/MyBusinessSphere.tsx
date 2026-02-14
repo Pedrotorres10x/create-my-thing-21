@@ -5,12 +5,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Map, Briefcase, HandshakeIcon, MapPin, Calendar, UserPlus, Send } from "lucide-react";
+import { Users, Map, Briefcase, HandshakeIcon, MapPin, Calendar, UserPlus } from "lucide-react";
 import { SphereDirectory } from "@/components/sphere/SphereDirectory";
 import { SpecializationMap } from "@/components/sphere/SpecializationMap";
 import { CollaborationOpportunities } from "@/components/sphere/CollaborationOpportunities";
 import { SphereReferencesManager } from "@/components/sphere/SphereReferencesManager";
-import { RecommendClient } from "@/components/sphere/RecommendClient";
+// RecommendClient moved to its own page
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 
@@ -187,14 +187,10 @@ export default function MyBusinessSphere() {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="directory" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Directorio</span>
-          </TabsTrigger>
-          <TabsTrigger value="recommend" className="flex items-center gap-2">
-            <Send className="h-4 w-4" />
-            <span className="hidden sm:inline">Recomendación</span>
           </TabsTrigger>
           <TabsTrigger value="map" className="flex items-center gap-2">
             <Map className="h-4 w-4" />
@@ -212,16 +208,6 @@ export default function MyBusinessSphere() {
 
         <TabsContent value="directory" className="mt-6">
           <SphereDirectory sphereId={sphereInfo.id} chapterId={chapterId} />
-        </TabsContent>
-
-        <TabsContent value="recommend" className="mt-6">
-          {professionalId && (
-            <RecommendClient
-              professionalId={professionalId}
-              chapterId={chapterId}
-              sphereId={sphereInfo.id}
-            />
-          )}
         </TabsContent>
 
         <TabsContent value="map" className="mt-6">

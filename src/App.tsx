@@ -11,7 +11,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Referrals from "./pages/Referrals";
-// Chapter merged into MyBusinessSphere
+import Recomendacion from "./pages/Recomendacion";
 import Meetings from "./pages/Meetings";
 
 import SomosUnicos from "./pages/SomosUnicos";
@@ -40,6 +40,7 @@ const App = () => (
             <Route path="/referrals" element={<ProtectedRoute><Layout><Referrals /></Layout></ProtectedRoute>} />
             <Route path="/mi-tribu" element={<ProtectedRoute><Layout><MyBusinessSphere /></Layout></ProtectedRoute>} />
             <Route path="/chapter" element={<ProtectedRoute><Layout><MyBusinessSphere /></Layout></ProtectedRoute>} />
+            <Route path="/recomendacion" element={<ProtectedRoute><Layout><Recomendacion /></Layout></ProtectedRoute>} />
             <Route path="/meetings" element={<ProtectedRoute><Layout><Meetings /></Layout></ProtectedRoute>} />
             
             <Route path="/somos-unicos" element={<ProtectedRoute><Layout><SomosUnicos /></Layout></ProtectedRoute>} />
