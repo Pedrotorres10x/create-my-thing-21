@@ -26,11 +26,11 @@ const coreItems = [
 
 const expandedMainItems = [
   { title: "Mis Invitados", url: "/referrals", icon: Handshake },
-  { title: "Mi Tribu", url: "/mi-tribu", icon: Users },
   { title: "Recomendación", url: "/recomendacion", icon: Send },
 ];
 
 const communityItems = [
+  { title: "Mi Tribu", url: "/mi-tribu", icon: Users },
   { title: "El Cafelito", url: "/meetings", icon: Calendar },
   { title: "Somos Únicos", url: "/somos-unicos", icon: MessageSquare },
 ];
