@@ -104,7 +104,7 @@ const Rankings = () => {
         }
       }
 
-      // @ts-expect-error - Complex nested select causes type instantiation issues
+      // @ts-ignore - Complex nested select causes type instantiation issues
       const profsQuery = supabase
         .from('professionals_public')
         .select(`

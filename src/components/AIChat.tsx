@@ -20,9 +20,6 @@ interface Message {
   content: string;
 }
 
-// Module-level counter: only the latest request updates state (resilient to StrictMode/HMR)
-let chatRequestCounter = 0;
-
 export function AIChat() {
   const navigate = useNavigate();
   const { user, session, loading: authLoading } = useAuth();
@@ -35,6 +32,7 @@ export function AIChat() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/conector-chat`;
   const isStreamingRef = useRef(false);
+  const hasInitializedRef = useRef(false);
 
   // Scroll inteligente: solo si el usuario está cerca del final
   const scrollToBottomIfNeeded = (force = false) => {
@@ -72,17 +70,15 @@ export function AIChat() {
   // Generar mensaje inicial proactivo de Alicia cuando el usuario entra
   useEffect(() => {
     if (authLoading || !user) return;
-
-    // Increment counter: this request becomes the "latest"
-    const myRequestId = ++chatRequestCounter;
-    const isStale = () => myRequestId !== chatRequestCounter;
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
 
     const startChat = async () => {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession?.access_token || isStale()) return;
+      if (!currentSession?.access_token) return;
       
       const validatedToken = currentSession.access_token;
-      if (!isAuthenticatedToken(validatedToken) || isStale()) return;
+      if (!isAuthenticatedToken(validatedToken)) return;
 
       try {
         const { data: professional } = await supabase
@@ -91,8 +87,8 @@ export function AIChat() {
           .eq('user_id', user.id)
           .single();
 
-        if (!professional || isStale()) {
-          if (!isStale()) setInitializing(false);
+        if (!professional) {
+          setInitializing(false);
           return;
         }
 
@@ -102,7 +98,6 @@ export function AIChat() {
           sessionStorage.setItem('alicia-greeting-shown', 'true');
         }
         
-        if (isStale()) return;
         isStreamingRef.current = true;
 
         const resp = await fetch(CHAT_URL, {
@@ -117,8 +112,6 @@ export function AIChat() {
           }),
         });
 
-        if (isStale()) return;
-
         if (!resp.ok) {
           if (resp.status === 401) {
             console.log('Got 401, will retry when session updates');
@@ -126,13 +119,14 @@ export function AIChat() {
             console.error('Chat init failed:', resp.status);
           }
           isStreamingRef.current = false;
-          if (!isStale()) setInitializing(false);
+          hasInitializedRef.current = false; // Allow retry
+          setInitializing(false);
           return;
         }
 
         if (!resp.body) {
           isStreamingRef.current = false;
-          if (!isStale()) setInitializing(false);
+          setInitializing(false);
           return;
         }
 
@@ -144,7 +138,6 @@ export function AIChat() {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          if (isStale()) { reader.cancel(); return; }
           textBuffer += decoder.decode(value, { stream: true });
 
           let newlineIndex: number;
@@ -162,7 +155,7 @@ export function AIChat() {
             try {
               const parsed = JSON.parse(jsonStr);
               const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-              if (content && !isStale()) {
+              if (content) {
                 assistantContent += content;
                 setMessages([{ role: "assistant", content: assistantContent }]);
               }
@@ -174,14 +167,13 @@ export function AIChat() {
         }
 
         isStreamingRef.current = false;
-        if (!isStale()) {
-          setInitializing(false);
-          scrollToBottomIfNeeded(true);
-        }
+        setInitializing(false);
+        scrollToBottomIfNeeded(true);
       } catch (error: any) {
         console.error("Error initializing chat:", error);
         isStreamingRef.current = false;
-        if (!isStale()) setInitializing(false);
+        hasInitializedRef.current = false; // Allow retry
+        setInitializing(false);
       }
     };
 
