@@ -11,7 +11,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Referrals from "./pages/Referrals";
-import Chapter from "./pages/Chapter";
+// Chapter merged into MyBusinessSphere
 import Meetings from "./pages/Meetings";
 
 import SomosUnicos from "./pages/SomosUnicos";
@@ -38,7 +38,8 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Layout><Profile /></Layout></ProtectedRoute>} />
             <Route path="/referrals" element={<ProtectedRoute><Layout><Referrals /></Layout></ProtectedRoute>} />
-            <Route path="/chapter" element={<ProtectedRoute><Layout><Chapter /></Layout></ProtectedRoute>} />
+            <Route path="/mi-tribu" element={<ProtectedRoute><Layout><MyBusinessSphere /></Layout></ProtectedRoute>} />
+            <Route path="/chapter" element={<ProtectedRoute><Layout><MyBusinessSphere /></Layout></ProtectedRoute>} />
             <Route path="/meetings" element={<ProtectedRoute><Layout><Meetings /></Layout></ProtectedRoute>} />
             
             <Route path="/somos-unicos" element={<ProtectedRoute><Layout><SomosUnicos /></Layout></ProtectedRoute>} />
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/subscriptions" element={<ProtectedRoute><Layout><Subscriptions /></Layout></ProtectedRoute>} />
             <Route path="/ethics-committee" element={<ProtectedRoute><Layout><EthicsCommittee /></Layout></ProtectedRoute>} />
             <Route path="/mi-esfera" element={<ProtectedRoute><Layout><MyBusinessSphere /></Layout></ProtectedRoute>} />
+
             <Route path="/admin" element={<ProtectedRoute><Layout><Admin /></Layout></ProtectedRoute>} />
             <Route path="/admin/moderation" element={<ProtectedRoute><Layout><AdminModeration /></Layout></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

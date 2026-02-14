@@ -3,14 +3,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
-import { Users, Map, Newspaper, Briefcase, HandshakeIcon } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Users, Map, Briefcase, HandshakeIcon, MapPin, Calendar, UserPlus, Send } from "lucide-react";
 import { SphereDirectory } from "@/components/sphere/SphereDirectory";
 import { SpecializationMap } from "@/components/sphere/SpecializationMap";
-import { SphereFeed } from "@/components/sphere/SphereFeed";
 import { CollaborationOpportunities } from "@/components/sphere/CollaborationOpportunities";
 import { SphereReferencesManager } from "@/components/sphere/SphereReferencesManager";
+import { RecommendClient } from "@/components/sphere/RecommendClient";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 interface SphereInfo {
   id: number;
@@ -19,12 +21,23 @@ interface SphereInfo {
   color: string | null;
 }
 
+interface ChapterInfo {
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+  member_count: number;
+  meeting_schedule: string | null;
+  location_details: string | null;
+}
+
 export default function MyBusinessSphere() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [sphereInfo, setSphereInfo] = useState<SphereInfo | null>(null);
+  const [chapterInfo, setChapterInfo] = useState<ChapterInfo | null>(null);
   const [chapterId, setChapterId] = useState<string | null>(null);
   const [professionalId, setProfessionalId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("directory");
@@ -34,15 +47,14 @@ export default function MyBusinessSphere() {
       navigate("/auth");
       return;
     }
-    loadSphereInfo();
+    loadData();
 
-    // Check if coming from notification
     if (location.state?.tab) {
       setActiveTab(location.state.tab);
     }
   }, [user, navigate, location]);
 
-  const loadSphereInfo = async () => {
+  const loadData = async () => {
     try {
       const { data: professional } = await supabase
         .from("professionals")
@@ -50,12 +62,7 @@ export default function MyBusinessSphere() {
           id,
           business_sphere_id,
           chapter_id,
-          business_spheres (
-            id,
-            name,
-            icon,
-            color
-          )
+          business_spheres (id, name, icon, color)
         `)
         .eq("user_id", user?.id)
         .single();
@@ -64,9 +71,18 @@ export default function MyBusinessSphere() {
         setSphereInfo(professional.business_spheres as SphereInfo);
         setChapterId(professional.chapter_id);
         setProfessionalId(professional.id);
+
+        if (professional.chapter_id) {
+          const { data: chapter } = await supabase
+            .from("chapters")
+            .select("id, name, city, state, member_count, meeting_schedule, location_details")
+            .eq("id", professional.chapter_id)
+            .single();
+          if (chapter) setChapterInfo(chapter);
+        }
       }
     } catch (error) {
-      console.error("Error loading sphere info:", error);
+      console.error("Error loading data:", error);
     } finally {
       setLoading(false);
     }
@@ -74,7 +90,7 @@ export default function MyBusinessSphere() {
 
   if (loading) {
     return (
-      <div className="container py-8 space-y-6">
+      <div className="space-y-6">
         <Skeleton className="h-12 w-64" />
         <Skeleton className="h-96" />
       </div>
@@ -83,48 +99,102 @@ export default function MyBusinessSphere() {
 
   if (!sphereInfo) {
     return (
-      <div className="container py-8">
+      <div className="py-8">
         <Card className="p-8 text-center space-y-4">
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
             <Users className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="text-xl font-bold">Tu Esfera te espera</h2>
+          <h2 className="text-xl font-bold">Tu Tribu te espera</h2>
           <p className="text-muted-foreground max-w-md mx-auto">
             Alic.ia te ayudará a elegir tu esfera de negocio y conectar con profesionales complementarios. Ve a Alic.IA y habla con ella.
           </p>
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
+          <Button onClick={() => navigate("/dashboard")}>
             Ir a Alic.IA
-          </button>
+          </Button>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="container py-8 space-y-6">
-      <div className="flex items-center gap-3">
-        <div
-          className="w-12 h-12 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: `${sphereInfo.color}20` }}
-        >
-          <span className="text-2xl">🌐</span>
+    <div className="space-y-6">
+      {/* Header with chapter info */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: `${sphereInfo.color}20` }}
+          >
+            <span className="text-2xl">🌐</span>
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">Mi Tribu</h1>
+            <p className="text-muted-foreground">
+              {sphereInfo.name}
+              {chapterInfo && (
+                <span className="ml-2">
+                  · <MapPin className="inline h-3 w-3" /> {chapterInfo.city}, {chapterInfo.state}
+                  · <Users className="inline h-3 w-3" /> {chapterInfo.member_count} miembros
+                </span>
+              )}
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-bold">Mi Grupo Profesional: {sphereInfo.name}</h1>
-          <p className="text-muted-foreground">
-            Conecta y colabora con profesionales complementarios
-          </p>
-        </div>
+        <Button onClick={() => navigate("/referrals")} variant="outline">
+          <UserPlus className="h-4 w-4 mr-2" />
+          Invitar Profesional
+        </Button>
       </div>
+
+      {/* Chapter quick stats */}
+      {chapterInfo && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-2xl font-bold">{chapterInfo.member_count}</p>
+              <p className="text-xs text-muted-foreground">Miembros</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-2xl font-bold">{chapterInfo.name}</p>
+              <p className="text-xs text-muted-foreground">Tribu</p>
+            </CardContent>
+          </Card>
+          {chapterInfo.meeting_schedule && (
+            <Card>
+              <CardContent className="p-4 flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Reuniones</p>
+                  <p className="text-sm font-medium truncate">{chapterInfo.meeting_schedule}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          {chapterInfo.location_details && (
+            <Card>
+              <CardContent className="p-4 flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Ubicación</p>
+                  <p className="text-sm font-medium truncate">{chapterInfo.location_details}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="directory" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Directorio</span>
+          </TabsTrigger>
+          <TabsTrigger value="recommend" className="flex items-center gap-2">
+            <Send className="h-4 w-4" />
+            <span className="hidden sm:inline">Recomendación</span>
           </TabsTrigger>
           <TabsTrigger value="map" className="flex items-center gap-2">
             <Map className="h-4 w-4" />
@@ -134,10 +204,6 @@ export default function MyBusinessSphere() {
             <HandshakeIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Referencias</span>
           </TabsTrigger>
-          <TabsTrigger value="feed" className="flex items-center gap-2">
-            <Newspaper className="h-4 w-4" />
-            <span className="hidden sm:inline">Feed</span>
-          </TabsTrigger>
           <TabsTrigger value="projects" className="flex items-center gap-2">
             <Briefcase className="h-4 w-4" />
             <span className="hidden sm:inline">Proyectos</span>
@@ -146,6 +212,16 @@ export default function MyBusinessSphere() {
 
         <TabsContent value="directory" className="mt-6">
           <SphereDirectory sphereId={sphereInfo.id} chapterId={chapterId} />
+        </TabsContent>
+
+        <TabsContent value="recommend" className="mt-6">
+          {professionalId && (
+            <RecommendClient
+              professionalId={professionalId}
+              chapterId={chapterId}
+              sphereId={sphereInfo.id}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="map" className="mt-6">
@@ -158,13 +234,9 @@ export default function MyBusinessSphere() {
           )}
         </TabsContent>
 
-        <TabsContent value="feed" className="mt-6">
-          <SphereFeed sphereId={sphereInfo.id} />
-        </TabsContent>
-
         <TabsContent value="projects" className="mt-6">
-          <CollaborationOpportunities 
-            sphereId={sphereInfo.id} 
+          <CollaborationOpportunities
+            sphereId={sphereInfo.id}
             chapterId={chapterId}
           />
         </TabsContent>
