@@ -143,6 +143,7 @@ serve(async (req) => {
           created_at,
           photo_url,
           logo_url,
+          professional_type,
           company_name,
           business_name,
           business_description,
@@ -546,19 +547,24 @@ serve(async (req) => {
     const hasNoChapter = !profileInfo?.chapter_id;
 
     // ===== PROFILE COMPLETENESS CHECK =====
-    const isAutonomo = !profileInfo?.company_name && !profileInfo?.business_name;
-    const hasCompany = !!profileInfo?.company_name || !!profileInfo?.business_name;
+    const professionalType = profileInfo?.professional_type; // 'autonomo' | 'empresa' | null
+    const isAutonomo = professionalType === 'autonomo';
+    const isEmpresa = professionalType === 'empresa';
+    const hasCompany = isEmpresa || !!profileInfo?.company_name || !!profileInfo?.business_name;
+    const typeUnknown = !professionalType; // Alic.IA needs to ask
     const profileMissing: string[] = [];
     if (!profileInfo?.photo_url) profileMissing.push('FOTO DE PERFIL');
-    if (!isAutonomo && !profileInfo?.logo_url) profileMissing.push('LOGO DE EMPRESA');
-    if (!profileInfo?.company_name && !profileInfo?.business_name) profileMissing.push('NOMBRE DE EMPRESA (o indicar que es autónomo)');
-    if (!profileInfo?.business_description) profileMissing.push('DESCRIPCIÓN DEL NEGOCIO');
+    if (typeUnknown) profileMissing.push('TIPO DE PROFESIONAL (autónomo o empresa)');
+    if (isEmpresa && !profileInfo?.company_name && !profileInfo?.business_name) profileMissing.push('NOMBRE DE EMPRESA');
+    if (isEmpresa && !profileInfo?.logo_url) profileMissing.push('LOGO DE EMPRESA');
+    if (!isAutonomo && !typeUnknown && !profileInfo?.company_name && !profileInfo?.business_name) profileMissing.push('NOMBRE DE EMPRESA');
+    if (!profileInfo?.business_description) profileMissing.push('DESCRIPCIÓN DEL NEGOCIO/SERVICIOS');
     if (!profileInfo?.phone) profileMissing.push('TELÉFONO');
     if (!profileInfo?.website && !profileInfo?.linkedin) profileMissing.push('WEB O LINKEDIN');
     if (!profileInfo?.years_experience) profileMissing.push('AÑOS DE EXPERIENCIA');
     const isProfileIncomplete = profileMissing.length > 0;
     const hasNoPhoto = !profileInfo?.photo_url;
-    const hasNoLogo = hasCompany && !profileInfo?.logo_url;
+    const hasNoLogo = isEmpresa && !profileInfo?.logo_url;
 
     // Robust first name extraction with JWT fallback
     const fullNameFromProfile = profileInfo?.full_name || '';
@@ -651,8 +657,8 @@ ESTADO DEL PERFIL:
 - Perfil completo: ${isProfileIncomplete ? 'NO ❌' : 'SÍ ✅'}
 ${isProfileIncomplete ? `- Le falta: ${profileMissing.join(', ')}` : ''}
 ${hasNoPhoto ? '- ⚠️ SIN FOTO DE PERFIL - PRIORIDAD MÁXIMA' : '- Tiene foto ✅'}
-- Tipo: ${isAutonomo ? 'AUTÓNOMO (sin empresa, NO pedir logo)' : `EMPRESA: ${profileInfo?.company_name || profileInfo?.business_name}`}
-${hasNoLogo ? '- ⚠️ TIENE EMPRESA PERO SIN LOGO - PEDIR DESPUÉS DE LA FOTO' : hasCompany ? '- Tiene logo ✅' : '- Autónomo, no necesita logo'}
+- Tipo profesional: ${typeUnknown ? '❓ NO DEFINIDO - DEBES PREGUNTAR si es autónomo o empresa' : isAutonomo ? 'AUTÓNOMO (no pedir nombre empresa ni logo)' : `EMPRESA: ${profileInfo?.company_name || profileInfo?.business_name}`}
+${hasNoLogo ? '- ⚠️ TIENE EMPRESA PERO SIN LOGO - PEDIR DESPUÉS DE LA FOTO' : isEmpresa ? '- Tiene logo ✅' : ''}
 
 ━━━ SUPERPODER: RELLENAR PERFIL DESDE EL CHAT ━━━
 
@@ -663,18 +669,19 @@ RELLENA el campo correspondiente usando este marcador OCULTO al final de tu mens
 [PERFIL:campo=valor]
 
 Campos disponibles (usa el nombre exacto):
-- company_name = Nombre de la empresa
-- business_description = Descripción del negocio (qué hace, a quién ayuda)
+- professional_type = Tipo de profesional ("autonomo" o "empresa") - IMPORTANTÍSIMO
+- company_name = Nombre de la empresa (SOLO si es empresa)
+- business_description = Descripción del negocio/servicios (qué hace, a quién ayuda) - TANTO autónomo como empresa
 - nif_cif = NIF o CIF personal
-- company_cif = CIF de la empresa
-- company_address = Dirección de la empresa
-- position = Cargo/puesto (CEO, Director, etc.)
+- company_cif = CIF de la empresa (SOLO si es empresa)
+- company_address = Dirección de la empresa (SOLO si es empresa)
+- position = Cargo/puesto (CEO, Director, Freelance, etc.)
 - bio = Biografía corta sobre el profesional
 - city = Ciudad
 - state = Provincia/Comunidad Autónoma
 - postal_code = Código postal
 - country = País
-- address = Dirección personal
+- address = Dirección personal/profesional
 - website = Página web
 - linkedin_url = URL de LinkedIn
 - years_experience = Años de experiencia (solo número)
@@ -689,20 +696,22 @@ REGLAS:
 3. Si el perfil está incompleto, VE PREGUNTANDO los campos que faltan UNO A UNO de forma natural.
 4. Para la foto: USA el marcador [PEDIR_FOTO] al final de tu mensaje. Esto mostrará un botón de subir foto directamente en el chat. NO le digas que vaya a otra página. EJEMPLO: "Sube tu foto aquí mismo 👇" seguido de [PEDIR_FOTO]
 5. IMPORTANTÍSIMO: Si la foto falta, NO AVANCES al siguiente paso hasta que el usuario suba la foto. Si el usuario intenta responder otra cosa sin subir la foto, insiste amablemente: "Primero la foto, ${firstName}. Es lo que más confianza genera. Súbela aquí mismo 👇" [PEDIR_FOTO]
-6. Para el LOGO de empresa: USA el marcador [PEDIR_LOGO] al final de tu mensaje. Esto mostrará un botón de subir logo. SOLO pide logo si el usuario tiene empresa (NO es autónomo). Si es autónomo, SÁLTATE el logo.
-7. FLUJO: Primero FOTO → luego preguntar si tiene empresa o es autónomo → si empresa, pedir LOGO → luego resto de datos.
-8. Si el usuario dice que es autónomo/freelance, NO le pidas nombre de empresa ni logo. Usa [PERFIL:company_name=] para dejarlo vacío si ya tenía algo.
-9. Si el usuario tiene dudas sobre qué poner, AYÚDALE con sugerencias y ejemplos.
-10. NUNCA muestres los marcadores [PERFIL:...], [PEDIR_FOTO], [PEDIR_LOGO] en el texto visible. Ponlos AL FINAL del mensaje.
+6. Para el LOGO de empresa: USA el marcador [PEDIR_LOGO] al final de tu mensaje. SOLO pide logo si es EMPRESA (professional_type=empresa). Si es autónomo, SÁLTATE el logo.
+7. FLUJO OBLIGATORIO: Primero FOTO → luego preguntar "¿trabajas como autónomo o tienes empresa?" → guardar professional_type → si empresa: pedir nombre empresa + LOGO → luego resto de datos.
+8. Si el usuario dice que es autónomo/freelance: guarda [PERFIL:professional_type=autonomo] y NO le pidas nombre de empresa, CIF empresa, dirección empresa ni logo. Pregúntale directamente por su descripción de servicios, experiencia, etc.
+9. Si el usuario dice que tiene empresa: guarda [PERFIL:professional_type=empresa] y pregunta nombre empresa, pide logo, CIF empresa, dirección empresa, descripción del negocio.
+10. Si el usuario tiene dudas sobre qué poner, AYÚDALE con sugerencias y ejemplos.
+11. NUNCA muestres los marcadores [PERFIL:...], [PEDIR_FOTO], [PEDIR_LOGO] en el texto visible. Ponlos AL FINAL del mensaje.
 
-EJEMPLO DE CONVERSACIÓN:
+EJEMPLO EMPRESA:
 Usuario: "Soy el CEO de Reformas López, hacemos reformas integrales en Madrid"
-Tú: "Genial ${firstName}, ya te he apuntado todo eso ✅ ¿Cuántos años lleváis en el sector?"
-[PERFIL:company_name=Reformas López][PERFIL:position=CEO][PERFIL:business_description=Reformas integrales en Madrid][PERFIL:city=Madrid]
+Tú: "Genial ${firstName}, ya te he apuntado todo eso ✅ ¿Tienes el logo de tu empresa? Súbelo aquí 👇"
+[PERFIL:professional_type=empresa][PERFIL:company_name=Reformas López][PERFIL:position=CEO][PERFIL:business_description=Reformas integrales en Madrid][PERFIL:city=Madrid][PEDIR_LOGO]
 
-Usuario: "Llevamos 15 años"
-Tú: "15 años, eso es mucha experiencia ✅ ¿Me pasas tu web o LinkedIn para completar tu perfil?"
-[PERFIL:years_experience=15]
+EJEMPLO AUTÓNOMO:
+Usuario: "Soy autónomo, trabajo como diseñador gráfico freelance"
+Tú: "Perfecto ${firstName}, apuntado ✅ Cuéntame, ¿qué tipo de diseño haces y quién es tu cliente ideal?"
+[PERFIL:professional_type=autonomo][PERFIL:position=Diseñador gráfico freelance]
 
 ${isProfileIncomplete ? `
 🚨 REGLA SUPREMA: EL PERFIL INCOMPLETO BLOQUEA TODO LO DEMÁS.
@@ -711,8 +720,11 @@ ${hasNoPhoto ? `⚠️ SIN FOTO = PRIORIDAD ABSOLUTA. NO avances a NINGÚN otro 
 Tu PRIMER mensaje SIEMPRE debe pedir la foto con el marcador [PEDIR_FOTO].
 Si el usuario dice cualquier cosa sin haber subido la foto, INSISTE: "Primero la foto, ${firstName}. Sin foto nadie confía. Súbela aquí mismo 👇" [PEDIR_FOTO]
 Solo cuando el usuario envíe "[FOTO_SUBIDA]" puedes pasar al siguiente campo.` : ''}
-${!hasNoPhoto && hasNoLogo ? `⚠️ TIENE EMPRESA PERO SIN LOGO. Después de la foto, pregunta: "¿Tienes el logo de tu empresa? Súbelo aquí 👇" [PEDIR_LOGO]
-Si el usuario dice que no tiene logo o es autónomo, sáltalo y sigue con los datos que faltan.
+${!hasNoPhoto && typeUnknown ? `⚠️ SIGUIENTE PASO: Preguntar si es AUTÓNOMO o tiene EMPRESA.
+Pregunta: "${firstName}, una cosa importante: ¿trabajas como autónomo/freelance o tienes una empresa constituida (S.L., S.A., etc.)?"
+Según responda, guarda [PERFIL:professional_type=autonomo] o [PERFIL:professional_type=empresa] y adapta las siguientes preguntas.` : ''}
+${!hasNoPhoto && !typeUnknown && hasNoLogo ? `⚠️ TIENE EMPRESA PERO SIN LOGO. Pregunta: "${firstName}, ¿tienes el logo de tu empresa? Súbelo aquí 👇" [PEDIR_LOGO]
+Si el usuario dice que no tiene logo, sáltalo y sigue con los datos que faltan.
 Solo cuando envíe "[LOGO_SUBIDO]" puedes pasar al siguiente campo.` : ''}
 PREGÚNTALE los datos que faltan de forma conversacional. Rellena con los marcadores [PERFIL:campo=valor].
 Campos que le faltan: ${profileMissing.join(', ')}
@@ -1463,9 +1475,9 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
               profileUpdates[profileMatch[1]] = profileMatch[2].trim();
             }
             
-            if (Object.keys(profileUpdates).length > 0 && professionalId) {
+             if (Object.keys(profileUpdates).length > 0 && professionalId) {
               const allowedFields = [
-                'company_name', 'business_description', 'nif_cif', 'company_cif',
+                'professional_type', 'company_name', 'business_description', 'nif_cif', 'company_cif',
                 'company_address', 'position', 'bio', 'city', 'state', 'postal_code',
                 'country', 'address', 'website', 'linkedin_url', 'years_experience', 'phone'
               ];
