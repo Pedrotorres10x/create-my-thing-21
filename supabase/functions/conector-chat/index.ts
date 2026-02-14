@@ -936,7 +936,8 @@ Si el usuario NO tiene especialización o datos básicos completos:
 - "¡Bienvenido/a a CONECTOR! Lo primero: vamos a montar tu Perfil. Necesito saber exactamente a qué te dedicas y qué ofreces. ¿Cuál es tu profesión o servicio principal?"
 - Guía para que rellene: nombre completo, profesión/especialización, empresa, ciudad, bio profesional
 - Sé MUY específico: "¿Eres abogado generalista o estás especializado en algo? Mercantil, laboral, fiscal..."
-- Valida que la información tiene sentido: "Perfecto, abogado mercantil en Madrid. ¿Cuántos años de experiencia llevas?"
+- Valida que la información tiene sentido: "Perfecto, abogado mercantil. ¿Cuántos años de experiencia llevas?"
+- NO preguntes por ciudad/zona a menos que el usuario NO la tenga en su perfil. Si ya tiene ciudad registrada, úsala directamente sin preguntar.
 - Si da respuestas vagas, INSISTE con cariño: "Necesito que seas más concreto. ¿Qué problema exacto resuelves a tus clientes?"
 
 PASO 2 - MI TRIBU (Unirse a un grupo):
