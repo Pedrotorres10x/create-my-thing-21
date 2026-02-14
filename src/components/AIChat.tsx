@@ -81,27 +81,28 @@ export function AIChat() {
   // Generar mensaje inicial proactivo de Alicia cuando el usuario entra
   useEffect(() => {
     // Wait for auth to be fully ready
-    if (authLoading || !user || !session?.access_token) {
-      return;
-    }
-
-    // Capture the validated token immediately from the session
-    const validatedToken = session.access_token;
-
-    // Validate token is authenticated user token, not anon key
-    if (!isAuthenticatedToken(validatedToken)) {
-      console.log('Token not authenticated yet, waiting for auth session');
+    if (authLoading || !user) {
       return;
     }
 
     // Only mark as initialized AFTER we've confirmed we have an authenticated token
     if (hasInitialized.current) return;
-    hasInitialized.current = true;
-    
-    const abortController = new AbortController();
-    
-    // Pass the validated token to the async function to avoid race conditions
-    const initializeChat = async (accessToken: string) => {
+
+    // Get fresh session token inside the effect to avoid session ref changes triggering re-runs
+    const startChat = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession?.access_token) return;
+      
+      const validatedToken = currentSession.access_token;
+
+      // Validate token is authenticated user token, not anon key
+      if (!isAuthenticatedToken(validatedToken)) {
+        console.log('Token not authenticated yet, waiting for auth session');
+        return;
+      }
+
+      hasInitialized.current = true;
+
       try {
         const { data: professional } = await supabase
           .from('professionals')
@@ -114,28 +115,24 @@ export function AIChat() {
           return;
         }
 
-        // Check if this is a fresh onboarding (just registered)
         const isOnboarding = sessionStorage.getItem('conector-onboarding') === 'true';
         if (isOnboarding) {
           sessionStorage.removeItem('conector-onboarding');
-          // Also suppress the welcome modal since we're going straight to guided chat
           sessionStorage.setItem('alicia-greeting-shown', 'true');
         }
         
-        // Use the validated token passed as parameter, not a fresh fetch
         isStreamingRef.current = true;
 
         const resp = await fetch(CHAT_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${validatedToken}`,
           },
           body: JSON.stringify({ 
             messages: [{ role: "user", content: isOnboarding ? "[ONBOARDING]" : "[INICIO_SESION]" }],
             professionalId: professional.id
           }),
-          signal: abortController.signal,
         });
 
         if (!resp.ok) {
@@ -197,22 +194,14 @@ export function AIChat() {
         setInitializing(false);
         scrollToBottomIfNeeded(true);
       } catch (error: any) {
-        if (error.name === 'AbortError') {
-          console.log('Chat init aborted (component cleanup)');
-          return;
-        }
         console.error("Error initializing chat:", error);
         isStreamingRef.current = false;
         setInitializing(false);
       }
     };
 
-    initializeChat(validatedToken);
-    
-    return () => {
-      abortController.abort();
-    };
-  }, [authLoading, user, session, CHAT_URL]);
+    startChat();
+  }, [authLoading, user?.id, CHAT_URL]);
 
 
   const sendMessage = async () => {
