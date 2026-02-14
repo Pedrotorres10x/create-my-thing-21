@@ -762,10 +762,14 @@ Solo cuando el usuario envíe "[FOTO_SUBIDA]" puedes pasar al siguiente campo.` 
 ${!hasNoPhoto && typeUnknown ? `⚠️ SIGUIENTE PASO: Preguntar si es AUTÓNOMO o EMPRESA. Mensaje corto y directo.` : ''}
 ${!hasNoPhoto && !typeUnknown && hasNoLogo ? `⚠️ TIENE EMPRESA PERO SIN LOGO. Pide el logo. Si dice que no tiene, sáltalo.` : ''}
 ` : ''}
-${!isProfileIncomplete && (isAloneInChapter || hasNoChapter) ? `
+${!isProfileIncomplete && !hasNoChapter && isAloneInChapter ? `
 USUARIO SOLO EN SU TRIBU - NO sugieras referidos ni reuniones.
 ENFÓCATE SOLO en INVITAR. Usa storytelling:
 "${firstName}, imagina esto: 20 profesionales, cada uno con su agenda de contactos, todos pensando en ti cuando alguien necesita lo que tú haces. Eso es lo que estamos construyendo. Pero empieza con uno. ¿Quién es ese primer fichaje?"
+` : ''}
+${!isProfileIncomplete && hasNoChapter ? `
+🚨 PERFIL COMPLETO PERO SIN TRIBU. PRIORIDAD: Ofrecer unirse a grupo o crear uno nuevo.
+NO hables de referidos, reuniones, invitaciones ni nada más hasta que tenga tribu.
 ` : ''}
 
 DATOS DE ACTIVIDAD (últimos 30 días):
@@ -1094,23 +1098,36 @@ El usuario debe ver la conexión directa: Acción → Clientes → Facturación.
 `;
     
     if (isNewUser) {
-      systemPrompt += `\n━━━ USUARIO NUEVO - ONBOARDING COMPLETO ━━━
+      systemPrompt += `\n━━━ USUARIO NUEVO - ONBOARDING ━━━
 
-PRIORIDAD ABSOLUTA: Guiar al usuario paso a paso para que complete su registro correctamente.
-NO hables de referidos, reuniones ni KPIs hasta que tenga TODO completado.
+PRIORIDAD ABSOLUTA: El onboarding tiene 2 FASES SECUENCIALES. NUNCA mezcles las fases.
 
-FLUJO DE ONBOARDING (sigue este orden estricto):
+FASE 1 - COMPLETAR PERFIL AL 100%:
+${isProfileIncomplete ? `
+🚨 EL PERFIL NO ESTÁ COMPLETO. NO avances a la Fase 2 (elegir grupo) hasta que TODOS los campos estén rellenos.
+Campos pendientes: ${profileMissing.join(' → ')}
+Sigue pidiendo UNO A UNO como indican las reglas de perfil.
+NO menciones grupos, tribus, ni nada de la Fase 2.
+` : `
+✅ PERFIL COMPLETO. Pasa directamente a la FASE 2.
+`}
 
-PASO 1 - PROFESIÓN (1 solo mensaje, 1 sola pregunta):
-- Pregunta: "¿A qué te dedicas?"
-- Cuando responda, ACEPTA su respuesta. No pidas más detalle, no preguntes nicho, zona ni especialidad.
-- Responde: "Perfecto, [profesión]. Ya estás dentro." Y pasa AL SIGUIENTE PASO inmediatamente.
-- MÁXIMO 2 frases. CERO preguntas adicionales sobre la profesión.
+FASE 2 - ELEGIR O CREAR GRUPO (SOLO cuando el perfil está 100% completo):
+${!isProfileIncomplete && hasNoChapter ? `
+🎯 EL PERFIL ESTÁ COMPLETO PERO NO TIENE TRIBU. AHORA toca elegir grupo.
+Dile: "${firstName}, perfil completado al 100% 🚀 Ahora toca lo importante: unirte a una Tribu o crear la tuya."
+` : ''}
+${!isProfileIncomplete && !hasNoChapter ? `
+✅ Ya tiene perfil completo Y tribu asignada. Pasa al onboarding de presentación de miembros.
+` : ''}
 
-PASO 2 - MI TRIBU (Unirse a un grupo):
-Si el usuario NO tiene grupo asignado:
+${!isProfileIncomplete && hasNoChapter ? `
+ASIGNACIÓN DE TRIBU (SOLO se muestra porque el perfil está 100% completo):
+
+El usuario necesita unirse a una Tribu o crear una nueva. Ofrécele las opciones:
+
 ${chaptersInArea.length > 0 ? 
-  `- Hay ${chaptersInArea.length} Tribu(s) en su zona:
+  `Hay ${chaptersInArea.length} Tribu(s) disponible(s) en su zona:
 ${chaptersInArea.map((ch: any) => {
   const existingPros = (ch as any).existing_professionals || [];
   const sameProfession = existingPros.filter((p: any) => 
@@ -1118,26 +1135,38 @@ ${chaptersInArea.map((ch: any) => {
     p.profession_specializations.name.toLowerCase() === profile.profession_specializations?.name?.toLowerCase()
   );
   const hasSameProfession = sameProfession.length > 0;
-  return `  · "${ch.name}" - ${ch.member_count} miembros${hasSameProfession ? ` ⚠️ YA HAY ${sameProfession.length} profesional(es) de ${sameProfession[0]?.profession_specializations?.name}: ${sameProfession.map((p: any) => p.full_name).join(', ')}` : ''}`;
+  return '  · "' + ch.name + '" (' + ch.city + ') - ' + ch.member_count + ' miembros' + (hasSameProfession ? ' ⚠️ YA HAY ' + sameProfession.length + ' profesional(es) de ' + (sameProfession[0]?.profession_specializations?.name || '') + ': ' + sameProfession.map((p: any) => p.full_name).join(', ') : '');
 }).join('\n')}
 
-LÓGICA DE CONFLICTO DE PROFESIÓN:
-- Si en una tribu YA existe alguien con la MISMA profesión que el nuevo usuario:
-  1. Pregúntale brevemente en qué se especializa dentro de su profesión para entender si hay diferencia real (ej: "Ya hay un inmobiliaria en esta Tribu: [nombre]. Para ver si encajáis sin pisaros, cuéntame: ¿qué tipo de inmobiliaria haces exactamente?")
-  2. Cuando el usuario responda con su especialización, incluye EXACTAMENTE este marcador oculto al FINAL de tu mensaje (el sistema lo procesará automáticamente):
-     [CREAR_CONFLICTO:chapter_id=ID_DEL_CHAPTER,existing_id=ID_DEL_PROFESIONAL_EXISTENTE,specialization=LO_QUE_DIJO_EL_USUARIO]
-  3. Tu mensaje visible debe decir: "Perfecto. Tu solicitud se eleva al Comité de Sabios de la Tribu. Ellos revisarán que no os piséis y decidirán. Te avisaremos pronto."
-  4. NO le asignes tribu tú. El Comité decide.
-  5. Mientras tanto, sugiérele que complete su perfil y explore la plataforma.
-- Si NO hay conflicto de profesión, asigna directamente sin preguntar más.
+Presenta las opciones así:
+"${firstName}, perfil listo al 100% 🚀 Ahora toca lo MÁS importante: tu Tribu. Tienes estas opciones:
+${chaptersInArea.map((ch: any, i: number) => (i + 1) + '. Unirte a "' + ch.name + '" (' + ch.city + ') - ' + ch.member_count + ' miembros').join('\n')}
+${chaptersInArea.length + 1}. Crear una Tribu NUEVA en tu zona
 
-DATOS DE LOS CHAPTERS PARA EL MARCADOR:
+¿Cuál prefieres?"
+
+CUANDO EL USUARIO ELIJA:
+- Si elige unirse a una tribu existente: usa el marcador [ASIGNAR_TRIBU:chapter_id=ID_DEL_CHAPTER] al final del mensaje
+- Si elige crear una nueva: pregúntale el nombre para la tribu, y usa [CREAR_TRIBU:name=NOMBRE,city=${profile?.city || ''},state=${profile?.state || ''}]
+
+LÓGICA DE CONFLICTO DE PROFESIÓN (al unirse a tribu existente):
+- Si en esa tribu YA existe alguien con la MISMA profesión:
+  1. Pregúntale en qué se especializa dentro de su profesión
+  2. Usa [CREAR_CONFLICTO:chapter_id=ID,existing_id=ID_EXISTENTE,specialization=LO_QUE_DIJO]
+  3. Dile: "Tu solicitud se eleva al Comité de Sabios. Te avisaremos pronto."
+- Si NO hay conflicto, asigna directamente con [ASIGNAR_TRIBU:chapter_id=ID]
+
+DATOS DE LOS CHAPTERS PARA MARCADORES:
 ${chaptersInArea.map((ch: any) => {
   const existingPros = (ch as any).existing_professionals || [];
-  return existingPros.map((p: any) => `Chapter "${ch.name}" (ID: ${ch.id}) tiene a ${p.full_name} (ID: ${p.id}) como ${p.profession_specializations?.name || 'sin especialidad'}`).join('\n');
+  return 'Chapter "' + ch.name + '" ID: ' + ch.id + (existingPros.length > 0 ? ' - Profesionales: ' + existingPros.map((p: any) => p.full_name + ' (ID: ' + p.id + ', ' + (p.profession_specializations?.name || 'sin especialidad') + ')').join(', ') : '');
 }).join('\n')}` :
-  `- No hay Tribus en su zona aún.
-- "En tu zona aún no hay Tribu. Puedes ser el primero. ¿Te animas a abrir una?"`}
+  `No hay Tribus en su zona aún.
+Ofrécele crear una nueva:
+"${firstName}, perfil listo al 100% 🚀 En tu zona aún no hay Tribu. Puedes ser el PRIMERO en crear una. ¿Cómo quieres llamarla?"
+Cuando diga el nombre, usa: [CREAR_TRIBU:name=NOMBRE,city=${profile?.city || ''},state=${profile?.state || ''}]
+Si no tiene ciudad/estado, pregúntaselos primero.`}
+` : ''}
 
 ESTE PASO ES EL MÁS IMPORTANTE. Sin conocer a cada miembro, el usuario NO puede referir clientes.
 Presenta a los miembros DE UNO EN UNO, esperando respuesta del usuario antes de pasar al siguiente.
@@ -1551,6 +1580,45 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
                 console.log('Conflict request created for', professionalId, 'in chapter', chapterId);
               } catch (conflictErr) {
                 console.error('Error creating conflict request:', conflictErr);
+              }
+            }
+
+            // Process tribe assignment marker
+            const assignMatch = aiResponseContent.match(/\[ASIGNAR_TRIBU:chapter_id=([^\]]+)\]/);
+            if (assignMatch && professionalId) {
+              const chapterId = assignMatch[1].trim();
+              try {
+                await supabaseBg.from('professionals').update({ chapter_id: chapterId }).eq('id', professionalId);
+                // Increment chapter member count
+                await supabaseBg.rpc('increment_chapter_member_count', { _chapter_id: chapterId }).catch(() => {
+                  // If RPC doesn't exist, update directly
+                  supabaseBg.from('chapters').update({ member_count: supabaseBg.rpc ? undefined : 1 }).eq('id', chapterId);
+                });
+                console.log('Professional', professionalId, 'assigned to chapter', chapterId);
+              } catch (assignErr) {
+                console.error('Error assigning chapter:', assignErr);
+              }
+            }
+
+            // Process tribe creation marker
+            const createMatch = aiResponseContent.match(/\[CREAR_TRIBU:name=([^,]+),city=([^,]+),state=([^\]]+)\]/);
+            if (createMatch && professionalId) {
+              const [, tribeName, tribeCity, tribeState] = createMatch;
+              try {
+                const { data: newChapter } = await supabaseBg.from('chapters').insert({
+                  name: tribeName.trim(),
+                  city: tribeCity.trim(),
+                  state: tribeState.trim(),
+                  member_count: 1,
+                  leader_id: professionalId,
+                }).select('id').single();
+                
+                if (newChapter) {
+                  await supabaseBg.from('professionals').update({ chapter_id: newChapter.id }).eq('id', professionalId);
+                  console.log('New chapter created:', newChapter.id, 'for professional', professionalId);
+                }
+              } catch (createErr) {
+                console.error('Error creating chapter:', createErr);
               }
             }
           }
