@@ -581,6 +581,81 @@ export type Database = {
           },
         ]
       }
+      deal_disagreements: {
+        Row: {
+          comment: string
+          created_at: string
+          deal_id: string
+          id: string
+          opened_by_id: string
+          reason: string
+          resolution_type: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          deal_id: string
+          id?: string
+          opened_by_id: string
+          reason: string
+          resolution_type?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          deal_id?: string
+          id?: string
+          opened_by_id?: string
+          reason?: string
+          resolution_type?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_disagreements_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_disagreements_opened_by_id_fkey"
+            columns: ["opened_by_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_disagreements_opened_by_id_fkey"
+            columns: ["opened_by_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_disagreements_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_disagreements_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deals: {
         Row: {
           commission_amount: number | null
@@ -592,10 +667,21 @@ export type Database = {
           deal_value: number | null
           declared_profit: number | null
           description: string
+          estimated_total_volume: number | null
           id: string
           receiver_id: string
           referrer_id: string
+          sector_id: string | null
           status: string
+          thanks_accepted_at: string | null
+          thanks_amount_selected: number | null
+          thanks_amount_status: string
+          thanks_band_id: string | null
+          thanks_band_version: string | null
+          thanks_comment: string | null
+          thanks_estimated_income_internal: number | null
+          thanks_paid_at: string | null
+          thanks_proposed_at: string | null
           updated_at: string
         }
         Insert: {
@@ -608,10 +694,21 @@ export type Database = {
           deal_value?: number | null
           declared_profit?: number | null
           description: string
+          estimated_total_volume?: number | null
           id?: string
           receiver_id: string
           referrer_id: string
+          sector_id?: string | null
           status?: string
+          thanks_accepted_at?: string | null
+          thanks_amount_selected?: number | null
+          thanks_amount_status?: string
+          thanks_band_id?: string | null
+          thanks_band_version?: string | null
+          thanks_comment?: string | null
+          thanks_estimated_income_internal?: number | null
+          thanks_paid_at?: string | null
+          thanks_proposed_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -624,10 +721,21 @@ export type Database = {
           deal_value?: number | null
           declared_profit?: number | null
           description?: string
+          estimated_total_volume?: number | null
           id?: string
           receiver_id?: string
           referrer_id?: string
+          sector_id?: string | null
           status?: string
+          thanks_accepted_at?: string | null
+          thanks_amount_selected?: number | null
+          thanks_amount_status?: string
+          thanks_band_id?: string | null
+          thanks_band_version?: string | null
+          thanks_comment?: string | null
+          thanks_estimated_income_internal?: number | null
+          thanks_paid_at?: string | null
+          thanks_proposed_at?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -657,6 +765,20 @@ export type Database = {
             columns: ["referrer_id"]
             isOneToOne: false
             referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "thanks_sectors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_thanks_band_id_fkey"
+            columns: ["thanks_band_id"]
+            isOneToOne: false
+            referencedRelation: "thanks_category_bands"
             referencedColumns: ["id"]
           },
         ]
@@ -2898,6 +3020,141 @@ export type Database = {
         }
         Relationships: []
       }
+      thanks_category_bands: {
+        Row: {
+          band_number: number
+          created_at: string
+          display_label: string
+          id: string
+          internal_max_estimated_income: number
+          internal_min_estimated_income: number
+          is_active: boolean
+          max_thanks_amount: number
+          min_thanks_amount: number
+          recommended_thanks_amount: number
+          updated_at: string
+        }
+        Insert: {
+          band_number: number
+          created_at?: string
+          display_label: string
+          id?: string
+          internal_max_estimated_income: number
+          internal_min_estimated_income: number
+          is_active?: boolean
+          max_thanks_amount: number
+          min_thanks_amount: number
+          recommended_thanks_amount: number
+          updated_at?: string
+        }
+        Update: {
+          band_number?: number
+          created_at?: string
+          display_label?: string
+          id?: string
+          internal_max_estimated_income?: number
+          internal_min_estimated_income?: number
+          is_active?: boolean
+          max_thanks_amount?: number
+          min_thanks_amount?: number
+          recommended_thanks_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      thanks_reputation_metrics: {
+        Row: {
+          avg_thanks_vs_recommended: number
+          disagreement_rate: number
+          generosity_index: number
+          id: string
+          payment_speed_avg_hours: number
+          professional_id: string
+          total_thanks_given: number
+          total_thanks_received: number
+          underpay_flags_count: number
+          updated_at: string
+        }
+        Insert: {
+          avg_thanks_vs_recommended?: number
+          disagreement_rate?: number
+          generosity_index?: number
+          id?: string
+          payment_speed_avg_hours?: number
+          professional_id: string
+          total_thanks_given?: number
+          total_thanks_received?: number
+          underpay_flags_count?: number
+          updated_at?: string
+        }
+        Update: {
+          avg_thanks_vs_recommended?: number
+          disagreement_rate?: number
+          generosity_index?: number
+          id?: string
+          payment_speed_avg_hours?: number
+          professional_id?: string
+          total_thanks_given?: number
+          total_thanks_received?: number
+          underpay_flags_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thanks_reputation_metrics_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "thanks_reputation_metrics_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      thanks_sectors: {
+        Row: {
+          created_at: string
+          id: string
+          internal_coefficient_max: number | null
+          internal_coefficient_min: number | null
+          internal_coefficient_type: string
+          internal_coefficient_value: number
+          is_active: boolean
+          name: string
+          notes_internal: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          internal_coefficient_max?: number | null
+          internal_coefficient_min?: number | null
+          internal_coefficient_type?: string
+          internal_coefficient_value?: number
+          is_active?: boolean
+          name: string
+          notes_internal?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          internal_coefficient_max?: number | null
+          internal_coefficient_min?: number | null
+          internal_coefficient_type?: string
+          internal_coefficient_value?: number
+          is_active?: boolean
+          name?: string
+          notes_internal?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_activity_tracking: {
         Row: {
           activity_score: number | null
@@ -3771,6 +4028,17 @@ export type Database = {
       }
     }
     Functions: {
+      assign_thanks_band: {
+        Args: { _estimated_total_volume: number; _sector_id: string }
+        Returns: {
+          band_id: string
+          display_label: string
+          estimated_income_internal: number
+          max_amount: number
+          min_amount: number
+          recommended_amount: number
+        }[]
+      }
       banner_has_reached_limits: {
         Args: { _banner_id: string }
         Returns: boolean
