@@ -14,8 +14,7 @@ import Referrals from "./pages/Referrals";
 import Chapter from "./pages/Chapter";
 import Meetings from "./pages/Meetings";
 
-import Feed from "./pages/Feed";
-import Rankings from "./pages/Rankings";
+import SomosUnicos from "./pages/SomosUnicos";
 
 import Subscriptions from "./pages/Subscriptions";
 import EthicsCommittee from "./pages/EthicsCommittee";
@@ -42,8 +41,9 @@ const App = () => (
             <Route path="/chapter" element={<ProtectedRoute><Layout><Chapter /></Layout></ProtectedRoute>} />
             <Route path="/meetings" element={<ProtectedRoute><Layout><Meetings /></Layout></ProtectedRoute>} />
             
-            <Route path="/feed" element={<ProtectedRoute><Layout><Feed /></Layout></ProtectedRoute>} />
-            <Route path="/rankings" element={<ProtectedRoute><Layout><Rankings /></Layout></ProtectedRoute>} />
+            <Route path="/somos-unicos" element={<ProtectedRoute><Layout><SomosUnicos /></Layout></ProtectedRoute>} />
+            <Route path="/feed" element={<ProtectedRoute><Layout><SomosUnicos /></Layout></ProtectedRoute>} />
+            <Route path="/rankings" element={<ProtectedRoute><Layout><SomosUnicos /></Layout></ProtectedRoute>} />
             
             <Route path="/subscriptions" element={<ProtectedRoute><Layout><Subscriptions /></Layout></ProtectedRoute>} />
             <Route path="/ethics-committee" element={<ProtectedRoute><Layout><EthicsCommittee /></Layout></ProtectedRoute>} />
