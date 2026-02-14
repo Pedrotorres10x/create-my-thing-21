@@ -35,6 +35,7 @@ import { RedFlagsDashboard } from "@/components/admin/RedFlagsDashboard";
 
 
 import { LovableEmotionalDashboard } from "@/components/admin/LovableEmotionalDashboard";
+import { ThanksAdminPanel } from "@/components/admin/ThanksAdminPanel";
 import { BarChart3 } from "lucide-react";
 
 interface Professional {
@@ -498,6 +499,10 @@ const Admin = () => {
             Red Flags
           </TabsTrigger>
           <TabsTrigger value="referrals">Referidos</TabsTrigger>
+          <TabsTrigger value="thanks">
+            <Heart className="w-4 h-4 mr-2" />
+            Agradecimiento
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard" className="space-y-6">
@@ -879,6 +884,10 @@ const Admin = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="thanks" className="space-y-4">
+          <ThanksAdminPanel />
         </TabsContent>
 
       </Tabs>
