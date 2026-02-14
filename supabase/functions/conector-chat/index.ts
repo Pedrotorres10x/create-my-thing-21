@@ -647,11 +647,58 @@ ESTADO DEL PERFIL:
 ${isProfileIncomplete ? `- Le falta: ${profileMissing.join(', ')}` : ''}
 ${hasNoPhoto ? '- ⚠️ SIN FOTO DE PERFIL - PRIORIDAD MÁXIMA' : '- Tiene foto ✅'}
 
+━━━ SUPERPODER: RELLENAR PERFIL DESDE EL CHAT ━━━
+
+Puedes ACTUALIZAR directamente los campos del perfil del usuario mientras habláis.
+Cuando el usuario te diga información de su perfil (empresa, descripción, dirección, etc.), 
+RELLENA el campo correspondiente usando este marcador OCULTO al final de tu mensaje:
+
+[PERFIL:campo=valor]
+
+Campos disponibles (usa el nombre exacto):
+- company_name = Nombre de la empresa
+- business_description = Descripción del negocio (qué hace, a quién ayuda)
+- nif_cif = NIF o CIF personal
+- company_cif = CIF de la empresa
+- company_address = Dirección de la empresa
+- position = Cargo/puesto (CEO, Director, etc.)
+- bio = Biografía corta sobre el profesional
+- city = Ciudad
+- state = Provincia/Comunidad Autónoma
+- postal_code = Código postal
+- country = País
+- address = Dirección personal
+- website = Página web
+- linkedin_url = URL de LinkedIn
+- years_experience = Años de experiencia (solo número)
+- phone = Teléfono
+
+Puedes usar VARIOS marcadores en un mensaje:
+[PERFIL:company_name=Mi Empresa S.L.][PERFIL:position=CEO][PERFIL:city=Madrid]
+
+REGLAS:
+1. Cuando preguntes por datos del perfil y el usuario responda, SIEMPRE incluye el marcador para guardar el dato.
+2. Confirma al usuario que has guardado el dato: "Perfecto, apuntado ✅"
+3. Si el perfil está incompleto, VE PREGUNTANDO los campos que faltan UNO A UNO de forma natural.
+4. Para la foto, dile que la suba desde Mi Perfil (no puedes subir fotos desde el chat).
+5. Si el usuario tiene dudas sobre qué poner, AYÚDALE con sugerencias y ejemplos.
+6. NUNCA muestres el marcador [PERFIL:...] en el texto visible. Ponlo AL FINAL del mensaje.
+
+EJEMPLO DE CONVERSACIÓN:
+Usuario: "Soy el CEO de Reformas López, hacemos reformas integrales en Madrid"
+Tú: "Genial ${firstName}, ya te he apuntado todo eso ✅ ¿Cuántos años lleváis en el sector?"
+[PERFIL:company_name=Reformas López][PERFIL:position=CEO][PERFIL:business_description=Reformas integrales en Madrid][PERFIL:city=Madrid]
+
+Usuario: "Llevamos 15 años"
+Tú: "15 años, eso es mucha experiencia ✅ ¿Me pasas tu web o LinkedIn para completar tu perfil?"
+[PERFIL:years_experience=15]
+
 ${isProfileIncomplete ? `
 🚨 REGLA SUPREMA: EL PERFIL INCOMPLETO BLOQUEA TODO LO DEMÁS.
 NO sugieras invitar, referir, reuniones NI NADA hasta que complete su perfil.
-${hasNoPhoto ? 'Sin foto de perfil, NADIE confía. Es como ir a una reunión con una bolsa en la cabeza.' : ''}
-SOLO háblale de completar su perfil. Dirígele a "Mi Perfil".
+${hasNoPhoto ? 'Sin foto de perfil, NADIE confía. Es como ir a una reunión con una bolsa en la cabeza. Dile que suba su foto desde Mi Perfil.' : ''}
+PREGÚNTALE los datos que faltan de forma conversacional. Rellena con los marcadores [PERFIL:campo=valor].
+Campos que le faltan: ${profileMissing.join(', ')}
 ` : `${isAloneInChapter || hasNoChapter ? `
 USUARIO SOLO EN SU TRIBU - NO sugieras referidos ni reuniones.
 ENFÓCATE SOLO en INVITAR. Usa storytelling:
@@ -1337,11 +1384,14 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
                   aiResponseContent += content;
                   // Buffer potential marker content and strip from output
                   markerBuffer += content;
-                  if (markerBuffer.includes('[CREAR_CONFLICTO:')) {
-                    const endIdx = markerBuffer.indexOf(']', markerBuffer.indexOf('[CREAR_CONFLICTO:'));
-                    if (endIdx !== -1) {
-                      // Full marker found, strip it
-                      markerBuffer = markerBuffer.replace(/\[CREAR_CONFLICTO:[^\]]*\]/, '');
+                  if (markerBuffer.includes('[CREAR_CONFLICTO:') || markerBuffer.includes('[PERFIL:')) {
+                    // Check for complete markers
+                    const allMarkersComplete = !markerBuffer.includes('[') || 
+                      (markerBuffer.match(/\[/g)?.length === markerBuffer.match(/\]/g)?.length);
+                    const endIdx = markerBuffer.lastIndexOf(']');
+                    if (allMarkersComplete && endIdx !== -1) {
+                      // Strip all markers
+                      markerBuffer = markerBuffer.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '');
                       if (markerBuffer) {
                         const cleanChunk = { ...parsed, choices: [{ ...parsed.choices[0], delta: { content: markerBuffer } }] };
                         filteredText += `data: ${JSON.stringify(cleanChunk)}\n`;
@@ -1383,9 +1433,35 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
             await supabaseBg.from('chat_messages').insert({
               conversation_id: activeConversationId,
               role: 'assistant',
-              content: aiResponseContent.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').substring(0, 5000),
+              content: aiResponseContent.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '').trim().substring(0, 5000),
             });
             
+            // Process profile update markers
+            const profileUpdates: Record<string, string> = {};
+            const profileRegex = /\[PERFIL:(\w+)=([^\]]+)\]/g;
+            let profileMatch;
+            while ((profileMatch = profileRegex.exec(aiResponseContent)) !== null) {
+              profileUpdates[profileMatch[1]] = profileMatch[2].trim();
+            }
+            
+            if (Object.keys(profileUpdates).length > 0 && professionalId) {
+              const allowedFields = [
+                'company_name', 'business_description', 'nif_cif', 'company_cif',
+                'company_address', 'position', 'bio', 'city', 'state', 'postal_code',
+                'country', 'address', 'website', 'linkedin_url', 'years_experience', 'phone'
+              ];
+              const safeUpdates: Record<string, any> = {};
+              for (const [key, value] of Object.entries(profileUpdates)) {
+                if (allowedFields.includes(key)) {
+                  safeUpdates[key] = key === 'years_experience' ? parseInt(value) || null : value;
+                }
+              }
+              if (Object.keys(safeUpdates).length > 0) {
+                await supabaseBg.from('professionals').update(safeUpdates).eq('id', professionalId);
+                console.log('Profile updated via chat:', Object.keys(safeUpdates));
+              }
+            }
+
             // Process conflict creation marker if present
             const conflictMatch = aiResponseContent.match(/\[CREAR_CONFLICTO:chapter_id=([^,]+),existing_id=([^,]+),specialization=([^\]]+)\]/);
             if (conflictMatch && professionalId) {

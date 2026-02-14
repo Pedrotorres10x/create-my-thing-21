@@ -456,6 +456,8 @@ export function AIChat() {
               >
                 <p className="text-sm leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ 
                   __html: message.content
+                    .replace(/\[PERFIL:[^\]]*\]/g, '')
+                    .replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '')
                     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*(.+?)\*/g, '<em>$1</em>')
                 }} />
