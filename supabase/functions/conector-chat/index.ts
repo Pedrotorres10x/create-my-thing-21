@@ -149,7 +149,7 @@ serve(async (req) => {
           website,
           linkedin,
           position,
-          specializations(name)
+          profession_specializations(name)
         `)
         .eq('id', professionalId)
         .single();
@@ -157,7 +157,7 @@ serve(async (req) => {
       if (profileError) {
         console.error('Profile query error:', profileError);
       }
-      console.log('Profile loaded:', JSON.stringify({ full_name: profile?.full_name, specialization: profile?.specializations }));
+      console.log('Profile loaded:', JSON.stringify({ full_name: profile?.full_name, specialization: profile?.profession_specializations }));
       profileInfo = profile;
       
       // Get chapter member count
@@ -268,7 +268,7 @@ serve(async (req) => {
       if (profile?.referral_code) {
         const { data: invited } = await supabase
           .from('professionals')
-          .select('full_name, specializations(name), status, created_at')
+          .select('full_name, profession_specializations(name), status, created_at')
           .eq('referred_by_code', profile.referral_code)
           .order('created_at', { ascending: false })
           .limit(10);
@@ -364,7 +364,7 @@ serve(async (req) => {
           for (const ch of chaptersInArea) {
             const { data: chapterPros } = await supabase
               .from('professionals')
-              .select('id, specialization_id, specializations(name), business_description, full_name')
+              .select('id, specialization_id, profession_specializations(name), business_description, full_name')
               .eq('chapter_id', ch.id)
               .eq('status', 'approved');
             (ch as any).existing_professionals = chapterPros || [];
@@ -379,7 +379,7 @@ serve(async (req) => {
           .select(`
             full_name,
             specialization_id,
-            specializations(name),
+            profession_specializations(name),
             company_name,
             business_name,
             business_description,
@@ -466,7 +466,7 @@ serve(async (req) => {
         }
         
         if (profileInfo.specialization_id) {
-          userContextStr += `- Profesión: ${profileInfo.specializations?.name || 'No especificada'}\n`;
+          userContextStr += `- Profesión: ${profileInfo.profession_specializations?.name || 'No especificada'}\n`;
         }
         
         if (profileInfo.chapter_id) {
@@ -483,7 +483,7 @@ serve(async (req) => {
         if (professionsInChapter.length > 0) {
           userContextStr += `\nPROFESIONES YA OCUPADAS EN SU TRIBU:\n`;
           professionsInChapter.forEach((prof: any) => {
-            userContextStr += `- ${prof.specializations?.name}\n`;
+            userContextStr += `- ${prof.profession_specializations?.name}\n`;
           });
         }
 
@@ -533,7 +533,7 @@ serve(async (req) => {
         if (invitedProfessionals && invitedProfessionals.length > 0) {
           userContextStr += `\nPROFESIONALES INVITADOS POR EL USUARIO (${invitedProfessionals.length}):\n`;
           invitedProfessionals.forEach((inv: any) => {
-            userContextStr += `- ${inv.full_name || 'Sin nombre'} → ${inv.specializations?.name || 'Sin especialidad'} (${inv.status})\n`;
+            userContextStr += `- ${inv.full_name || 'Sin nombre'} → ${inv.profession_specializations?.name || 'Sin especialidad'} (${inv.status})\n`;
           });
         } else {
           userContextStr += `\nINVITACIONES: No ha invitado a nadie aún.\n`;
@@ -635,7 +635,7 @@ PERFIL DEL USUARIO:
 - Nombre completo: ${bestFullName}
 - Puntos: ${profileInfo?.total_points || 0}
 - Experiencia: ${profileInfo?.years_experience || 0} años
-- Profesión: ${(profileInfo?.specializations as any)?.name || 'No especificada'}
+- Profesión: ${(profileInfo?.profession_specializations as any)?.name || 'No especificada'}
 
 CONTEXTO DE SU TRIBU:
 - Tiene Tribu asignada: ${profileInfo?.chapter_id ? 'Sí' : 'No'}
@@ -674,7 +674,7 @@ La prioridad NO es referir, es INVITAR. Con menos de 10 no hay masa crítica.
 - NO sugieras referidos como prioridad
 - SUGIERE PROFESIONALES CONCRETOS según la profesión del usuario. Piensa en su ESFERA NATURAL de colaboradores:
 
-SUGERENCIAS POR PROFESIÓN (adapta según la profesión del usuario "${(profileInfo?.specializations as any)?.name || ''}"):
+SUGERENCIAS POR PROFESIÓN (adapta según la profesión del usuario "${(profileInfo?.profession_specializations as any)?.name || ''}"):
   Si es INMOBILIARIO → sugiere invitar: tasador, arquitecto, interiorista, abogado inmobiliario, fotógrafo inmobiliario, gestor hipotecario, empresa de mudanzas, home stager
   Si es ABOGADO → sugiere invitar: gestor administrativo, notario, mediador, perito judicial, detective privado, asesor fiscal, procurador
   Si es ARQUITECTO → sugiere invitar: aparejador, ingeniero de estructuras, interiorista, constructora, paisajista, empresa de reformas, inmobiliario
@@ -703,7 +703,7 @@ CONECTORES UNIVERSALES (alta rotación de personas, sugiere 1-2 siempre):
   - Autoescuela: "Jóvenes que empiezan su vida, familias, todo tipo de perfiles"
   - Veterinario: "Los dueños de mascotas hablan MUCHO entre ellos. Comunidad muy conectada"
 
-CONECTORES ESPECÍFICOS POR PROFESIÓN (adapta según "${(profileInfo?.specializations as any)?.name || ''}"):
+CONECTORES ESPECÍFICOS POR PROFESIÓN (adapta según "${(profileInfo?.profession_specializations as any)?.name || ''}"):
   INMOBILIARIO → administrador de fincas (gestiona 20+ comunidades = cientos de propietarios), portero de finca (sabe quién vende, quién alquila), cerrajero (entra en casas vacías, sabe de cambios), empresa de mudanzas (sabe quién llega y quién se va), notaría (ve todas las operaciones)
   ABOGADO → funeraria (herencias, testamentos), gestoría de tráfico (accidentes → reclamaciones), correduría de seguros (siniestros → demandas), mediador familiar, trabajador social
   DENTISTA/MÉDICO → farmacia (derivan pacientes), óptica (comparten pacientes), guardería/colegio (padres con niños = pacientes), herbolario/dietista
@@ -1004,11 +1004,11 @@ ${chaptersInArea.length > 0 ?
 ${chaptersInArea.map((ch: any) => {
   const existingPros = (ch as any).existing_professionals || [];
   const sameProfession = existingPros.filter((p: any) => 
-    p.specializations?.name && profile?.specializations?.name && 
-    p.specializations.name.toLowerCase() === profile.specializations?.name?.toLowerCase()
+    p.profession_specializations?.name && profile?.profession_specializations?.name && 
+    p.profession_specializations.name.toLowerCase() === profile.profession_specializations?.name?.toLowerCase()
   );
   const hasSameProfession = sameProfession.length > 0;
-  return `  · "${ch.name}" - ${ch.member_count} miembros${hasSameProfession ? ` ⚠️ YA HAY ${sameProfession.length} profesional(es) de ${sameProfession[0]?.specializations?.name}: ${sameProfession.map((p: any) => p.full_name).join(', ')}` : ''}`;
+  return `  · "${ch.name}" - ${ch.member_count} miembros${hasSameProfession ? ` ⚠️ YA HAY ${sameProfession.length} profesional(es) de ${sameProfession[0]?.profession_specializations?.name}: ${sameProfession.map((p: any) => p.full_name).join(', ')}` : ''}`;
 }).join('\n')}
 
 LÓGICA DE CONFLICTO DE PROFESIÓN:
@@ -1024,7 +1024,7 @@ LÓGICA DE CONFLICTO DE PROFESIÓN:
 DATOS DE LOS CHAPTERS PARA EL MARCADOR:
 ${chaptersInArea.map((ch: any) => {
   const existingPros = (ch as any).existing_professionals || [];
-  return existingPros.map((p: any) => `Chapter "${ch.name}" (ID: ${ch.id}) tiene a ${p.full_name} (ID: ${p.id}) como ${p.specializations?.name || 'sin especialidad'}`).join('\n');
+  return existingPros.map((p: any) => `Chapter "${ch.name}" (ID: ${ch.id}) tiene a ${p.full_name} (ID: ${p.id}) como ${p.profession_specializations?.name || 'sin especialidad'}`).join('\n');
 }).join('\n')}` :
   `- No hay Tribus en su zona aún.
 - "En tu zona aún no hay Tribu. Puedes ser el primero. ¿Te animas a abrir una?"`}
@@ -1033,7 +1033,7 @@ ESTE PASO ES EL MÁS IMPORTANTE. Sin conocer a cada miembro, el usuario NO puede
 Presenta a los miembros DE UNO EN UNO, esperando respuesta del usuario antes de pasar al siguiente.
 
 ${professionsInChapter.length > 0 ? 
-  `MIEMBROS DE SU TRIBU (${professionsInChapter.length} compañeros):\n${professionsInChapter.map((p: any, i: number) => `${i + 1}. ${p.full_name || 'Miembro'} → ${p.specializations?.name || 'Sin especialidad'}${p.company_name ? ` (${p.company_name})` : p.business_name ? ` (${p.business_name})` : ''}${p.business_description ? ` - ${p.business_description.substring(0, 80)}` : ''}`).join('\n')}
+  `MIEMBROS DE SU TRIBU (${professionsInChapter.length} compañeros):\n${professionsInChapter.map((p: any, i: number) => `${i + 1}. ${p.full_name || 'Miembro'} → ${p.profession_specializations?.name || 'Sin especialidad'}${p.company_name ? ` (${p.company_name})` : p.business_name ? ` (${p.business_name})` : ''}${p.business_description ? ` - ${p.business_description.substring(0, 80)}` : ''}`).join('\n')}
 
 MECÁNICA UNO A UNO (OBLIGATORIA):
 1. Empieza con el PRIMER miembro. Preséntalo con nombre, profesión y un ejemplo concreto de qué tipo de cliente le encaja.
@@ -1073,7 +1073,7 @@ IMPORTANTE: Invitar miembros NO es un referido. Un referido es pasar un CLIENTE.
 PROFESIONES QUE FALTAN (sugerir activamente):
 - Mira las profesiones ya ocupadas y sugiere las que faltan como oportunidad
 ${professionsInChapter.length > 0 ? 
-  `- Profesiones cubiertas: ${professionsInChapter.map((p: any) => p.specializations?.name).filter(Boolean).join(', ')}
+  `- Profesiones cubiertas: ${professionsInChapter.map((p: any) => p.profession_specializations?.name).filter(Boolean).join(', ')}
 - "Tienes cubierto [lista], pero faltan muchas categorías. ¿Conoces a algún profesional de [categoría que falte] que sea bueno? Tráelo y amplías tu red de negocio."` :
   '- "Tu Tribu está vacía. El primero que traigas será tu primer aliado de negocio. ¿A qué profesional de confianza invitarías?"'}
 
@@ -1390,7 +1390,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
                 // Get existing professional's specialization name
                 const { data: existingPro } = await supabaseBg
                   .from('professionals')
-                  .select('specializations(name)')
+                  .select('profession_specializations(name)')
                   .eq('id', existingId)
                   .single();
                 
@@ -1400,7 +1400,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
                   existing_professional_id: existingId,
                   applicant_specialization: specialization.trim(),
                   applicant_description: specialization.trim(),
-                  existing_specialization: (existingPro as any)?.specializations?.name || 'Sin especificar',
+                  existing_specialization: (existingPro as any)?.profession_specializations?.name || 'Sin especificar',
                   status: 'pending',
                 });
                 console.log('Conflict request created for', professionalId, 'in chapter', chapterId);
