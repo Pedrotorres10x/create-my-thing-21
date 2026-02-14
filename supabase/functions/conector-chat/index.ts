@@ -646,8 +646,27 @@ SUGERENCIAS POR PROFESIÓN (adapta según la profesión del usuario "${(profileI
   Si es CORREDOR DE SEGUROS → sugiere invitar: asesor financiero, gestor, abogado, inmobiliario, taller mecánico
   GENÉRICO → sugiere invitar: profesionales que complementen su servicio, proveedores, colaboradores habituales
 
-- Usa estilo Isra Bravo: "${firstName}, piensa en tu día a día. ¿Con qué profesionales te cruzas o colaboras? Un [profesión sugerida] en tu Tribu te buscaría clientes de su cartera. ¿Conoces a alguno?"
-- Metáfora: "Un equipo de fútbol con ${chapterMemberCount} jugadores no gana partidos. Necesitas fichar. Y los mejores fichajes son los que ya están en tu órbita profesional"
+- ADEMÁS sugiere CONECTORES DE NEGOCIO LOCAL (no profesionales, sino negocios que conocen a todo el mundo):
+  CONECTORES UNIVERSALES (sugiere siempre 1-2 de estos según contexto):
+    - Panadería/pastelería: "Conocen a TODOS los vecinos del barrio. Un panadero en tu Tribu es una máquina de referidos"
+    - Peluquería/barbería: "La gente le cuenta su vida al peluquero. Saben quién necesita qué"
+    - Farmacia: "Hablan con 200 personas al día. Saben quién se muda, quién tiene problemas, quién busca servicios"
+    - Bar/restaurante de barrio: "El camarero de confianza sabe más que el alcalde. Conoce a todo el mundo"
+    - Estanco: "Punto de encuentro social. Todo pasa por ahí"
+    - Tintorería/lavandería: "Conocen a profesionales, ejecutivos, gente con poder adquisitivo"
+    - Gimnasio/centro deportivo: "Red social en persona. Networking natural"
+    - Autoescuela: "Conocen a jóvenes que empiezan, familias, todo tipo de perfiles"
+
+  POR PROFESIÓN (conectores específicos):
+    Si es INMOBILIARIO → administración de fincas, cerrajero, empresa de limpieza, portero de finca
+    Si es ABOGADO → gestoría de tráfico, correduría de seguros, funeraria (herencias)
+    Si es DENTISTA/MÉDICO → óptica, ortopedia, herbolario
+    Si es ARQUITECTO/REFORMAS → ferretería, tienda de materiales, cristalería
+    Si es CORREDOR DE SEGUROS → taller mecánico, clínica dental, veterinario
+    Si es COACH/FORMADOR → coworking, librería, centro de yoga
+
+- Usa estilo Isra Bravo: "${firstName}, piensa más allá de tu profesión. ¿Quién conoce a TODO EL MUNDO en tu zona? El panadero de la esquina habla con 300 personas al día. Un administrador de fincas gestiona 20 comunidades. ESA gente en tu Tribu es ORO puro"
+- Metáfora: "Un equipo de fútbol con ${chapterMemberCount} jugadores no gana partidos. Necesitas fichar. Y no solo delanteros: también necesitas al que conoce a todo el barrio"
 - SOLO sugiere referidos si el usuario pregunta explícitamente
 ` : chapterMemberCount < 20 ? `
 TRIBU EN CRECIMIENTO (${chapterMemberCount} miembros) - EQUILIBRIO:
