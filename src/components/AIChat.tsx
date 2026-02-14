@@ -20,8 +20,8 @@ interface Message {
   content: string;
 }
 
-// Module-level flag to survive React StrictMode unmount/remount cycles
-let moduleInitializedForUser: string | null = null;
+// Module-level counter: only the latest request updates state (resilient to StrictMode/HMR)
+let chatRequestCounter = 0;
 
 export function AIChat() {
   const navigate = useNavigate();
@@ -60,23 +60,11 @@ export function AIChat() {
     try {
       const parts = token.split('.');
       if (parts.length !== 3) return false;
-      
-      // Check header for 'kid' field (user tokens have this, anon keys don't)
       const header = JSON.parse(atob(parts[0]));
-      if (!header.kid) {
-        console.log('Token missing kid in header - likely anon key');
-        return false;
-      }
-      
-      // Check payload for authenticated role and user ID
+      if (!header.kid) return false;
       const payload = JSON.parse(atob(parts[1]));
-      const isValid = payload.role === 'authenticated' && !!payload.sub;
-      if (!isValid) {
-        console.log('Token validation failed:', { role: payload.role, hasSub: !!payload.sub });
-      }
-      return isValid;
-    } catch (e) {
-      console.error('Token validation error:', e);
+      return payload.role === 'authenticated' && !!payload.sub;
+    } catch {
       return false;
     }
   };
@@ -85,26 +73,16 @@ export function AIChat() {
   useEffect(() => {
     if (authLoading || !user) return;
 
-    // Module-level check survives React StrictMode unmount/remount
-    if (moduleInitializedForUser === user.id) return;
-
-    // Set SYNCHRONOUSLY before any async work to block StrictMode duplicate
-    moduleInitializedForUser = user.id;
+    // Increment counter: this request becomes the "latest"
+    const myRequestId = ++chatRequestCounter;
+    const isStale = () => myRequestId !== chatRequestCounter;
 
     const startChat = async () => {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession?.access_token) {
-        moduleInitializedForUser = null;
-        return;
-      }
+      if (!currentSession?.access_token || isStale()) return;
       
       const validatedToken = currentSession.access_token;
-      if (!isAuthenticatedToken(validatedToken)) {
-        console.log('Token not authenticated yet, waiting for auth session');
-        moduleInitializedForUser = null;
-        return;
-      }
-      
+      if (!isAuthenticatedToken(validatedToken) || isStale()) return;
 
       try {
         const { data: professional } = await supabase
@@ -113,8 +91,8 @@ export function AIChat() {
           .eq('user_id', user.id)
           .single();
 
-        if (!professional) {
-          setInitializing(false);
+        if (!professional || isStale()) {
+          if (!isStale()) setInitializing(false);
           return;
         }
 
@@ -124,6 +102,7 @@ export function AIChat() {
           sessionStorage.setItem('alicia-greeting-shown', 'true');
         }
         
+        if (isStale()) return;
         isStreamingRef.current = true;
 
         const resp = await fetch(CHAT_URL, {
@@ -136,27 +115,24 @@ export function AIChat() {
             messages: [{ role: "user", content: isOnboarding ? "[ONBOARDING]" : "[INICIO_SESION]" }],
             professionalId: professional.id
           }),
-          
         });
 
-        
+        if (isStale()) return;
 
         if (!resp.ok) {
           if (resp.status === 401) {
             console.log('Got 401, will retry when session updates');
-            moduleInitializedForUser = null;
-            isStreamingRef.current = false;
-            return;
+          } else {
+            console.error('Chat init failed:', resp.status);
           }
-          console.error('Chat init failed:', resp.status);
-          setInitializing(false);
           isStreamingRef.current = false;
+          if (!isStale()) setInitializing(false);
           return;
         }
 
         if (!resp.body) {
-          setInitializing(false);
           isStreamingRef.current = false;
+          if (!isStale()) setInitializing(false);
           return;
         }
 
@@ -166,9 +142,9 @@ export function AIChat() {
         let assistantContent = "";
 
         while (true) {
-          
           const { done, value } = await reader.read();
           if (done) break;
+          if (isStale()) { reader.cancel(); return; }
           textBuffer += decoder.decode(value, { stream: true });
 
           let newlineIndex: number;
@@ -186,7 +162,7 @@ export function AIChat() {
             try {
               const parsed = JSON.parse(jsonStr);
               const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-              if (content) {
+              if (content && !isStale()) {
                 assistantContent += content;
                 setMessages([{ role: "assistant", content: assistantContent }]);
               }
@@ -198,12 +174,14 @@ export function AIChat() {
         }
 
         isStreamingRef.current = false;
-        setInitializing(false);
-        scrollToBottomIfNeeded(true);
+        if (!isStale()) {
+          setInitializing(false);
+          scrollToBottomIfNeeded(true);
+        }
       } catch (error: any) {
         console.error("Error initializing chat:", error);
         isStreamingRef.current = false;
-        setInitializing(false);
+        if (!isStale()) setInitializing(false);
       }
     };
 
