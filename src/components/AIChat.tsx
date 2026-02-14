@@ -414,7 +414,11 @@ export function AIChat() {
                     : "bg-gradient-to-br from-card to-primary/5 border border-primary/20 text-foreground shadow-lg backdrop-blur-sm"
                 )}
               >
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                <p className="text-sm leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ 
+                  __html: message.content
+                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                }} />
               </div>
               {message.role === "user" && (
                 <Avatar className="h-9 w-9 border-2 border-primary/30 shadow-lg flex-shrink-0">
