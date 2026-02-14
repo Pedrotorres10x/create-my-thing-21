@@ -221,6 +221,49 @@ serve(async (req) => {
         }
       }
       
+      // ===== DATOS ENRIQUECIDOS: DEALS, BADGES, SUSCRIPCIÓN, REFERIDOS DETALLADOS =====
+      
+      // Deals/Agradecimientos del usuario
+      const { data: dealsData } = await supabase
+        .from('deals')
+        .select('id, description, status, deal_value, estimated_total_volume, thanks_amount_selected, thanks_amount_status, thanks_band_id, created_at, completed_at, receiver_id, referrer_id')
+        .or(`referrer_id.eq.${professionalId},receiver_id.eq.${professionalId}`)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      // Badges ganados
+      const { data: badgesData } = await supabase
+        .from('professional_badges')
+        .select('unlocked_at, badges(name, description, icon, category)')
+        .eq('professional_id', professionalId);
+      
+      // Plan de suscripción
+      const { data: subscriptionData } = await supabase
+        .from('professionals')
+        .select('subscription_plan_id, subscription_status, subscription_plans(name, slug, price_monthly, chapter_access_level, features)')
+        .eq('id', professionalId)
+        .single();
+      
+      // Referidos detallados (últimos 10)
+      const { data: recentReferrals } = await supabase
+        .from('referrals')
+        .select('id, referred_email, status, reward_points, created_at, completed_at, referred_id')
+        .or(`referrer_id.eq.${professionalId},referred_id.eq.${professionalId}`)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      // Invitaciones: buscar profesionales que usaron el código de referido del usuario
+      let invitedProfessionals: any[] = [];
+      if (profile?.referral_code) {
+        const { data: invited } = await supabase
+          .from('professionals')
+          .select('full_name, specializations(name), status, created_at')
+          .eq('referred_by_code', profile.referral_code)
+          .order('created_at', { ascending: false })
+          .limit(10);
+        if (invited) invitedProfessionals = invited;
+      }
+
       // Contar posts y comentarios este mes
       const { data: postsData } = await supabase
         .from('posts')
@@ -422,6 +465,58 @@ serve(async (req) => {
             userContextStr += `- ${prof.specializations?.name}\n`;
           });
         }
+
+        // ===== CONTEXTO ENRIQUECIDO =====
+        
+        // Deals / Agradecimientos
+        if (dealsData && dealsData.length > 0) {
+          userContextStr += `\nHISTORIAL DE TRATOS/AGRADECIMIENTOS (últimos ${dealsData.length}):\n`;
+          dealsData.forEach((deal: any) => {
+            const role = deal.referrer_id === professionalId ? 'REFERIDOR' : 'RECEPTOR';
+            userContextStr += `- ${deal.description?.substring(0, 80)} | Rol: ${role} | Estado: ${deal.status} | Volumen: ${deal.estimated_total_volume || deal.deal_value || 'N/A'}€`;
+            if (deal.thanks_amount_selected) userContextStr += ` | Agradecimiento: ${deal.thanks_amount_selected}€ (${deal.thanks_amount_status})`;
+            userContextStr += ` | ${new Date(deal.created_at).toLocaleDateString('es-ES')}\n`;
+          });
+        } else {
+          userContextStr += `\nTRATOS: Aún no tiene tratos registrados.\n`;
+        }
+
+        // Badges
+        if (badgesData && badgesData.length > 0) {
+          userContextStr += `\nBADGES CONSEGUIDOS (${badgesData.length}):\n`;
+          badgesData.forEach((b: any) => {
+            userContextStr += `- ${b.badges?.icon || '🏅'} ${b.badges?.name} (${b.badges?.category}): ${b.badges?.description}\n`;
+          });
+        } else {
+          userContextStr += `\nBADGES: Aún no ha desbloqueado ningún badge.\n`;
+        }
+
+        // Suscripción
+        if (subscriptionData?.subscription_plans) {
+          const plan = subscriptionData.subscription_plans as any;
+          userContextStr += `\nPLAN DE SUSCRIPCIÓN: ${plan.name} (${plan.slug}) - ${plan.price_monthly ? plan.price_monthly + '€/mes' : 'Gratuito'}\n`;
+          userContextStr += `- Estado: ${subscriptionData.subscription_status || 'activo'}\n`;
+          userContextStr += `- Acceso a Tribus: ${plan.chapter_access_level || 'local'}\n`;
+        }
+
+        // Referidos detallados
+        if (recentReferrals && recentReferrals.length > 0) {
+          userContextStr += `\nREFERIDOS RECIENTES (${recentReferrals.length}):\n`;
+          recentReferrals.forEach((ref: any) => {
+            const role = ref.referrer_id === professionalId ? 'Enviado' : 'Recibido';
+            userContextStr += `- ${role} | Estado: ${ref.status} | ${ref.reward_points ? ref.reward_points + ' puntos' : 'sin puntos aún'} | ${new Date(ref.created_at).toLocaleDateString('es-ES')}\n`;
+          });
+        }
+
+        // Profesionales invitados
+        if (invitedProfessionals && invitedProfessionals.length > 0) {
+          userContextStr += `\nPROFESIONALES INVITADOS POR EL USUARIO (${invitedProfessionals.length}):\n`;
+          invitedProfessionals.forEach((inv: any) => {
+            userContextStr += `- ${inv.full_name || 'Sin nombre'} → ${inv.specializations?.name || 'Sin especialidad'} (${inv.status})\n`;
+          });
+        } else {
+          userContextStr += `\nINVITACIONES: No ha invitado a nadie aún.\n`;
+        }
       }
     }
 
@@ -609,8 +704,8 @@ DATOS DE GENERACIÓN DE NEGOCIO:
 PRIORIZACIÓN ENFOCADA EN NEGOCIO (detecta la mejor oportunidad):
 
 0. Si el usuario está SOLO en su Tribu (${chapterMemberCount} miembros) o no tiene Tribu:
-   SIEMPRE dirígete al usuario por su nombre de pila: "${profileInfo?.full_name?.split(' ')[0] || 'Profesional'}". NUNCA uses "Profesional" como apelativo.
-   Ejemplo: "Eres el primero de tu Tribu, ${profileInfo?.full_name?.split(' ')[0] || 'Profesional'}. Cada profesional que invites es un comercial que te buscará clientes. ¿A quién de tu entorno le propondrías unirse?"
+   SIEMPRE dirígete al usuario por su nombre de pila: "${profileInfo?.full_name?.split(' ')[0] || 'crack'}". NUNCA uses "Profesional" como apelativo.
+   Ejemplo: "Eres el primero de tu Tribu, ${profileInfo?.full_name?.split(' ')[0] || 'crack'}. Cada profesional que invites es un comercial que te buscará clientes. ¿A quién de tu entorno le propondrías unirse?"
    ESTA ES LA MÁXIMA PRIORIDAD. NO sugieras referidos, reuniones ni nada que requiera compañeros.
 
 1. Si días inactivo > 7 Y tiene compañeros:
