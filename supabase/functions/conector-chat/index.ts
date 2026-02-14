@@ -680,7 +680,8 @@ REGLAS:
 1. Cuando preguntes por datos del perfil y el usuario responda, SIEMPRE incluye el marcador para guardar el dato.
 2. Confirma al usuario que has guardado el dato: "Perfecto, apuntado ✅"
 3. Si el perfil está incompleto, VE PREGUNTANDO los campos que faltan UNO A UNO de forma natural.
-4. Para la foto, dile que la suba desde Mi Perfil (no puedes subir fotos desde el chat).
+4. Para la foto: USA el marcador [PEDIR_FOTO] al final de tu mensaje. Esto mostrará un botón de subir foto directamente en el chat. NO le digas que vaya a otra página. EJEMPLO: "Sube tu foto aquí mismo 👇" seguido de [PEDIR_FOTO]
+5. IMPORTANTÍSIMO: Si la foto falta, NO AVANCES al siguiente paso hasta que el usuario suba la foto. Si el usuario intenta responder otra cosa sin subir la foto, insiste amablemente: "Primero la foto, ${firstName}. Es lo que más confianza genera. Súbela aquí mismo 👇" [PEDIR_FOTO]
 5. Si el usuario tiene dudas sobre qué poner, AYÚDALE con sugerencias y ejemplos.
 6. NUNCA muestres el marcador [PERFIL:...] en el texto visible. Ponlo AL FINAL del mensaje.
 
@@ -696,7 +697,10 @@ Tú: "15 años, eso es mucha experiencia ✅ ¿Me pasas tu web o LinkedIn para c
 ${isProfileIncomplete ? `
 🚨 REGLA SUPREMA: EL PERFIL INCOMPLETO BLOQUEA TODO LO DEMÁS.
 NO sugieras invitar, referir, reuniones NI NADA hasta que complete su perfil.
-${hasNoPhoto ? 'Sin foto de perfil, NADIE confía. Es como ir a una reunión con una bolsa en la cabeza. Dile que suba su foto desde Mi Perfil.' : ''}
+${hasNoPhoto ? `⚠️ SIN FOTO = PRIORIDAD ABSOLUTA. NO avances a NINGÚN otro campo hasta que suba la foto.
+Tu PRIMER mensaje SIEMPRE debe pedir la foto con el marcador [PEDIR_FOTO].
+Si el usuario dice cualquier cosa sin haber subido la foto, INSISTE: "Primero la foto, ${firstName}. Sin foto nadie confía. Súbela aquí mismo 👇" [PEDIR_FOTO]
+Solo cuando el usuario envíe "[FOTO_SUBIDA]" puedes pasar al siguiente campo.` : ''}
 PREGÚNTALE los datos que faltan de forma conversacional. Rellena con los marcadores [PERFIL:campo=valor].
 Campos que le faltan: ${profileMissing.join(', ')}
 ` : `${isAloneInChapter || hasNoChapter ? `
@@ -1384,14 +1388,16 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
                   aiResponseContent += content;
                   // Buffer potential marker content and strip from output
                   markerBuffer += content;
-                  if (markerBuffer.includes('[CREAR_CONFLICTO:') || markerBuffer.includes('[PERFIL:')) {
+                  if (markerBuffer.includes('[CREAR_CONFLICTO:') || markerBuffer.includes('[PERFIL:') || markerBuffer.includes('[PEDIR_FOTO]')) {
                     // Check for complete markers
                     const allMarkersComplete = !markerBuffer.includes('[') || 
                       (markerBuffer.match(/\[/g)?.length === markerBuffer.match(/\]/g)?.length);
                     const endIdx = markerBuffer.lastIndexOf(']');
                     if (allMarkersComplete && endIdx !== -1) {
-                      // Strip all markers
+                      // Strip all markers but keep PEDIR_FOTO for frontend
+                      const hasPedirFoto = markerBuffer.includes('[PEDIR_FOTO]');
                       markerBuffer = markerBuffer.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '');
+                      // Keep [PEDIR_FOTO] - frontend will handle it
                       if (markerBuffer) {
                         const cleanChunk = { ...parsed, choices: [{ ...parsed.choices[0], delta: { content: markerBuffer } }] };
                         filteredText += `data: ${JSON.stringify(cleanChunk)}\n`;
@@ -1433,7 +1439,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
             await supabaseBg.from('chat_messages').insert({
               conversation_id: activeConversationId,
               role: 'assistant',
-              content: aiResponseContent.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '').trim().substring(0, 5000),
+              content: aiResponseContent.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '').replace(/\[PEDIR_FOTO\]/g, '').trim().substring(0, 5000),
             });
             
             // Process profile update markers
