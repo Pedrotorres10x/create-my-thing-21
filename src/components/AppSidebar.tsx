@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const coreItems = [
-  { title: "Mi Refugio", url: "/dashboard", icon: Home },
+  { title: "Alic.IA", url: "/dashboard", icon: Home },
   { title: "Mi Perfil", url: "/profile", icon: UserCircle },
 ];
 

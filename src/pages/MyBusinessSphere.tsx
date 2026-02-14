@@ -90,13 +90,13 @@ export default function MyBusinessSphere() {
           </div>
           <h2 className="text-xl font-bold">Tu Esfera te espera</h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Alic.ia te ayudará a elegir tu esfera de negocio y conectar con profesionales complementarios. Ve a tu Refugio y habla con ella.
+            Alic.ia te ayudará a elegir tu esfera de negocio y conectar con profesionales complementarios. Ve a Alic.IA y habla con ella.
           </p>
           <button
             onClick={() => navigate("/dashboard")}
             className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            Ir a Mi Refugio
+            Ir a Alic.IA
           </button>
         </Card>
       </div>
