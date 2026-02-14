@@ -341,7 +341,7 @@ serve(async (req) => {
       // Determine if user is experienced (has completed at least 3 meetings)
       isExperiencedUser = completedMeetingsCount >= 3;
 
-      // If new user, get chapters in their area
+      // If new user, get chapters in their area AND their members' professions
       if (isNewUser && profile?.city && profile?.state) {
         const { data: chapters } = await supabase
           .from('chapters')
@@ -351,6 +351,16 @@ serve(async (req) => {
         
         if (chapters) {
           chaptersInArea = chapters;
+          
+          // For each chapter, fetch existing professions so we can detect conflicts
+          for (const ch of chaptersInArea) {
+            const { data: chapterPros } = await supabase
+              .from('professionals')
+              .select('specialization_id, specializations(name), business_description, full_name')
+              .eq('chapter_id', ch.id)
+              .eq('status', 'approved');
+            (ch as any).existing_professionals = chapterPros || [];
+          }
         }
       }
 
@@ -948,13 +958,27 @@ PASO 1 - PROFESIÓN (1 solo mensaje, 1 sola pregunta):
 PASO 2 - MI TRIBU (Unirse a un grupo):
 Si el usuario NO tiene grupo asignado:
 ${chaptersInArea.length > 0 ? 
-  `- Hay ${chaptersInArea.length} Tribu(s) en su zona. Preséntaselas en 1 frase:
-${chaptersInArea.map((ch: any) => `  · "${ch.name}" - ${ch.member_count} miembros`).join('\n')}
-- "Ahora tu Tribu. En tu zona tienes: [lista]. ¿Cuál eliges?"` :
+  `- Hay ${chaptersInArea.length} Tribu(s) en su zona:
+${chaptersInArea.map((ch: any) => {
+  const existingPros = (ch as any).existing_professionals || [];
+  const sameProfession = existingPros.filter((p: any) => 
+    p.specializations?.name && profile?.specializations?.name && 
+    p.specializations.name.toLowerCase() === profile.specializations?.name?.toLowerCase()
+  );
+  const hasSameProfession = sameProfession.length > 0;
+  return `  · "${ch.name}" - ${ch.member_count} miembros${hasSameProfession ? ` ⚠️ YA HAY ${sameProfession.length} profesional(es) de ${sameProfession[0]?.specializations?.name}: ${sameProfession.map((p: any) => p.full_name).join(', ')}` : ''}`;
+}).join('\n')}
+
+LÓGICA DE CONFLICTO DE PROFESIÓN:
+- Si en una tribu YA existe alguien con la MISMA profesión que el nuevo usuario, AVISA al usuario:
+  "En [tribu] ya hay un [profesión]: [nombre]. Dos opciones: 
+  1. Si tu línea de negocio es MUY diferente (ej: uno vende pisos y otro alquila locales), puedes entrar sin problema. ¿En qué te especializas exactamente?
+  2. Si hacéis lo mismo, mejor fundar una nueva Tribu donde seas el único de tu profesión."
+- SOLO en este caso (conflicto de profesión) pide detalle de especialización. Es la única situación donde tiene sentido.
+- Si NO hay conflicto, asigna directamente sin preguntar más.` :
   `- No hay Tribus en su zona aún.
 - "En tu zona aún no hay Tribu. Puedes ser el primero. ¿Te animas a abrir una?"`}
 
-PASO 3 - CONOCE TU TRIBU (Presentar miembros UNO A UNO):
 ESTE PASO ES EL MÁS IMPORTANTE. Sin conocer a cada miembro, el usuario NO puede referir clientes.
 Presenta a los miembros DE UNO EN UNO, esperando respuesta del usuario antes de pasar al siguiente.
 
