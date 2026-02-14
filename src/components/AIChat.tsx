@@ -98,6 +98,8 @@ export function AIChat() {
     if (hasInitialized.current) return;
     hasInitialized.current = true;
     
+    const abortController = new AbortController();
+    
     // Pass the validated token to the async function to avoid race conditions
     const initializeChat = async (accessToken: string) => {
       try {
@@ -133,6 +135,7 @@ export function AIChat() {
             messages: [{ role: "user", content: isOnboarding ? "[ONBOARDING]" : "[INICIO_SESION]" }],
             professionalId: professional.id
           }),
+          signal: abortController.signal,
         });
 
         if (!resp.ok) {
@@ -193,7 +196,11 @@ export function AIChat() {
         isStreamingRef.current = false;
         setInitializing(false);
         scrollToBottomIfNeeded(true);
-      } catch (error) {
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          console.log('Chat init aborted (component cleanup)');
+          return;
+        }
         console.error("Error initializing chat:", error);
         isStreamingRef.current = false;
         setInitializing(false);
@@ -201,6 +208,10 @@ export function AIChat() {
     };
 
     initializeChat(validatedToken);
+    
+    return () => {
+      abortController.abort();
+    };
   }, [authLoading, user, session, CHAT_URL]);
 
 
