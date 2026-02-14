@@ -142,6 +142,7 @@ serve(async (req) => {
           referral_code,
           created_at,
           photo_url,
+          logo_url,
           company_name,
           business_name,
           business_description,
@@ -545,15 +546,19 @@ serve(async (req) => {
     const hasNoChapter = !profileInfo?.chapter_id;
 
     // ===== PROFILE COMPLETENESS CHECK =====
+    const isAutonomo = !profileInfo?.company_name && !profileInfo?.business_name;
+    const hasCompany = !!profileInfo?.company_name || !!profileInfo?.business_name;
     const profileMissing: string[] = [];
     if (!profileInfo?.photo_url) profileMissing.push('FOTO DE PERFIL');
-    if (!profileInfo?.company_name && !profileInfo?.business_name) profileMissing.push('NOMBRE DE EMPRESA');
+    if (!isAutonomo && !profileInfo?.logo_url) profileMissing.push('LOGO DE EMPRESA');
+    if (!profileInfo?.company_name && !profileInfo?.business_name) profileMissing.push('NOMBRE DE EMPRESA (o indicar que es autónomo)');
     if (!profileInfo?.business_description) profileMissing.push('DESCRIPCIÓN DEL NEGOCIO');
     if (!profileInfo?.phone) profileMissing.push('TELÉFONO');
     if (!profileInfo?.website && !profileInfo?.linkedin) profileMissing.push('WEB O LINKEDIN');
     if (!profileInfo?.years_experience) profileMissing.push('AÑOS DE EXPERIENCIA');
     const isProfileIncomplete = profileMissing.length > 0;
     const hasNoPhoto = !profileInfo?.photo_url;
+    const hasNoLogo = hasCompany && !profileInfo?.logo_url;
 
     // Robust first name extraction with JWT fallback
     const fullNameFromProfile = profileInfo?.full_name || '';
@@ -646,6 +651,8 @@ ESTADO DEL PERFIL:
 - Perfil completo: ${isProfileIncomplete ? 'NO ❌' : 'SÍ ✅'}
 ${isProfileIncomplete ? `- Le falta: ${profileMissing.join(', ')}` : ''}
 ${hasNoPhoto ? '- ⚠️ SIN FOTO DE PERFIL - PRIORIDAD MÁXIMA' : '- Tiene foto ✅'}
+- Tipo: ${isAutonomo ? 'AUTÓNOMO (sin empresa, NO pedir logo)' : `EMPRESA: ${profileInfo?.company_name || profileInfo?.business_name}`}
+${hasNoLogo ? '- ⚠️ TIENE EMPRESA PERO SIN LOGO - PEDIR DESPUÉS DE LA FOTO' : hasCompany ? '- Tiene logo ✅' : '- Autónomo, no necesita logo'}
 
 ━━━ SUPERPODER: RELLENAR PERFIL DESDE EL CHAT ━━━
 
@@ -682,8 +689,11 @@ REGLAS:
 3. Si el perfil está incompleto, VE PREGUNTANDO los campos que faltan UNO A UNO de forma natural.
 4. Para la foto: USA el marcador [PEDIR_FOTO] al final de tu mensaje. Esto mostrará un botón de subir foto directamente en el chat. NO le digas que vaya a otra página. EJEMPLO: "Sube tu foto aquí mismo 👇" seguido de [PEDIR_FOTO]
 5. IMPORTANTÍSIMO: Si la foto falta, NO AVANCES al siguiente paso hasta que el usuario suba la foto. Si el usuario intenta responder otra cosa sin subir la foto, insiste amablemente: "Primero la foto, ${firstName}. Es lo que más confianza genera. Súbela aquí mismo 👇" [PEDIR_FOTO]
-5. Si el usuario tiene dudas sobre qué poner, AYÚDALE con sugerencias y ejemplos.
-6. NUNCA muestres el marcador [PERFIL:...] en el texto visible. Ponlo AL FINAL del mensaje.
+6. Para el LOGO de empresa: USA el marcador [PEDIR_LOGO] al final de tu mensaje. Esto mostrará un botón de subir logo. SOLO pide logo si el usuario tiene empresa (NO es autónomo). Si es autónomo, SÁLTATE el logo.
+7. FLUJO: Primero FOTO → luego preguntar si tiene empresa o es autónomo → si empresa, pedir LOGO → luego resto de datos.
+8. Si el usuario dice que es autónomo/freelance, NO le pidas nombre de empresa ni logo. Usa [PERFIL:company_name=] para dejarlo vacío si ya tenía algo.
+9. Si el usuario tiene dudas sobre qué poner, AYÚDALE con sugerencias y ejemplos.
+10. NUNCA muestres los marcadores [PERFIL:...], [PEDIR_FOTO], [PEDIR_LOGO] en el texto visible. Ponlos AL FINAL del mensaje.
 
 EJEMPLO DE CONVERSACIÓN:
 Usuario: "Soy el CEO de Reformas López, hacemos reformas integrales en Madrid"
@@ -701,6 +711,9 @@ ${hasNoPhoto ? `⚠️ SIN FOTO = PRIORIDAD ABSOLUTA. NO avances a NINGÚN otro 
 Tu PRIMER mensaje SIEMPRE debe pedir la foto con el marcador [PEDIR_FOTO].
 Si el usuario dice cualquier cosa sin haber subido la foto, INSISTE: "Primero la foto, ${firstName}. Sin foto nadie confía. Súbela aquí mismo 👇" [PEDIR_FOTO]
 Solo cuando el usuario envíe "[FOTO_SUBIDA]" puedes pasar al siguiente campo.` : ''}
+${!hasNoPhoto && hasNoLogo ? `⚠️ TIENE EMPRESA PERO SIN LOGO. Después de la foto, pregunta: "¿Tienes el logo de tu empresa? Súbelo aquí 👇" [PEDIR_LOGO]
+Si el usuario dice que no tiene logo o es autónomo, sáltalo y sigue con los datos que faltan.
+Solo cuando envíe "[LOGO_SUBIDO]" puedes pasar al siguiente campo.` : ''}
 PREGÚNTALE los datos que faltan de forma conversacional. Rellena con los marcadores [PERFIL:campo=valor].
 Campos que le faltan: ${profileMissing.join(', ')}
 ` : `${isAloneInChapter || hasNoChapter ? `
@@ -1388,7 +1401,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
                   aiResponseContent += content;
                   // Buffer potential marker content and strip from output
                   markerBuffer += content;
-                  if (markerBuffer.includes('[CREAR_CONFLICTO:') || markerBuffer.includes('[PERFIL:') || markerBuffer.includes('[PEDIR_FOTO]')) {
+                  if (markerBuffer.includes('[CREAR_CONFLICTO:') || markerBuffer.includes('[PERFIL:') || markerBuffer.includes('[PEDIR_FOTO]') || markerBuffer.includes('[PEDIR_LOGO]')) {
                     // Check for complete markers
                     const allMarkersComplete = !markerBuffer.includes('[') || 
                       (markerBuffer.match(/\[/g)?.length === markerBuffer.match(/\]/g)?.length);
@@ -1439,7 +1452,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
             await supabaseBg.from('chat_messages').insert({
               conversation_id: activeConversationId,
               role: 'assistant',
-              content: aiResponseContent.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '').replace(/\[PEDIR_FOTO\]/g, '').trim().substring(0, 5000),
+              content: aiResponseContent.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '').replace(/\[PEDIR_FOTO\]/g, '').replace(/\[PEDIR_LOGO\]/g, '').trim().substring(0, 5000),
             });
             
             // Process profile update markers
