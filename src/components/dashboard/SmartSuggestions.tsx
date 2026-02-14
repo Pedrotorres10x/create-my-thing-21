@@ -222,7 +222,7 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
         title: `🟢 Tribu sana — a por los 50 para maximizar negocio`,
         description: `Con ${memberCount} miembros ya fluye el trabajo. Pero con 50 profesiones distintas, cada contacto de tu agenda tiene un servicio al que derivarlo.`,
         action: 'Ver mi Tribu',
-        actionRoute: '/chapter',
+        actionRoute: '/mi-tribu',
         icon: Users,
       });
     }
