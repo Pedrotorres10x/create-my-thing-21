@@ -1,11 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Heart, Tag } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 
 interface CloseDealDialogProps {
   open: boolean;
@@ -14,38 +14,63 @@ interface CloseDealDialogProps {
   onSuccess?: () => void;
 }
 
+interface BandInfo {
+  display_label: string;
+  min_thanks_amount: number;
+  recommended_thanks_amount: number;
+  max_thanks_amount: number;
+}
+
 export const CloseDealDialog = ({ open, onOpenChange, dealId, onSuccess }: CloseDealDialogProps) => {
-  const [profit, setProfit] = useState("");
+  const [band, setBand] = useState<BandInfo | null>(null);
+  const [selectedAmount, setSelectedAmount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadingBand, setLoadingBand] = useState(true);
   const { toast } = useToast();
 
-  const commission = useMemo(() => {
-    const val = parseFloat(profit);
-    return isNaN(val) ? 0 : val * 0.1;
-  }, [profit]);
+  useEffect(() => {
+    if (open && dealId) fetchDealBand();
+  }, [open, dealId]);
+
+  const fetchDealBand = async () => {
+    setLoadingBand(true);
+    const { data: deal } = await (supabase as any)
+      .from("deals")
+      .select("thanks_band_id, thanks_category_bands(display_label, min_thanks_amount, recommended_thanks_amount, max_thanks_amount)")
+      .eq("id", dealId)
+      .single();
+
+    if (deal?.thanks_category_bands) {
+      const b = deal.thanks_category_bands;
+      setBand(b);
+      setSelectedAmount(b.recommended_thanks_amount);
+    } else {
+      setBand(null);
+    }
+    setLoadingBand(false);
+  };
 
   const handleClose = async () => {
-    const profitVal = parseFloat(profit);
-    if (isNaN(profitVal) || profitVal <= 0) return;
-
+    if (!band) return;
     setLoading(true);
     try {
       const { error } = await (supabase as any)
         .from("deals")
         .update({
           status: "completed",
-          declared_profit: profitVal,
-          deal_value: profitVal,
+          completed_at: new Date().toISOString(),
+          thanks_amount_selected: selectedAmount,
+          thanks_amount_status: "proposed",
+          thanks_proposed_at: new Date().toISOString(),
         })
         .eq("id", dealId);
 
       if (error) throw error;
 
       toast({
-        title: "Trato cerrado",
-        description: `Beneficio declarado: ${profitVal.toFixed(2)}€. Comisión: ${(profitVal * 0.1).toFixed(2)}€`,
+        title: "¡Trato cerrado!",
+        description: `Has propuesto un agradecimiento de ${selectedAmount}€. El recomendador deberá aceptarlo.`,
       });
-      setProfit("");
       onOpenChange(false);
       onSuccess?.();
     } catch (error: any) {
@@ -59,43 +84,96 @@ export const CloseDealDialog = ({ open, onOpenChange, dealId, onSuccess }: Close
     }
   };
 
+  const sliderPercent = band
+    ? ((selectedAmount - band.min_thanks_amount) / (band.max_thanks_amount - band.min_thanks_amount)) * 100
+    : 0;
+
+  const getGenerosityLabel = () => {
+    if (!band) return "";
+    if (selectedAmount >= band.recommended_thanks_amount * 1.1) return "🙏 Muy generoso";
+    if (selectedAmount >= band.recommended_thanks_amount) return "👍 Generoso";
+    if (selectedAmount >= band.min_thanks_amount * 1.2) return "Estándar";
+    return "Mínimo";
+  };
+
+  if (loadingBand) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (!band) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>No se puede cerrar</DialogTitle>
+            <DialogDescription>
+              Este trato no tiene una categoría de agradecimiento asignada. Contacta con soporte.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Cerrar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Cerrar trato y declarar beneficio</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Heart className="h-5 w-5 text-primary" />
+            Proponer agradecimiento
+          </DialogTitle>
           <DialogDescription>
-            Indica cuánto has ganado con este trato. Se calculará automáticamente el 10% de comisión para el recomendador.
+            El trato ha fructificado. Elige cuánto quieres agradecer al recomendador.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="profit">Beneficio obtenido (€)</Label>
-            <Input
-              id="profit"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-              value={profit}
-              onChange={(e) => setProfit(e.target.value)}
-            />
+
+        <div className="space-y-6 py-2">
+          <div className="flex items-center gap-2 text-sm">
+            <Tag className="h-4 w-4 text-primary" />
+            <span className="font-medium">{band.display_label}</span>
           </div>
-          {commission > 0 && (
-            <div className="rounded-lg border bg-muted/50 p-4 space-y-1">
-              <p className="text-sm text-muted-foreground">Comisión para el recomendador (10%)</p>
-              <p className="text-2xl font-bold text-primary">{commission.toFixed(2)}€</p>
-              <p className="text-xs text-muted-foreground">Tendrás 30 días para abonar esta comisión</p>
+
+          <div className="space-y-3">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Mínimo: {band.min_thanks_amount}€</span>
+              <span>Máximo: {band.max_thanks_amount}€</span>
             </div>
-          )}
+            <Slider
+              value={[selectedAmount]}
+              onValueChange={([v]) => setSelectedAmount(v)}
+              min={band.min_thanks_amount}
+              max={band.max_thanks_amount}
+              step={10}
+              className="w-full"
+            />
+            <div className="text-center">
+              <p className="text-3xl font-bold text-primary">{selectedAmount}€</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Recomendado: {band.recommended_thanks_amount}€ · {getGenerosityLabel()}
+              </p>
+            </div>
+          </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button onClick={handleClose} disabled={loading || !profit || parseFloat(profit) <= 0}>
+
+        <DialogFooter className="flex-col gap-2 sm:flex-col">
+          <Button onClick={handleClose} disabled={loading} className="w-full">
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Confirmar Cierre
+            Proponer {selectedAmount}€ de agradecimiento
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="w-full">
+            Cancelar
           </Button>
         </DialogFooter>
       </DialogContent>
