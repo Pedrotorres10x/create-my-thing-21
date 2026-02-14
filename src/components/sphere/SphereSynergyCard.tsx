@@ -219,7 +219,7 @@ export const SphereSynergyCard = ({ professionalId }: SphereSynergyCardProps) =>
           onClick={() => navigate("/mi-esfera")}
         >
           <Users className="h-4 w-4 mr-2" />
-          Ver Mi Esfera
+          Ver Mi Grupo Profesional
         </Button>
       </CardContent>
     </Card>

@@ -236,7 +236,7 @@ export const SphereFeed = ({ sphereId }: SphereFeedProps) => {
                 disabled={!newPost.trim()}
               >
                 <Send className="h-4 w-4 mr-2" />
-                Publicar en mi Esfera
+                Publicar en mi Grupo Profesional
               </Button>
             </div>
           </div>
@@ -266,7 +266,7 @@ export const SphereFeed = ({ sphereId }: SphereFeedProps) => {
                     <div className="flex items-center gap-2">
                       <h4 className="font-semibold">{post.professional.full_name}</h4>
                       <span className="px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full">
-                        🌐 Mi Esfera
+                        🌐 Mi Grupo Profesional
                       </span>
                     </div>
                     {post.professional.business_name && (
