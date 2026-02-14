@@ -134,6 +134,35 @@ export function AIChat() {
         const decoder = new TextDecoder();
         let textBuffer = "";
         let assistantContent = "";
+        let pendingDataLines: string[] = [];
+
+        const processJsonStr = (jsonStr: string) => {
+          if (jsonStr === "[DONE]") return;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantContent += content;
+              setMessages([{ role: "assistant", content: assistantContent }]);
+            }
+          } catch {
+            // Accumulate partial JSON across lines
+            pendingDataLines.push(jsonStr);
+            // Try to parse accumulated lines as one JSON object
+            const combined = pendingDataLines.join("");
+            try {
+              const parsed = JSON.parse(combined);
+              const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+              if (content) {
+                assistantContent += content;
+                setMessages([{ role: "assistant", content: assistantContent }]);
+              }
+              pendingDataLines = [];
+            } catch {
+              // Still incomplete, wait for more lines
+            }
+          }
+        };
 
         while (true) {
           const { done, value } = await reader.read();
@@ -146,23 +175,25 @@ export function AIChat() {
             textBuffer = textBuffer.slice(newlineIndex + 1);
 
             if (line.endsWith("\r")) line = line.slice(0, -1);
+            
+            // If we have pending partial JSON, any non-empty line continues it
+            if (pendingDataLines.length > 0) {
+              if (line.trim() === "") {
+                // Empty line = end of SSE event, reset pending
+                pendingDataLines = [];
+                continue;
+              }
+              // This line is a continuation of the fragmented JSON
+              const fragment = line.startsWith("data: ") ? line.slice(6) : line;
+              processJsonStr(fragment);
+              continue;
+            }
+            
             if (line.startsWith(":") || line.trim() === "") continue;
             if (!line.startsWith("data: ")) continue;
 
             const jsonStr = line.slice(6).trim();
-            if (jsonStr === "[DONE]") continue;
-
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-              if (content) {
-                assistantContent += content;
-                setMessages([{ role: "assistant", content: assistantContent }]);
-              }
-            } catch {
-              textBuffer = line + "\n" + textBuffer;
-              break;
-            }
+            processJsonStr(jsonStr);
           }
         }
 
@@ -245,6 +276,29 @@ export function AIChat() {
       const decoder = new TextDecoder();
       let textBuffer = "";
       let streamDone = false;
+      let pendingDataLines: string[] = [];
+
+      const processJsonStr2 = (jsonStr: string): boolean => {
+        if (jsonStr === "[DONE]") return true;
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+          if (content) updateAssistant(content);
+          return false;
+        } catch {
+          pendingDataLines.push(jsonStr);
+          const combined = pendingDataLines.join("");
+          try {
+            const parsed = JSON.parse(combined);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) updateAssistant(content);
+            pendingDataLines = [];
+          } catch {
+            // Still incomplete
+          }
+          return false;
+        }
+      };
 
       while (!streamDone) {
         const { done, value } = await reader.read();
@@ -257,23 +311,22 @@ export function AIChat() {
           textBuffer = textBuffer.slice(newlineIndex + 1);
 
           if (line.endsWith("\r")) line = line.slice(0, -1);
+          
+          if (pendingDataLines.length > 0) {
+            if (line.trim() === "") {
+              pendingDataLines = [];
+              continue;
+            }
+            const fragment = line.startsWith("data: ") ? line.slice(6) : line;
+            if (processJsonStr2(fragment)) { streamDone = true; break; }
+            continue;
+          }
+          
           if (line.startsWith(":") || line.trim() === "") continue;
           if (!line.startsWith("data: ")) continue;
 
           const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") {
-            streamDone = true;
-            break;
-          }
-
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) updateAssistant(content);
-          } catch {
-            textBuffer = line + "\n" + textBuffer;
-            break;
-          }
+          if (processJsonStr2(jsonStr)) { streamDone = true; break; }
         }
       }
 
