@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageCircle, Send, Filter, Flag, Trophy, Medal, TrendingUp } from "lucide-react";
+import { Heart, MessageCircle, Send, Filter, Flag, Trophy, Medal, TrendingUp, MapPin } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReportUserDialog } from "@/components/ReportUserDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -62,10 +63,15 @@ interface RankedProfessional {
   position: string | null;
   company_name: string | null;
   total_points: number;
+  city: string | null;
+  state: string | null;
+  chapter_id: string | null;
   profession_specializations: { name: string } | null;
   specializations: { name: string } | null;
   sector_catalog: { name: string } | null;
 }
+
+type RankingScope = "grupo" | "ciudad" | "provincia" | "nacional";
 
 interface BadgeData {
   id: string;
@@ -94,6 +100,8 @@ const SomosUnicos = () => {
   const [myProfessionalId, setMyProfessionalId] = useState<string | null>(null);
   const [profBadges, setProfBadges] = useState<Record<string, BadgeData[]>>({});
   const [loadingRankings, setLoadingRankings] = useState(true);
+  const [rankingScope, setRankingScope] = useState<RankingScope>("nacional");
+  const [myGeoInfo, setMyGeoInfo] = useState<{ city: string | null; state: string | null; chapter_id: string | null }>({ city: null, state: null, chapter_id: null });
 
   useEffect(() => {
     if (user) {
@@ -210,11 +218,13 @@ const SomosUnicos = () => {
       if (authUser) {
         const { data: myProf } = await supabase
           .from("professionals")
-          .select("id")
+          .select("id, city, state, chapter_id")
           .eq("user_id", authUser.id)
-          .eq("status", "approved")
           .maybeSingle();
-        if (myProf) setMyProfessionalId(myProf.id);
+        if (myProf) {
+          setMyProfessionalId(myProf.id);
+          setMyGeoInfo({ city: myProf.city, state: myProf.state, chapter_id: myProf.chapter_id });
+        }
       }
 
       // @ts-ignore - Complex nested select
@@ -222,12 +232,13 @@ const SomosUnicos = () => {
         .from("professionals_public")
         .select(`
           id, full_name, photo_url, position, company_name, total_points,
+          city, state, chapter_id,
           profession_specializations (name),
           specializations (name),
           sector_catalog (name)
         `)
         .order("total_points", { ascending: false })
-        .limit(20);
+        .limit(100);
 
       if (profsData) setRankedProfessionals(profsData as any);
 
@@ -250,6 +261,24 @@ const SomosUnicos = () => {
     }
   };
 
+  // Filter rankings by geographic scope
+  const filteredRankings = useMemo(() => {
+    if (rankingScope === "nacional") return rankedProfessionals;
+    
+    return rankedProfessionals.filter((prof) => {
+      switch (rankingScope) {
+        case "grupo":
+          return myGeoInfo.chapter_id && prof.chapter_id === myGeoInfo.chapter_id;
+        case "ciudad":
+          return myGeoInfo.city && prof.city === myGeoInfo.city;
+        case "provincia":
+          return myGeoInfo.state && prof.state === myGeoInfo.state;
+        default:
+          return true;
+      }
+    });
+  }, [rankedProfessionals, rankingScope, myGeoInfo]);
+
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1: return <Trophy className="h-5 w-5 text-yellow-500" />;
@@ -259,7 +288,7 @@ const SomosUnicos = () => {
     }
   };
 
-  const myRank = rankedProfessionals.findIndex((p) => p.id === myProfessionalId) + 1;
+  const myRank = filteredRankings.findIndex((p) => p.id === myProfessionalId) + 1;
 
   return (
     <div className="space-y-6">
@@ -457,7 +486,7 @@ const SomosUnicos = () => {
                   </div>
                   <div className="ml-auto">
                     <PointsLevelBadge
-                      points={rankedProfessionals.find((p) => p.id === myProfessionalId)?.total_points || 0}
+                      points={filteredRankings.find((p) => p.id === myProfessionalId)?.total_points || 0}
                       size="sm"
                     />
                   </div>
@@ -473,7 +502,22 @@ const SomosUnicos = () => {
                 <Trophy className="h-5 w-5 text-yellow-500" />
                 Ranking
               </CardTitle>
-              <CardDescription>Los que más aportan a la comunidad</CardDescription>
+              <Tabs value={rankingScope} onValueChange={(v) => setRankingScope(v as RankingScope)} className="mt-2">
+                <TabsList className="grid grid-cols-4 w-full h-auto">
+                  <TabsTrigger value="grupo" className="text-[11px] px-1 py-1.5">Mi Grupo</TabsTrigger>
+                  <TabsTrigger value="ciudad" className="text-[11px] px-1 py-1.5">Ciudad</TabsTrigger>
+                  <TabsTrigger value="provincia" className="text-[11px] px-1 py-1.5">Provincia</TabsTrigger>
+                  <TabsTrigger value="nacional" className="text-[11px] px-1 py-1.5">Nacional</TabsTrigger>
+                </TabsList>
+              </Tabs>
+              {rankingScope !== "nacional" && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                  <MapPin className="h-3 w-3" />
+                  {rankingScope === "grupo" && (myGeoInfo.city || "Sin grupo asignado")}
+                  {rankingScope === "ciudad" && (myGeoInfo.city || "Sin ciudad")}
+                  {rankingScope === "provincia" && (myGeoInfo.state || "Sin provincia")}
+                </p>
+              )}
             </CardHeader>
             <CardContent>
               {loadingRankings ? (
@@ -482,9 +526,18 @@ const SomosUnicos = () => {
                     <Skeleton key={i} className="h-12 w-full" />
                   ))}
                 </div>
+              ) : filteredRankings.length === 0 ? (
+                <div className="text-center py-6 text-muted-foreground">
+                  <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm font-medium">Sin datos para este ámbito</p>
+                  <p className="text-xs mt-1">
+                    {rankingScope === "grupo" ? "Únete a un grupo para ver el ranking local" :
+                     "Completa tu perfil con tu ubicación"}
+                  </p>
+                </div>
               ) : (
                 <div className="space-y-2">
-                  {rankedProfessionals.map((prof, index) => {
+                  {filteredRankings.slice(0, 20).map((prof, index) => {
                     const rank = index + 1;
                     return (
                       <div
@@ -538,12 +591,12 @@ const SomosUnicos = () => {
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-2xl font-bold">{rankedProfessionals.length}</p>
+                <p className="text-2xl font-bold">{filteredRankings.length}</p>
                 <p className="text-xs text-muted-foreground">Miembros</p>
               </div>
               <div>
                 <p className="text-2xl font-bold">
-                  {rankedProfessionals.reduce((sum, p) => sum + p.total_points, 0)}
+                  {filteredRankings.reduce((sum, p) => sum + p.total_points, 0)}
                 </p>
                 <p className="text-xs text-muted-foreground">Puntos totales</p>
               </div>
