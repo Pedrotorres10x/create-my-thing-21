@@ -2564,6 +2564,57 @@ export type Database = {
           },
         ]
       }
+      referral_band_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_version: string
+          category_band_id: string
+          deal_id: string
+          estimated_income_internal: number | null
+          id: string
+          is_overridden: boolean
+          overridden_by: string | null
+          override_reason: string | null
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_version?: string
+          category_band_id: string
+          deal_id: string
+          estimated_income_internal?: number | null
+          id?: string
+          is_overridden?: boolean
+          overridden_by?: string | null
+          override_reason?: string | null
+        }
+        Update: {
+          assigned_at?: string
+          assigned_version?: string
+          category_band_id?: string
+          deal_id?: string
+          estimated_income_internal?: number | null
+          id?: string
+          is_overridden?: boolean
+          overridden_by?: string | null
+          override_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_band_assignments_category_band_id_fkey"
+            columns: ["category_band_id"]
+            isOneToOne: false
+            referencedRelation: "thanks_category_bands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_band_assignments_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referrals: {
         Row: {
           completed_at: string | null

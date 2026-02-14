@@ -5,6 +5,7 @@ import { LevelBenefitsCard } from "@/components/LevelBenefitsCard";
 import { UserPenaltiesAlert } from "@/components/UserPenaltiesAlert";
 import { AppealsList } from "@/components/appeals/AppealsList";
 import { BadgeGrid } from "@/components/gamification/BadgeGrid";
+import { ThanksReputationCard } from "@/components/profile/ThanksReputationCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,6 +71,7 @@ const Profile = () => {
             <div className="space-y-6">
               {professional && (
                 <>
+                  <ThanksReputationCard professionalId={professional.id} />
                   <BadgeGrid professionalId={professional.id} />
                   <LevelBenefitsCard 
                     currentLevel={Math.floor(professional.total_points / 100) + 1}
