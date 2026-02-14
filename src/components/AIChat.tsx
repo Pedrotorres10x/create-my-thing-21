@@ -85,23 +85,26 @@ export function AIChat() {
       return;
     }
 
-    // Only mark as initialized AFTER we've confirmed we have an authenticated token
+    // Prevent duplicate calls (including React StrictMode)
     if (hasInitialized.current) return;
+    hasInitialized.current = true;
 
     // Get fresh session token inside the effect to avoid session ref changes triggering re-runs
     const startChat = async () => {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession?.access_token) return;
+      if (!currentSession?.access_token) {
+        hasInitialized.current = false;
+        return;
+      }
       
       const validatedToken = currentSession.access_token;
 
       // Validate token is authenticated user token, not anon key
       if (!isAuthenticatedToken(validatedToken)) {
         console.log('Token not authenticated yet, waiting for auth session');
+        hasInitialized.current = false;
         return;
       }
-
-      hasInitialized.current = true;
 
       try {
         const { data: professional } = await supabase
