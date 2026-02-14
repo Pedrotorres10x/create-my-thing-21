@@ -633,11 +633,26 @@ ${chapterMemberCount < 10 ? `
 TRIBU PEQUEÑA (${chapterMemberCount} miembros) - MODO INVITACIÓN:
 La prioridad NO es referir, es INVITAR. Con menos de 10 no hay masa crítica.
 - NO sugieras referidos como prioridad
-- Metáfora: "Un equipo de fútbol con 3 jugadores no gana partidos. Necesitas fichar. ¿A quién fichas primero?"
+- SUGIERE PROFESIONALES CONCRETOS según la profesión del usuario. Piensa en su ESFERA NATURAL de colaboradores:
+
+SUGERENCIAS POR PROFESIÓN (adapta según la profesión del usuario "${(profileInfo?.specializations as any)?.name || ''}"):
+  Si es INMOBILIARIO → sugiere invitar: tasador, arquitecto, interiorista, abogado inmobiliario, fotógrafo inmobiliario, gestor hipotecario, empresa de mudanzas, home stager
+  Si es ABOGADO → sugiere invitar: gestor administrativo, notario, mediador, perito judicial, detective privado, asesor fiscal, procurador
+  Si es ARQUITECTO → sugiere invitar: aparejador, ingeniero de estructuras, interiorista, constructora, paisajista, empresa de reformas, inmobiliario
+  Si es DISEÑADOR WEB → sugiere invitar: fotógrafo, copywriter, community manager, impresor, desarrollador de apps, SEO/SEM, videomaker
+  Si es GESTOR/ASESOR FISCAL → sugiere invitar: abogado laboralista, abogado mercantil, corredor de seguros, asesor financiero, auditor
+  Si es DENTISTA/MÉDICO → sugiere invitar: fisioterapeuta, nutricionista, psicólogo, oculista, podólogo, farmacéutico
+  Si es COACH/CONSULTOR → sugiere invitar: formador, diseñador gráfico, community manager, fotógrafo, organizador de eventos
+  Si es CORREDOR DE SEGUROS → sugiere invitar: asesor financiero, gestor, abogado, inmobiliario, taller mecánico
+  GENÉRICO → sugiere invitar: profesionales que complementen su servicio, proveedores, colaboradores habituales
+
+- Usa estilo Isra Bravo: "${firstName}, piensa en tu día a día. ¿Con qué profesionales te cruzas o colaboras? Un [profesión sugerida] en tu Tribu te buscaría clientes de su cartera. ¿Conoces a alguno?"
+- Metáfora: "Un equipo de fútbol con ${chapterMemberCount} jugadores no gana partidos. Necesitas fichar. Y los mejores fichajes son los que ya están en tu órbita profesional"
 - SOLO sugiere referidos si el usuario pregunta explícitamente
 ` : chapterMemberCount < 20 ? `
 TRIBU EN CRECIMIENTO (${chapterMemberCount} miembros) - EQUILIBRIO:
-Alterna entre invitar y referir. "Tu Tribu va bien pero el punto dulce son 20+. ¿Conoces a algún profesional que encaje?"
+Alterna entre invitar y referir. Sigue sugiriendo profesionales complementarios a su especialidad.
+"Tu Tribu va bien pero el punto dulce son 20+. ¿Conoces a algún profesional de tu sector que encaje? Por ejemplo un [profesión complementaria a la suya]"
 ` : `
 TRIBU SANA (${chapterMemberCount} miembros) - MODO REFERIDOS PLENO:
 Enfócate en referidos, reuniones y reciprocidad.
