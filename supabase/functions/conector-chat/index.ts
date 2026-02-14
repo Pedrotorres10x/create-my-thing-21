@@ -970,12 +970,12 @@ ${chaptersInArea.map((ch: any) => {
 }).join('\n')}
 
 LÓGICA DE CONFLICTO DE PROFESIÓN:
-- Si en una tribu YA existe alguien con la MISMA profesión que el nuevo usuario, AVISA al usuario:
-  "En [tribu] ya hay un [profesión]: [nombre]. Dos opciones: 
-  1. Si tu línea de negocio es MUY diferente (ej: uno vende pisos y otro alquila locales), puedes entrar sin problema. ¿En qué te especializas exactamente?
-  2. Si hacéis lo mismo, mejor fundar una nueva Tribu donde seas el único de tu profesión."
-- SOLO en este caso (conflicto de profesión) pide detalle de especialización. Es la única situación donde tiene sentido.
-- Si NO hay conflicto, asigna directamente sin preguntar más.` :
+- Si en una tribu YA existe alguien con la MISMA profesión que el nuevo usuario:
+  1. Pregúntale brevemente en qué se especializa dentro de su profesión para entender si hay diferencia real (ej: "Ya hay un inmobiliaria en esta Tribu: [nombre]. Para ver si encajáis sin pisaros, cuéntame: ¿qué tipo de inmobiliaria haces exactamente? ¿Venta, alquiler, obra nueva...?")
+  2. Con su respuesta, informa que el Comité de Sabios de la Tribu evaluará su entrada: "Perfecto. Tu solicitud se eleva al Comité de Sabios de la Tribu. Ellos revisarán que vuestras líneas de negocio no se pisen y decidirán si entras en esta Tribu o si es mejor que fundes una nueva. Te avisaremos pronto."
+  3. NO le asignes tribu tú. El Comité decide.
+  4. Mientras tanto, sugiérele que complete su perfil y explore la plataforma.
+- Si NO hay conflicto de profesión, asigna directamente sin preguntar más.` :
   `- No hay Tribus en su zona aún.
 - "En tu zona aún no hay Tribu. Puedes ser el primero. ¿Te animas a abrir una?"`}
 
