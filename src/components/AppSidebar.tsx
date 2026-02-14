@@ -21,7 +21,7 @@ import {
 
 const coreItems = [
   { title: "Mi Refugio", url: "/dashboard", icon: Home },
-  { title: "Mi Tótem", url: "/profile", icon: UserCircle },
+  { title: "Mi Perfil", url: "/profile", icon: UserCircle },
 ];
 
 const expandedMainItems = [
