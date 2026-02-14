@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles, Camera, User } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const profileSchema = z.object({
   full_name: z.string().min(2, "Nombre muy corto").max(100, "Nombre muy largo"),
@@ -21,6 +22,9 @@ export function ProfileForm() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -31,18 +35,16 @@ export function ProfileForm() {
   useEffect(() => {
     if (!user) return;
     
-    // Check for referral code in URL
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
     if (refCode) {
       setFormData(prev => ({ ...prev, referred_by_code: refCode }));
     }
 
-    // Check if profile already exists
     const checkProfile = async () => {
       const { data } = await (supabase as any)
         .from("professionals")
-        .select("id, full_name, phone, referred_by_code")
+        .select("id, full_name, phone, referred_by_code, photo_url")
         .eq("user_id", user.id)
         .maybeSingle();
       
@@ -53,10 +55,61 @@ export function ProfileForm() {
           phone: data.phone || "",
           referred_by_code: data.referred_by_code || refCode || "",
         });
+        if (data.photo_url) setPhotoUrl(data.photo_url);
       }
     };
     checkProfile();
   }, [user]);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Error", description: "La imagen no debe superar 5MB", variant: "destructive" });
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Error", description: "Solo se permiten imágenes", variant: "destructive" });
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.id}/profile.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('photos')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('photos')
+        .getPublicUrl(filePath);
+
+      // Add cache buster
+      const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+      setPhotoUrl(urlWithCacheBust);
+
+      // Update profile if it exists
+      if (hasProfile) {
+        await (supabase as any)
+          .from("professionals")
+          .update({ photo_url: urlWithCacheBust })
+          .eq("user_id", user.id);
+      }
+
+      toast({ title: "✅ Foto subida", description: "Tu foto de perfil se ha actualizado" });
+    } catch (error: any) {
+      console.error("Photo upload error:", error);
+      toast({ title: "Error", description: "No se pudo subir la foto", variant: "destructive" });
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,13 +119,17 @@ export function ProfileForm() {
       const validated = profileSchema.parse(formData);
       setLoading(true);
 
-      const profileData = {
+      const profileData: any = {
         user_id: user.id,
         full_name: validated.full_name,
         email: user.email || "",
         phone: validated.phone,
         referred_by_code: formData.referred_by_code || null,
       };
+
+      if (photoUrl) {
+        profileData.photo_url = photoUrl;
+      }
 
       let error;
       if (hasProfile) {
@@ -88,7 +145,6 @@ export function ProfileForm() {
 
       if (error) throw error;
 
-      // Mark as new onboarding so AIChat triggers guided flow
       sessionStorage.setItem('conector-onboarding', 'true');
       
       toast({
@@ -116,6 +172,10 @@ export function ProfileForm() {
     }
   };
 
+  const initials = formData.full_name
+    ? formData.full_name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()
+    : "?";
+
   return (
     <Card className="w-full max-w-md mx-auto border-primary/20 shadow-xl">
       <CardHeader className="text-center space-y-3">
@@ -129,6 +189,39 @@ export function ProfileForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Photo Upload */}
+          <div className="flex flex-col items-center space-y-2">
+            <div 
+              className="relative cursor-pointer group" 
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Avatar className="h-24 w-24 border-2 border-primary/30 group-hover:border-primary transition-colors">
+                <AvatarImage src={photoUrl || undefined} alt="Foto de perfil" />
+                <AvatarFallback className="text-2xl bg-muted">
+                  {photoUrl ? initials : <User className="h-10 w-10 text-muted-foreground" />}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-1.5 shadow-md group-hover:scale-110 transition-transform">
+                {uploadingPhoto ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Camera className="h-4 w-4" />
+                )}
+              </div>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handlePhotoUpload}
+              className="hidden"
+              disabled={uploadingPhoto}
+            />
+            <p className="text-xs text-muted-foreground">
+              {photoUrl ? "Toca para cambiar tu foto" : "Sube tu foto de perfil"}
+            </p>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="full_name">Nombre Completo *</Label>
             <Input
