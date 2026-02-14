@@ -190,7 +190,7 @@ export function ProfileForm() {
           </Button>
 
           <p className="text-xs text-center text-muted-foreground">
-            Alic.ia te guiará para elegir tu profesión, tu Tribu y completar tu Tótem paso a paso
+            Alic.ia te guiará para elegir tu profesión, tu Tribu y completar tu Perfil paso a paso
           </p>
         </form>
       </CardContent>
