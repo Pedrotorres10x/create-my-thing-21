@@ -132,7 +132,7 @@ export const SphereReferenceDialog = ({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            🤝 Referir a mi Esfera
+            🤝 Referir a mi Grupo Profesional
             <span className="text-sm font-normal text-muted-foreground">
               (+50 puntos)
             </span>
