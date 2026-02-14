@@ -372,7 +372,7 @@ export function AIChat() {
                   IA
                 </Badge>
               </h3>
-              <p className="text-xs md:text-sm text-white/90 font-medium">Tu asistente personal inteligente</p>
+              <p className="text-xs md:text-sm text-white/90 font-medium">Trabajo para ti 24/7</p>
             </div>
           </div>
           <AIUsageIndicator />
