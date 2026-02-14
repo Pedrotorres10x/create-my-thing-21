@@ -69,6 +69,9 @@ const Dashboard = () => {
             deals_completed,
             total_deal_value,
             subscription_plan_id,
+            photo_url,
+            profession_specialization_id,
+            professional_type,
             subscription_plans (slug),
             business_spheres (
               name,
@@ -214,6 +217,7 @@ const Dashboard = () => {
             totalPoints={stats?.totalPoints}
             levelName={stats?.level.name}
             levelColor={stats?.level.color}
+            isProfileIncomplete={!professional?.photo_url || !professional?.profession_specialization_id || !professional?.professional_type}
           />
 
           {/* Deal limit banner */}

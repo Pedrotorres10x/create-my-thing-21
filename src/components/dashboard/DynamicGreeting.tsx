@@ -11,11 +11,17 @@ interface DynamicGreetingProps {
   totalPoints?: number;
   levelName?: string;
   levelColor?: string;
+  isProfileIncomplete?: boolean;
 }
 
 type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'night';
 
 const revenueInsights = {
+  profileIncomplete: [
+    "Tu perfil está a medias. Complétalo para que tu Tribu sepa a quién referir clientes.",
+    "Sin un perfil completo, nadie sabe qué haces. Termínalo y empieza a recibir referencias.",
+    "Primer paso: que te conozcan. Completa tu perfil y abre la puerta a nuevos clientes.",
+  ],
   noActivity: [
     "Cada profesional de tu Tribu puede ser un comercial que trabaja para ti. Gratis.",
     "Tu red ya está generando dinero para otros. La pregunta es si tú estás dentro.",
@@ -54,6 +60,7 @@ export const DynamicGreeting = ({
   totalPoints = 0,
   levelName = 'Bronce',
   levelColor = '#CD7F32',
+  isProfileIncomplete = false,
 }: DynamicGreetingProps) => {
   const [greeting, setGreeting] = useState('');
   const [insight, setInsight] = useState('');
@@ -76,7 +83,9 @@ export const DynamicGreeting = ({
 
     setGreeting(pickRandom(greetings[timeOfDay]));
 
-    if (referralsSent > 0 && meetingsCompleted > 0) {
+    if (isProfileIncomplete) {
+      setInsight(pickRandom(revenueInsights.profileIncomplete));
+    } else if (referralsSent > 0 && meetingsCompleted > 0) {
       setInsight(pickRandom(revenueInsights.active));
     } else if (meetingsCompleted > 0) {
       setInsight(pickRandom(revenueInsights.hasMeetings(meetingsCompleted)));
@@ -87,7 +96,7 @@ export const DynamicGreeting = ({
     } else {
       setInsight(pickRandom(revenueInsights.noActivity));
     }
-  }, [userName, chapterSize, referralsSent, meetingsCompleted]);
+  }, [userName, chapterSize, referralsSent, meetingsCompleted, isProfileIncomplete]);
 
   return (
     <div className="relative overflow-hidden rounded-2xl gradient-primary p-6 sm:p-8 text-primary-foreground animate-in fade-in slide-in-from-top-4 duration-700">
