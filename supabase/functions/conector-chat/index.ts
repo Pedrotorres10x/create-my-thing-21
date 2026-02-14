@@ -1260,6 +1260,9 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
       }
     }
 
+    console.log('System prompt length:', systemPrompt.length, 'chars, approx', Math.round(systemPrompt.length / 4), 'tokens');
+    console.log('Messages count:', messages.length);
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -1273,6 +1276,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
           ...messages,
         ],
         stream: true,
+        max_tokens: 500,
       }),
     });
 
