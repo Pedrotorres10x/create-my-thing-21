@@ -76,7 +76,7 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
           title: 'Que sepan a qué te dedicas',
           description: 'Si no te conocen, no te refieren clientes. Una publicación tuya hoy puede ser tu próximo cliente mañana.',
           action: 'Publicar',
-          actionRoute: '/feed',
+          actionRoute: '/somos-unicos',
           icon: MessageSquare,
         },
       ];
@@ -175,9 +175,9 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
           type: 'growth',
           priority: 4,
           title: 'Si no saben qué haces, no te refieren',
-          description: 'Publica en La Fogata qué problemas resuelves. Así tus compañeros sabrán a quién mandar cuando surja la ocasión.',
+          description: 'Publica en Somos Únicos qué problemas resuelves. Así tus compañeros sabrán a quién mandar cuando surja la ocasión.',
           action: 'Publicar',
-          actionRoute: '/feed',
+          actionRoute: '/somos-unicos',
           icon: MessageSquare,
         });
       }
@@ -233,9 +233,9 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
         type: 'growth',
         priority: 4,
         title: 'Si no saben qué haces, no te pueden referir',
-        description: 'Publica en La Fogata qué problemas resuelves. Cuando tus compañeros entiendan tu negocio, te mandarán clientes.',
+        description: 'Publica en Somos Únicos qué problemas resuelves. Cuando tus compañeros entiendan tu negocio, te mandarán clientes.',
         action: 'Publicar',
-        actionRoute: '/feed',
+        actionRoute: '/somos-unicos',
         icon: MessageSquare,
       });
     }

@@ -32,8 +32,7 @@ const expandedMainItems = [
 const communityItems = [
   { title: "Mi Grupo Profesional", url: "/mi-esfera", icon: Globe },
   { title: "El Cafelito", url: "/meetings", icon: Calendar },
-  { title: "La Fogata", url: "/feed", icon: MessageSquare },
-  { title: "La Cumbre", url: "/rankings", icon: Trophy },
+  { title: "Somos Únicos", url: "/somos-unicos", icon: MessageSquare },
 ];
 
 export function AppSidebar() {

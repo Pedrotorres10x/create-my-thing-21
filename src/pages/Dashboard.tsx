@@ -251,7 +251,7 @@ const Dashboard = () => {
               icon={<TrendingUp className="h-5 w-5" />}
               gradient="from-accent/10 to-primary/5"
               accentColor="text-accent"
-              onClick={() => navigate('/rankings')}
+              onClick={() => navigate('/somos-unicos')}
             />
           </div>
 
