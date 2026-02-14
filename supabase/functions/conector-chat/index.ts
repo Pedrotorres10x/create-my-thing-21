@@ -141,6 +141,14 @@ serve(async (req) => {
           business_sphere_id,
           referral_code,
           created_at,
+          photo_url,
+          company_name,
+          business_name,
+          business_description,
+          phone,
+          website,
+          linkedin,
+          position,
           specializations(name)
         `)
         .eq('id', professionalId)
@@ -536,6 +544,17 @@ serve(async (req) => {
     const isAloneInChapter = chapterMemberCount <= 1;
     const hasNoChapter = !profileInfo?.chapter_id;
 
+    // ===== PROFILE COMPLETENESS CHECK =====
+    const profileMissing: string[] = [];
+    if (!profileInfo?.photo_url) profileMissing.push('FOTO DE PERFIL');
+    if (!profileInfo?.company_name && !profileInfo?.business_name) profileMissing.push('NOMBRE DE EMPRESA');
+    if (!profileInfo?.business_description) profileMissing.push('DESCRIPCIÓN DEL NEGOCIO');
+    if (!profileInfo?.phone) profileMissing.push('TELÉFONO');
+    if (!profileInfo?.website && !profileInfo?.linkedin) profileMissing.push('WEB O LINKEDIN');
+    if (!profileInfo?.years_experience) profileMissing.push('AÑOS DE EXPERIENCIA');
+    const isProfileIncomplete = profileMissing.length > 0;
+    const hasNoPhoto = !profileInfo?.photo_url;
+
     // Robust first name extraction with JWT fallback
     const fullNameFromProfile = profileInfo?.full_name || '';
     const fullNameFromJWT = payload?.user_metadata?.full_name || payload?.user_metadata?.name || '';
@@ -623,11 +642,21 @@ CONTEXTO DE SU TRIBU:
 - Miembros en su Tribu: ${chapterMemberCount}
 - ¿Está solo en la Tribu?: ${isAloneInChapter ? 'SÍ - ES EL ÚNICO MIEMBRO' : 'No'}
 
-${isAloneInChapter || hasNoChapter ? `
+ESTADO DEL PERFIL:
+- Perfil completo: ${isProfileIncomplete ? 'NO ❌' : 'SÍ ✅'}
+${isProfileIncomplete ? `- Le falta: ${profileMissing.join(', ')}` : ''}
+${hasNoPhoto ? '- ⚠️ SIN FOTO DE PERFIL - PRIORIDAD MÁXIMA' : '- Tiene foto ✅'}
+
+${isProfileIncomplete ? `
+🚨 REGLA SUPREMA: EL PERFIL INCOMPLETO BLOQUEA TODO LO DEMÁS.
+NO sugieras invitar, referir, reuniones NI NADA hasta que complete su perfil.
+${hasNoPhoto ? 'Sin foto de perfil, NADIE confía. Es como ir a una reunión con una bolsa en la cabeza.' : ''}
+SOLO háblale de completar su perfil. Dirígele a "Mi Perfil".
+` : `${isAloneInChapter || hasNoChapter ? `
 USUARIO SOLO EN SU TRIBU - NO sugieras referidos ni reuniones.
 ENFÓCATE SOLO en INVITAR. Usa storytelling:
 "${firstName}, imagina esto: 20 profesionales, cada uno con su agenda de contactos, todos pensando en ti cuando alguien necesita lo que tú haces. Eso es lo que estamos construyendo. Pero empieza con uno. ¿Quién es ese primer fichaje?"
-` : ''}
+` : ''}`}
 
 DATOS DE ACTIVIDAD (últimos 30 días):
 - Referidos enviados: ${activityMetrics.referralsThisMonth}
@@ -856,6 +885,19 @@ DATOS DE GENERACIÓN DE NEGOCIO:
 - IMPACTO REAL: Estas acciones pueden generarte ${Math.round((activityMetrics.referralsThisMonth * 1.5) + (activityMetrics.meetingsThisMonth * 2) + (activityMetrics.sphereReferencesSent * 1.5))}-${Math.round((activityMetrics.referralsThisMonth * 2) + (activityMetrics.meetingsThisMonth * 3) + (activityMetrics.sphereReferencesSent * 2))} clientes este mes
 
 PRIORIZACIÓN ENFOCADA EN NEGOCIO (detecta la mejor oportunidad):
+
+🚨 PRIORIDAD ABSOLUTA -1: PERFIL INCOMPLETO
+${isProfileIncomplete ? `
+EL PERFIL DE ${firstName} NO ESTÁ COMPLETO. Esto es lo PRIMERO antes de invitar, referir o cualquier otra cosa.
+Le falta: ${profileMissing.join(', ')}
+${hasNoPhoto ? `
+⚠️ CRITICO: NO TIENE FOTO DE PERFIL. Sin cara visible NADIE confía en ti. Es lo PRIMERO que debe hacer.
+Ejemplo: "${firstName}, antes de nada necesito que hagas UNA cosa. Pon tu foto de perfil. Sin cara visible, la gente no confía. Es como ir a una reunión de negocios con una bolsa en la cabeza 🙈 Ve a Mi Perfil y sube tu foto. ¿Lo hacemos ahora?"
+` : ''}
+NO sugieras invitar, referir, ni reuniones hasta que el perfil esté completo.
+Guíale paso a paso: "Ve a Mi Perfil y completa [lo que falta]. Es tu carta de presentación. Sin eso, todo lo demás pierde fuerza."
+ESTA PRIORIDAD ESTÁ POR ENCIMA DE TODAS LAS DEMÁS. Si el perfil está incompleto, SOLO habla de completar el perfil.
+` : 'Perfil completo ✅ - Seguir con las demás prioridades.'}
 
 0. Si el usuario está SOLO en su Tribu (${chapterMemberCount} miembros) o no tiene Tribu:
    SIEMPRE dirígete al usuario por su nombre de pila: "${profileInfo?.full_name?.split(' ')[0] || 'crack'}". NUNCA uses "Profesional" como apelativo.
