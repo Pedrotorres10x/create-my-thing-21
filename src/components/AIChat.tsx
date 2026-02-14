@@ -22,7 +22,6 @@ interface Message {
 
 // Module-level flag to survive React StrictMode unmount/remount cycles
 let moduleInitializedForUser: string | null = null;
-let moduleAbortController: AbortController | null = null;
 
 export function AIChat() {
   const navigate = useNavigate();
@@ -92,12 +91,6 @@ export function AIChat() {
     // Set SYNCHRONOUSLY before any async work to block StrictMode duplicate
     moduleInitializedForUser = user.id;
 
-    // Abort any previous in-flight request
-    if (moduleAbortController) {
-      moduleAbortController.abort();
-    }
-    moduleAbortController = new AbortController();
-
     const startChat = async () => {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       if (!currentSession?.access_token) {
@@ -111,7 +104,7 @@ export function AIChat() {
         moduleInitializedForUser = null;
         return;
       }
-      const signal = moduleAbortController!.signal;
+      
 
       try {
         const { data: professional } = await supabase
@@ -143,10 +136,10 @@ export function AIChat() {
             messages: [{ role: "user", content: isOnboarding ? "[ONBOARDING]" : "[INICIO_SESION]" }],
             professionalId: professional.id
           }),
-          signal,
+          
         });
 
-        if (signal.aborted) return;
+        
 
         if (!resp.ok) {
           if (resp.status === 401) {
@@ -173,7 +166,7 @@ export function AIChat() {
         let assistantContent = "";
 
         while (true) {
-          if (signal.aborted) { reader.cancel(); return; }
+          
           const { done, value } = await reader.read();
           if (done) break;
           textBuffer += decoder.decode(value, { stream: true });
@@ -208,7 +201,6 @@ export function AIChat() {
         setInitializing(false);
         scrollToBottomIfNeeded(true);
       } catch (error: any) {
-        if (error.name === 'AbortError') return;
         console.error("Error initializing chat:", error);
         isStreamingRef.current = false;
         setInitializing(false);
@@ -216,13 +208,6 @@ export function AIChat() {
     };
 
     startChat();
-
-    return () => {
-      // Cleanup: abort in-flight request if component unmounts
-      if (moduleAbortController) {
-        moduleAbortController.abort();
-      }
-    };
   }, [authLoading, user?.id, CHAT_URL]);
 
 
