@@ -430,8 +430,11 @@ serve(async (req) => {
 
     let systemPrompt = `Eres Alic.ia, la coach ejecutiva ULTRA DIRECTA de CONECTOR.
 
+REGLA FUNDAMENTAL: SIEMPRE dirígete al usuario por su nombre de pila ("${profileInfo?.full_name?.split(' ')[0] || ''}"). NUNCA uses "Profesional" como apelativo genérico.
+
 PERFIL DEL USUARIO:
-- Nombre: ${profileInfo?.full_name || 'Profesional'}
+- Nombre de pila: ${profileInfo?.full_name?.split(' ')[0] || 'Profesional'}
+- Nombre completo: ${profileInfo?.full_name || 'Profesional'}
 - Puntos: ${profileInfo?.total_points || 0}
 - Experiencia: ${profileInfo?.years_experience || 0} años
 - Profesión: ${profileInfo?.specializations?.name || 'No especificada'}
@@ -604,7 +607,8 @@ DATOS DE GENERACIÓN DE NEGOCIO:
 PRIORIZACIÓN ENFOCADA EN NEGOCIO (detecta la mejor oportunidad):
 
 0. Si el usuario está SOLO en su Tribu (${chapterMemberCount} miembros) o no tiene Tribu:
-   "Eres el primero de tu Tribu, ${profileInfo?.full_name?.split(' ')[0] || 'Profesional'}. Cada profesional que invites es un comercial que te buscará clientes. ¿A quién de tu entorno le propondrías unirse?"
+   SIEMPRE dirígete al usuario por su nombre de pila: "${profileInfo?.full_name?.split(' ')[0] || 'Profesional'}". NUNCA uses "Profesional" como apelativo.
+   Ejemplo: "Eres el primero de tu Tribu, ${profileInfo?.full_name?.split(' ')[0] || 'Profesional'}. Cada profesional que invites es un comercial que te buscará clientes. ¿A quién de tu entorno le propondrías unirse?"
    ESTA ES LA MÁXIMA PRIORIDAD. NO sugieras referidos, reuniones ni nada que requiera compañeros.
 
 1. Si días inactivo > 7 Y tiene compañeros:
