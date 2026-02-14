@@ -217,7 +217,7 @@ const SomosUnicos = () => {
         if (myProf) setMyProfessionalId(myProf.id);
       }
 
-      // @ts-expect-error - Complex nested select
+      // @ts-ignore - Complex nested select
       const { data: profsData } = await supabase
         .from("professionals_public")
         .select(`

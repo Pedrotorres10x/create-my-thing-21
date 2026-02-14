@@ -419,6 +419,92 @@ export type Database = {
           },
         ]
       }
+      committee_rotations: {
+        Row: {
+          chapter_id: string
+          created_at: string
+          id: string
+          is_founding: boolean | null
+          member_1_id: string | null
+          member_2_id: string | null
+          member_3_id: string | null
+          next_rotation_at: string
+          rotation_date: string
+        }
+        Insert: {
+          chapter_id: string
+          created_at?: string
+          id?: string
+          is_founding?: boolean | null
+          member_1_id?: string | null
+          member_2_id?: string | null
+          member_3_id?: string | null
+          next_rotation_at?: string
+          rotation_date?: string
+        }
+        Update: {
+          chapter_id?: string
+          created_at?: string
+          id?: string
+          is_founding?: boolean | null
+          member_1_id?: string | null
+          member_2_id?: string | null
+          member_3_id?: string | null
+          next_rotation_at?: string
+          rotation_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "committee_rotations_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "committee_rotations_member_1_id_fkey"
+            columns: ["member_1_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "committee_rotations_member_1_id_fkey"
+            columns: ["member_1_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "committee_rotations_member_2_id_fkey"
+            columns: ["member_2_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "committee_rotations_member_2_id_fkey"
+            columns: ["member_2_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "committee_rotations_member_3_id_fkey"
+            columns: ["member_3_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "committee_rotations_member_3_id_fkey"
+            columns: ["member_3_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cross_chapter_requests: {
         Row: {
           created_at: string
@@ -1923,6 +2009,7 @@ export type Database = {
           expulsion_count: number
           full_name: string
           id: string
+          is_chapter_founder: boolean | null
           last_expulsion_at: string | null
           linkedin: string | null
           linkedin_url: string | null
@@ -1983,6 +2070,7 @@ export type Database = {
           expulsion_count?: number
           full_name: string
           id?: string
+          is_chapter_founder?: boolean | null
           last_expulsion_at?: string | null
           linkedin?: string | null
           linkedin_url?: string | null
@@ -2043,6 +2131,7 @@ export type Database = {
           expulsion_count?: number
           full_name?: string
           id?: string
+          is_chapter_founder?: boolean | null
           last_expulsion_at?: string | null
           linkedin?: string | null
           linkedin_url?: string | null
@@ -3790,16 +3879,27 @@ export type Database = {
         Args: { professional_uuid: string }
         Returns: number
       }
-      get_ethics_committee_members: {
-        Args: never
-        Returns: {
-          email: string
-          full_name: string
-          id: string
-          photo_url: string
-          total_points: number
-        }[]
-      }
+      get_ethics_committee_members:
+        | {
+            Args: never
+            Returns: {
+              email: string
+              full_name: string
+              id: string
+              photo_url: string
+              total_points: number
+            }[]
+          }
+        | {
+            Args: { _chapter_id?: string }
+            Returns: {
+              email: string
+              full_name: string
+              id: string
+              photo_url: string
+              total_points: number
+            }[]
+          }
       get_lovable_action: { Args: { _emotional_state: string }; Returns: Json }
       get_next_banner_to_display: {
         Args: { _location: string }

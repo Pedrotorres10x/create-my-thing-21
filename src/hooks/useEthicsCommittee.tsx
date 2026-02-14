@@ -64,20 +64,23 @@ export function useEthicsCommittee() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: professionalId } = useQuery({
-    queryKey: ["professional-id", user?.id],
+  const { data: professionalData } = useQuery({
+    queryKey: ["professional-data-committee", user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from("professionals")
-        .select("id")
+        .select("id, chapter_id")
         .eq("user_id", user.id)
         .single();
       if (error) throw error;
-      return data?.id || null;
+      return data || null;
     },
     enabled: !!user?.id,
   });
+
+  const professionalId = professionalData?.id || null;
+  const chapterId = professionalData?.chapter_id || null;
 
   const { data: isCommitteeMember = false, isLoading: checkingMembership } = useQuery({
     queryKey: ["ethics-committee-member", professionalId],
@@ -93,12 +96,15 @@ export function useEthicsCommittee() {
   });
 
   const { data: committeeMembers = [], isLoading: loadingMembers } = useQuery({
-    queryKey: ["ethics-committee-members"],
+    queryKey: ["ethics-committee-members", chapterId],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_ethics_committee_members");
+      const { data, error } = await supabase.rpc("get_ethics_committee_members", {
+        _chapter_id: chapterId,
+      });
       if (error) throw error;
       return (data || []) as EthicsCommitteeMember[];
     },
+    enabled: !!chapterId,
   });
 
   const { data: pendingReports = [], isLoading: loadingReports } = useQuery({
