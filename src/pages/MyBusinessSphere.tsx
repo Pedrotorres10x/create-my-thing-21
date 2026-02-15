@@ -141,8 +141,8 @@ export default function MyBusinessSphere() {
             </p>
           </div>
         </div>
-        <Button onClick={() => navigate("/referrals")} variant="outline">
-          <UserPlus className="h-4 w-4 mr-2" />
+        <Button onClick={() => navigate("/referrals")} size="lg" className="shadow-md">
+          <UserPlus className="h-5 w-5 mr-2" />
           Invitar Profesional
         </Button>
       </div>
