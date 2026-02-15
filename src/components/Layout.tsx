@@ -45,58 +45,58 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <SidebarProvider defaultOpen>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
-          <header className="h-12 border-b flex items-center justify-between px-4 bg-background sticky top-0 z-10">
-            <div className="flex items-center gap-1.5">
+          <header className="h-14 border-b border-border/50 flex items-center justify-between px-6 bg-background/80 backdrop-blur-xl sticky top-0 z-10">
+            <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <div className="text-base font-semibold">CONECTOR</div>
+              <div className="text-lg font-semibold tracking-tight">CONECTOR</div>
             </div>
             
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <PushNotificationToggle professionalId={professional?.id || null} />
               {professional?.business_sphere_id && professional?.id && (
                 <SphereNotifications professionalId={professional.id} />
               )}
               
               <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-1.5 h-9 hover:bg-muted">
-                  <Avatar className="h-7 w-7">
-                    <AvatarImage src={professional?.photo_url || ""} />
-                    <AvatarFallback className="text-xs">
-                      {professional?.full_name?.charAt(0) || <User className="h-3.5 w-3.5" />}
-                    </AvatarFallback>
-                  </Avatar>
-                  {professional?.full_name && (
-                    <span className="hidden lg:inline text-xs max-w-[120px] truncate">
-                      {professional.full_name}
-                    </span>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  <User className="mr-2 h-4 w-4" />
-                  Mi Perfil
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                  <Home className="mr-2 h-4 w-4" />
-                  Inicio
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Cerrar Sesión
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2 h-9 rounded-full hover:bg-accent px-2">
+                    <Avatar className="h-7 w-7">
+                      <AvatarImage src={professional?.photo_url || ""} />
+                      <AvatarFallback className="text-xs bg-muted">
+                        {professional?.full_name?.charAt(0) || <User className="h-3.5 w-3.5" />}
+                      </AvatarFallback>
+                    </Avatar>
+                    {professional?.full_name && (
+                      <span className="hidden lg:inline text-sm max-w-[140px] truncate font-medium">
+                        {professional.full_name}
+                      </span>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 rounded-xl p-1.5">
+                  <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2">Mi Cuenta</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/profile")} className="rounded-lg cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    Mi Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/dashboard")} className="rounded-lg cursor-pointer">
+                    <Home className="mr-2 h-4 w-4" />
+                    Inicio
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive rounded-lg cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Cerrar Sesión
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 p-4 md:p-6 bg-background overflow-auto">
+          <main className="flex-1 p-5 md:p-8 bg-background overflow-auto">
             {children}
           </main>
         </div>

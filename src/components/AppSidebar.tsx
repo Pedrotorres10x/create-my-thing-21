@@ -59,24 +59,26 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const isActive = (path: string) => currentPath === path;
 
-  // New users only see core items until they have a profile
   const mainItems = hasProfile ? [...coreItems, ...expandedMainItems] : coreItems;
+
+  const linkClass = "rounded-xl transition-all duration-200 hover:bg-accent";
+  const activeClass = "bg-accent text-foreground font-semibold";
 
   return (
     <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
-      <SidebarContent>
+      <SidebarContent className="pt-2">
         <SidebarGroup>
-          <SidebarGroupLabel>Mi Tierra</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[11px] uppercase tracking-widest text-muted-foreground/70 font-medium px-3">Mi Tierra</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-0.5 px-2">
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
                       end
-                      className="hover:bg-muted/50"
-                      activeClassName="bg-muted text-primary font-medium"
+                      className={linkClass}
+                      activeClassName={activeClass}
                     >
                       <item.icon className="h-4 w-4" />
                       {open && <span>{item.title}</span>}
@@ -90,17 +92,17 @@ export function AppSidebar() {
 
         {hasProfile && (
           <SidebarGroup>
-            <SidebarGroupLabel>La Tribu</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[11px] uppercase tracking-widest text-muted-foreground/70 font-medium px-3">La Tribu</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="space-y-0.5 px-2">
                 {communityItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <NavLink
                         to={item.url}
                         end
-                        className="hover:bg-muted/50"
-                        activeClassName="bg-muted text-primary font-medium"
+                        className={linkClass}
+                        activeClassName={activeClass}
                       >
                         <item.icon className="h-4 w-4" />
                         {open && <span>{item.title}</span>}
@@ -115,16 +117,16 @@ export function AppSidebar() {
 
         {isCommitteeMember && (
           <SidebarGroup>
-            <SidebarGroupLabel>Comité de Ética</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[11px] uppercase tracking-widest text-muted-foreground/70 font-medium px-3">Comité de Ética</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="space-y-0.5 px-2">
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to="/ethics-committee"
                       end
-                      className="hover:bg-muted/50"
-                      activeClassName="bg-muted text-primary font-medium"
+                      className={linkClass}
+                      activeClassName={activeClass}
                     >
                       <Scale className="h-4 w-4" />
                       {open && <span>Comité Ética</span>}
@@ -138,16 +140,16 @@ export function AppSidebar() {
 
         {isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel>Administración</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[11px] uppercase tracking-widest text-muted-foreground/70 font-medium px-3">Administración</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="space-y-0.5 px-2">
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to="/admin"
                       end
-                      className="hover:bg-muted/50"
-                      activeClassName="bg-muted text-primary font-medium"
+                      className={linkClass}
+                      activeClassName={activeClass}
                     >
                       <Shield className="h-4 w-4" />
                       {open && <span>Admin</span>}
@@ -158,8 +160,8 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to="/admin/moderation"
-                      className="hover:bg-muted/50"
-                      activeClassName="bg-muted text-primary font-medium"
+                      className={linkClass}
+                      activeClassName={activeClass}
                     >
                       <AlertTriangle className="h-4 w-4" />
                       {open && <span>Moderación</span>}
