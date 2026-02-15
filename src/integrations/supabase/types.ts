@@ -3031,18 +3031,21 @@ export type Database = {
           created_at: string
           id: number
           name: string
+          referral_role: string
           sector_id: number
         }
         Insert: {
           created_at?: string
           id?: number
           name: string
+          referral_role?: string
           sector_id: number
         }
         Update: {
           created_at?: string
           id?: number
           name?: string
+          referral_role?: string
           sector_id?: number
         }
         Relationships: [
