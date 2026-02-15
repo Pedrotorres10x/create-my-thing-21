@@ -20,6 +20,7 @@ import { SphereReferencesManager } from "@/components/sphere/SphereReferencesMan
 // RecommendClient moved to its own page
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { TribeBalanceIndicator } from "@/components/chapter/TribeBalanceIndicator";
 
 interface SphereInfo {
   id: number;
@@ -49,11 +50,12 @@ export default function MyBusinessSphere() {
   const [chapterId, setChapterId] = useState<string | null>(null);
   const [professionalId, setProfessionalId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("directory");
-  const [geoScope, setGeoScope] = useState<string>("chapter"); // chapter | city | province | community | country
+  const [geoScope, setGeoScope] = useState<string>("chapter");
   const [allChapters, setAllChapters] = useState<ChapterInfo[]>([]);
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [selectedProvince, setSelectedProvince] = useState<string>("all");
   const [selectedCommunity, setSelectedCommunity] = useState<string>("all");
+  const [roleBalance, setRoleBalance] = useState<{ referrers: number; receivers: number; hybrids: number; unknown: number; total: number } | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -96,6 +98,25 @@ export default function MyBusinessSphere() {
         if (professional.chapter_id) {
           const chapter = chaptersData?.find(c => c.id === professional.chapter_id);
           if (chapter) setChapterInfo(chapter);
+
+          // Load role balance for the chapter
+          // @ts-ignore - Complex nested select
+          const { data: membersRoles } = await supabase
+            .from('professionals')
+            .select('specializations (referral_role)')
+            .eq('chapter_id', professional.chapter_id)
+            .eq('status', 'approved');
+
+          if (membersRoles) {
+            const roles = (membersRoles as any[]).map(m => m.specializations?.referral_role);
+            setRoleBalance({
+              referrers: roles.filter(r => r === 'referrer').length,
+              receivers: roles.filter(r => r === 'receiver').length,
+              hybrids: roles.filter(r => r === 'hybrid').length,
+              unknown: roles.filter(r => !r).length,
+              total: roles.length,
+            });
+          }
         }
       }
     } catch (error) {
@@ -241,6 +262,11 @@ export default function MyBusinessSphere() {
             </Card>
           )}
         </div>
+      )}
+
+      {/* Tribe balance indicator */}
+      {roleBalance && roleBalance.total > 0 && (
+        <TribeBalanceIndicator balance={roleBalance} />
       )}
 
       {/* Geographic scope selector */}
