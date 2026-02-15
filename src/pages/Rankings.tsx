@@ -48,6 +48,10 @@ interface Professional {
     icon: string | null;
     color: string | null;
   } | null;
+  // Weighted ranking fields
+  referrals_sent?: number;
+  deals_closed_as_receiver?: number;
+  weighted_score?: number;
 }
 
 interface Chapter {
@@ -150,7 +154,66 @@ const Rankings = () => {
         supabase.from('business_spheres').select('id, name').order('name')
       ]);
 
-      if (profsRes.data) setProfessionals(profsRes.data as any);
+      // Load referral stats for weighted scoring
+      const [referralsSentRes, dealsClosedRes] = await Promise.all([
+        supabase
+          .from('referrals')
+          .select('referrer_id'),
+        supabase
+          .from('deals')
+          .select('receiver_id, status')
+          .eq('status', 'completed')
+      ]);
+
+      // Count referrals sent per professional
+      const referralsSentMap: Record<string, number> = {};
+      if (referralsSentRes.data) {
+        for (const r of referralsSentRes.data) {
+          referralsSentMap[r.referrer_id] = (referralsSentMap[r.referrer_id] || 0) + 1;
+        }
+      }
+
+      // Count deals closed as receiver
+      const dealsClosedMap: Record<string, number> = {};
+      if (dealsClosedRes.data) {
+        for (const d of dealsClosedRes.data) {
+          dealsClosedMap[d.receiver_id] = (dealsClosedMap[d.receiver_id] || 0) + 1;
+        }
+      }
+
+      if (profsRes.data) {
+        const enriched = (profsRes.data as any[]).map((prof: Professional) => {
+          const role = prof.specializations?.referral_role || 'hybrid';
+          const refsSent = referralsSentMap[prof.id] || 0;
+          const dealsClosed = dealsClosedMap[prof.id] || 0;
+
+          // Weighted score formula:
+          // Referrers: base points + 15pts per lead sent + 5pts per deal closed
+          // Receivers: base points + 5pts per lead sent + 15pts per deal closed
+          // Hybrids: base points + 10pts per lead + 10pts per deal
+          let weighted = prof.total_points;
+          if (role === 'referrer') {
+            weighted += refsSent * 15 + dealsClosed * 5;
+          } else if (role === 'receiver') {
+            weighted += refsSent * 5 + dealsClosed * 15;
+          } else {
+            weighted += refsSent * 10 + dealsClosed * 10;
+          }
+
+          return {
+            ...prof,
+            referrals_sent: refsSent,
+            deals_closed_as_receiver: dealsClosed,
+            weighted_score: weighted,
+          };
+        });
+
+        enriched.sort((a: Professional, b: Professional) => 
+          (b.weighted_score || 0) - (a.weighted_score || 0)
+        );
+        setProfessionals(enriched);
+      }
+
       if (chaptersRes.data) setChapters(chaptersRes.data);
       if (sectorsRes.data) setSectors(sectorsRes.data);
       if (spheresRes.data) setBusinessSpheres(spheresRes.data);
@@ -231,7 +294,7 @@ const Rankings = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">Tu Posición</p>
                   <h3 className="text-2xl font-bold">#{myRank}</h3>
-                  <p className="text-sm font-medium">{myProfile.total_points} puntos</p>
+                  <p className="text-sm font-medium">{myProfile.weighted_score || myProfile.total_points} puntos ponderados</p>
                 </div>
               </div>
               <div className="text-right">
@@ -440,8 +503,18 @@ const Rankings = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-xl font-bold">{prof.total_points}</p>
-                        <p className="text-xs text-muted-foreground">puntos</p>
+                        <p className="text-xl font-bold">{prof.weighted_score || prof.total_points}</p>
+                        <p className="text-xs text-muted-foreground">puntos ponderados</p>
+                        {prof.referrals_sent || prof.deals_closed_as_receiver ? (
+                          <div className="flex gap-2 mt-1 justify-end text-xs text-muted-foreground">
+                            {(prof.referrals_sent ?? 0) > 0 && (
+                              <span>📡 {prof.referrals_sent} leads</span>
+                            )}
+                            {(prof.deals_closed_as_receiver ?? 0) > 0 && (
+                              <span>🎯 {prof.deals_closed_as_receiver} deals</span>
+                            )}
+                          </div>
+                        ) : null}
                         <div className="mt-1">
                           <PointsLevelBadge points={prof.total_points} size="sm" />
                         </div>
@@ -465,18 +538,18 @@ const Rankings = () => {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardDescription>Puntos Totales</CardDescription>
+            <CardDescription>Puntos Ponderados Totales</CardDescription>
             <CardTitle className="text-3xl">
-              {filteredProfessionals.reduce((sum, p) => sum + p.total_points, 0)}
+              {filteredProfessionals.reduce((sum, p) => sum + (p.weighted_score || p.total_points), 0)}
             </CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardDescription>Promedio de Puntos</CardDescription>
+            <CardDescription>Promedio Ponderado</CardDescription>
             <CardTitle className="text-3xl">
               {Math.round(
-                filteredProfessionals.reduce((sum, p) => sum + p.total_points, 0) / 
+                filteredProfessionals.reduce((sum, p) => sum + (p.weighted_score || p.total_points), 0) / 
                 (filteredProfessionals.length || 1)
               )}
             </CardTitle>
