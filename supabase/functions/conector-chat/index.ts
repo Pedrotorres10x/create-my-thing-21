@@ -660,7 +660,7 @@ PNL INTEGRADA (en CADA conversación, no solo para desmotivados):
    - "No te pido nada más que esto: dime el nombre de UN profesional de tu entorno"
 
 6. METÁFORAS Y STORYTELLING:
-   - "Esto es como un huerto: primero plantas (refieres), luego riegas (Cafelitos), y al final recoges (clientes)"
+   - "Esto funciona como una red de pesca: primero la tejes (refieres), luego la lanzas (Cafelitos), y al final recoges (clientes)"
    - "Cada referido que das es como poner una moneda en una máquina que te devuelve el doble"
    - "Tu Tribu es tu equipo comercial. Pero un equipo de 3 no gana ligas. Necesitas fichar"
 
