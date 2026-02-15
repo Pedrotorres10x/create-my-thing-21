@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import DOMPurify from "dompurify";
 
 interface Message {
   role: "user" | "assistant";
@@ -742,15 +743,18 @@ export function AIChat() {
                 )}
               >
                 <p className="text-sm leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ 
-                  __html: message.content
-                    .replace(/\[PERFIL:[^\]]*\]/g, '')
-                    .replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '')
-                    .replace(/\[PEDIR_FOTO\]/g, '')
-                    .replace(/\[PEDIR_LOGO\]/g, '')
-                    .replace(/\[IR_A_INVITADOS\]/g, '')
-                    .replace(/\[IR_A_RECOMENDACION\]/g, '')
-                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                  __html: DOMPurify.sanitize(
+                    message.content
+                      .replace(/\[PERFIL:[^\]]*\]/g, '')
+                      .replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '')
+                      .replace(/\[PEDIR_FOTO\]/g, '')
+                      .replace(/\[PEDIR_LOGO\]/g, '')
+                      .replace(/\[IR_A_INVITADOS\]/g, '')
+                      .replace(/\[IR_A_RECOMENDACION\]/g, '')
+                      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                      .replace(/\*(.+?)\*/g, '<em>$1</em>'),
+                    { ALLOWED_TAGS: ['strong', 'em', 'br', 'p'], ALLOWED_ATTR: [] }
+                  )
                 }} />
                 {message.role === "assistant" && message.content.includes("[IR_A_INVITADOS]") && (
                   <div className="mt-3">
