@@ -6,28 +6,28 @@
 
 @layer base {
   :root {
-    /* Light mode fallback — rarely used, dark is default */
-    --background: 220 13% 6%;
-    --foreground: 0 0% 95%;
-    --card: 220 12% 9%;
-    --card-foreground: 0 0% 95%;
-    --popover: 220 12% 9%;
-    --popover-foreground: 0 0% 95%;
+    /* Professional Light-Dark — warm carbon, not pitch black */
+    --background: 220 10% 12%;
+    --foreground: 0 0% 93%;
+    --card: 220 10% 15%;
+    --card-foreground: 0 0% 93%;
+    --popover: 220 10% 15%;
+    --popover-foreground: 0 0% 93%;
     --primary: 145 65% 42%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 14%;
+    --secondary: 220 8% 20%;
     --secondary-foreground: 0 0% 70%;
-    --muted: 220 10% 14%;
-    --muted-foreground: 220 5% 50%;
-    --accent: 220 10% 16%;
+    --muted: 220 8% 20%;
+    --muted-foreground: 220 5% 55%;
+    --accent: 220 8% 22%;
     --accent-foreground: 0 0% 90%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 10% 16%;
-    --input: 220 10% 16%;
+    --border: 220 8% 22%;
+    --input: 220 8% 22%;
     --ring: 145 65% 42%;
     --radius: 0.5rem;
-    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.3), 0 0 0 1px hsl(220 10% 16%);
+    --shadow-card: 0 1px 4px hsl(0 0% 0% / 0.2), 0 0 0 1px hsl(220 8% 22%);
 
     /* Alicia AI */
     --alicia-primary: 145 65% 42%;
@@ -37,13 +37,13 @@
     --alicia-glow: 0 0 24px hsl(145 65% 42% / 0.15);
     --alicia-shadow: 0 4px 20px hsl(145 65% 42% / 0.1);
 
-    --sidebar-background: 220 13% 7%;
+    --sidebar-background: 220 10% 10%;
     --sidebar-foreground: 0 0% 70%;
     --sidebar-primary: 145 65% 42%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 10% 12%;
+    --sidebar-accent: 220 8% 16%;
     --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 220 10% 14%;
+    --sidebar-border: 220 8% 18%;
     --sidebar-ring: 145 65% 42%;
   }
 }
