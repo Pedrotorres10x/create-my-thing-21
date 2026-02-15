@@ -29,8 +29,15 @@ interface ProfessionalData {
   website: string | null;
   city: string | null;
   state: string | null;
+  chapter_id: string | null;
   profession_specializations: { name: string } | null;
-  chapters: { name: string; apellido: string | null; city: string; state: string } | null;
+}
+
+interface ChapterData {
+  name: string;
+  apellido: string | null;
+  city: string;
+  state: string;
 }
 
 export default function ProfessionalProfile() {
@@ -38,6 +45,7 @@ export default function ProfessionalProfile() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [professional, setProfessional] = useState<ProfessionalData | null>(null);
+  const [chapterData, setChapterData] = useState<ChapterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentProfessionalId, setCurrentProfessionalId] = useState<string | null>(null);
 
@@ -72,14 +80,25 @@ export default function ProfessionalProfile() {
           website,
           city,
           state,
-          profession_specializations ( name ),
-          chapters ( name, apellido, city, state )
+          chapter_id,
+          profession_specializations ( name )
         `)
         .eq("id", id)
         .single();
 
       if (error) throw error;
-      setProfessional(data as unknown as ProfessionalData);
+      const profData = data as unknown as ProfessionalData;
+      setProfessional(profData);
+
+      // Load chapter separately to avoid RLS join issues
+      if (profData.chapter_id) {
+        const { data: chapter } = await supabase
+          .from("chapters")
+          .select("name, apellido, city, state")
+          .eq("id", profData.chapter_id)
+          .single();
+        if (chapter) setChapterData(chapter as unknown as ChapterData);
+      }
     } catch (error) {
       console.error("Error loading profile:", error);
     } finally {
@@ -110,8 +129,8 @@ export default function ProfessionalProfile() {
     );
   }
 
-  const chapterFullName = professional.chapters
-    ? `${professional.chapters.name}${professional.chapters.apellido ? ` ${professional.chapters.apellido}` : ""}`
+  const chapterFullName = chapterData
+    ? `${chapterData.name}${chapterData.apellido ? ` ${chapterData.apellido}` : ""}`
     : null;
 
   return (
@@ -191,7 +210,7 @@ export default function ProfessionalProfile() {
               <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               <span>
                 {chapterFullName}
-                {professional.chapters && ` · ${professional.chapters.city}, ${professional.chapters.state}`}
+                {chapterData && ` · ${chapterData.city}, ${chapterData.state}`}
               </span>
             </div>
           )}
