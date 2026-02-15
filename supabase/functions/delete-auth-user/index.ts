@@ -100,7 +100,6 @@ Deno.serve(async (req) => {
         { table: "sphere_internal_references", column: "referrer_id" },
         { table: "sphere_internal_references", column: "referred_to_id" },
         { table: "sphere_project_participants", column: "professional_id" },
-        { table: "sphere_collaborative_projects", column: "created_by" },
         { table: "meetings", column: "requester_id" },
         { table: "meetings", column: "recipient_id" },
         { table: "referrals", column: "referrer_id" },
@@ -127,6 +126,9 @@ Deno.serve(async (req) => {
         await supabaseAdmin.from("chat_messages").delete().in("conversation_id", convoIds);
       }
 
+      // Nullify chapters.leader_id referencing this professional
+      await supabaseAdmin.from("chapters").update({ leader_id: null }).eq("leader_id", profId);
+
       // Delete from all related tables
       for (const rel of relatedTables) {
         if (rel.subquery) continue; // Already handled above
@@ -136,6 +138,16 @@ Deno.serve(async (req) => {
           console.log(`Note: could not clean ${rel.table}.${rel.column}: ${e.message}`);
         }
       }
+
+      // Nullify committee_rotations member references
+      for (const col of ["member_1_id", "member_2_id", "member_3_id"]) {
+        await supabaseAdmin.from("committee_rotations").update({ [col]: null }).eq(col, profId);
+      }
+
+      // Nullify other nullable FK references
+      await supabaseAdmin.from("cross_chapter_requests").update({ matched_professional_id: null }).eq("matched_professional_id", profId);
+      await supabaseAdmin.from("ethics_committee_decisions").update({ reviewed_by: null }).eq("reviewed_by", profId);
+      await supabaseAdmin.from("deal_disagreements").update({ resolved_by: null }).eq("resolved_by", profId);
 
       // Delete user_roles
       await supabaseAdmin.from("user_roles").delete().eq("user_id", user_id);
