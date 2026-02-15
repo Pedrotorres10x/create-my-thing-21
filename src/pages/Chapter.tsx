@@ -83,7 +83,7 @@ const Chapter = () => {
       if (chapterData) {
         setChapter(chapterData);
 
-        // @ts-expect-error - Complex nested select causes type instantiation issues
+        // @ts-ignore - Complex nested select causes type instantiation issues
         const { data: membersData } = await supabase
           .from('professionals')
           .select(`
