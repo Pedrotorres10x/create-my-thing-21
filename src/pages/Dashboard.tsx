@@ -205,7 +205,7 @@ const Dashboard = () => {
           <ProfileForm />
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Hero Greeting with ranking embedded */}
           <DynamicGreeting 
             userName={professional?.full_name?.split(' ')[0] || 'Profesional'}
