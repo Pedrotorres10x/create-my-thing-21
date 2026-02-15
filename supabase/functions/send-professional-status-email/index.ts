@@ -141,7 +141,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <li>Aparecer en el directorio de profesionales</li>
                   <li>Conectar con otros profesionales</li>
                   <li>Recibir y hacer referidos</li>
-                  <li>Participar en reuniones de networking</li>
+                  <li>Participar en reuniones de negocio</li>
                 </ul>
                 <div style="text-align: center;">
                   <a href="${supabaseUrl.replace('https://', 'https://').replace('.supabase.co', '.lovable.app')}/dashboard" class="button">

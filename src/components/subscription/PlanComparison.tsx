@@ -12,7 +12,7 @@ const features = [
     ]
   },
   {
-    category: "Networking de Alto Valor",
+    category: "Generación de Negocio",
     items: [
       { name: "One-to-Ones semanales", free: "1/mes", provincial: "1/semana", regional: "2/semana", national: "Ilimitados" },
       { name: "Leads cualificados/mes (contactos trabajados)", free: "1", provincial: "4", regional: "4", national: "Ilimitados" },

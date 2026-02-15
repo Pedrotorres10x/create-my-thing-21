@@ -168,7 +168,7 @@ Deno.serve(async (req) => {
 
     // Now use AI to analyze each alert and assign severity + analysis
     if (alerts.length > 0) {
-      const aiPrompt = `Eres un analista de fraude para CONECTOR, una red de networking profesional.
+      const aiPrompt = `Eres un analista de fraude para CONECTOR, una plataforma de generación de negocio entre profesionales.
 Analiza estas señales sospechosas de usuarios que podrían estar recibiendo referidos de negocio a través de la plataforma pero cerrando tratos por fuera sin reportarlos.
 
 Esto desnaturaliza el sistema: sin registro, no hay puntos, no hay rankings, no hay confianza grupal.

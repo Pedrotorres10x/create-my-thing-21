@@ -53,7 +53,7 @@ const Index = () => {
       {/* Hero */}
       <BackgroundImage
         imageUrl={heroBg}
-        alt="CONECTOR networking"
+        alt="CONECTOR generación de negocio"
         overlayOpacity={0.7}
         overlayColor="hsl(222 47% 11%)"
         className="relative"
@@ -65,7 +65,7 @@ const Index = () => {
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              No es networking. Es un sistema para que otros profesionales te traigan clientes. Y tú a ellos.
+              Un sistema para que otros profesionales te traigan clientes. Y tú a ellos.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
