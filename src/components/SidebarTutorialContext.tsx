@@ -23,16 +23,12 @@ interface SidebarTutorialContextType {
   currentStep: number;
   totalSteps: number;
   currentStepInfo: TutorialStepInfo | null;
-  /** The URL of the item that should be highlighted */
   highlightedUrl: string | null;
-  /** Whether we're showing the explanation (after click) */
   showingExplanation: boolean;
-  /** Called when the user clicks the highlighted sidebar item */
   onHighlightedClick: () => void;
-  /** Dismiss explanation and advance to next step */
   onDismissExplanation: () => void;
-  /** Skip the entire tutorial */
   skipTutorial: () => void;
+  restartTutorial: () => void;
 }
 
 const SidebarTutorialContext = createContext<SidebarTutorialContextType>({
@@ -45,6 +41,7 @@ const SidebarTutorialContext = createContext<SidebarTutorialContextType>({
   onHighlightedClick: () => {},
   onDismissExplanation: () => {},
   skipTutorial: () => {},
+  restartTutorial: () => {},
 });
 
 export const useSidebarTutorial = () => useContext(SidebarTutorialContext);
@@ -65,6 +62,13 @@ export function SidebarTutorialProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(TUTORIAL_KEY, "true");
     setActive(false);
     setShowingExplanation(false);
+  }, []);
+
+  const restart = useCallback(() => {
+    localStorage.removeItem(TUTORIAL_KEY);
+    setCurrentStep(0);
+    setShowingExplanation(false);
+    setActive(true);
   }, []);
 
   const onHighlightedClick = useCallback(() => {
@@ -94,6 +98,7 @@ export function SidebarTutorialProvider({ children }: { children: ReactNode }) {
         onHighlightedClick,
         onDismissExplanation,
         skipTutorial: finish,
+        restartTutorial: restart,
       }}
     >
       {children}
