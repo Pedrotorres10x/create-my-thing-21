@@ -8,6 +8,7 @@ import { useState } from "react";
 import { CloseDealDialog } from "./CloseDealDialog";
 import { ThanksAcceptDialog } from "./ThanksAcceptDialog";
 import { DisagreementDialog } from "./DisagreementDialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface Deal {
   id: string;
@@ -30,6 +31,7 @@ interface Deal {
   thanks_category_bands: { display_label: string; min_thanks_amount: number; recommended_thanks_amount: number; max_thanks_amount: number } | null;
   thanks_sectors: { name: string } | null;
   estimated_total_volume: number | null;
+  close_initiated_by: string | null;
 }
 
 interface DealCardProps {
@@ -43,6 +45,7 @@ export const DealCard = ({ deal, perspective, myProfessionalId, onRefresh }: Dea
   const [closeDialogOpen, setCloseDialogOpen] = useState(false);
   const [thanksAcceptOpen, setThanksAcceptOpen] = useState(false);
   const [disagreementOpen, setDisagreementOpen] = useState(false);
+  const { toast } = useToast();
 
   const otherParty = perspective === "referrer" ? deal.receiver?.full_name : deal.referrer?.full_name;
   const roleLabel = perspective === "referrer" ? "Enviado a" : "Recibido de";
@@ -53,8 +56,10 @@ export const DealCard = ({ deal, perspective, myProfessionalId, onRefresh }: Dea
         return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Pendiente</Badge>;
       case "confirmed":
         return <Badge className="bg-secondary text-secondary-foreground"><CheckCircle className="w-3 h-3 mr-1" />Confirmado</Badge>;
+      case "pending_close":
+        return <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-300"><Clock className="w-3 h-3 mr-1" />Cierre pendiente</Badge>;
       case "completed":
-        return <Badge variant="default"><CheckCircle className="w-3 h-3 mr-1" />Completado</Badge>;
+        return <Badge variant="default"><CheckCircle className="w-3 h-3 mr-1" />Cerrado</Badge>;
       case "disputed":
         return <Badge variant="destructive"><AlertTriangle className="w-3 h-3 mr-1" />En revisión</Badge>;
       default:
@@ -79,13 +84,24 @@ export const DealCard = ({ deal, perspective, myProfessionalId, onRefresh }: Dea
   };
 
   const canConfirm = deal.status === "pending" && perspective === "receiver";
-  const canClose = deal.status === "confirmed" && perspective === "receiver";
+  const canClose = deal.status === "confirmed";
+  const canConfirmClose = deal.status === "pending_close" && deal.close_initiated_by !== myProfessionalId;
   const canAcceptThanks = deal.status === "completed" && deal.thanks_amount_status === "proposed" && perspective === "referrer";
   const canDisagree = deal.status !== "disputed" && (deal.thanks_amount_status === "proposed" || deal.thanks_amount_status === "accepted");
 
   const handleConfirm = async () => {
     const { supabase } = await import("@/integrations/supabase/client");
     await (supabase as any).from("deals").update({ status: "confirmed" }).eq("id", deal.id);
+    onRefresh?.();
+  };
+
+  const handleConfirmClose = async () => {
+    const { supabase } = await import("@/integrations/supabase/client");
+    await (supabase as any).from("deals").update({
+      status: "completed",
+      completed_at: new Date().toISOString(),
+    }).eq("id", deal.id);
+    toast({ title: "¡Trato cerrado!", description: "Ambas partes han confirmado el cierre." });
     onRefresh?.();
   };
 
@@ -142,6 +158,12 @@ export const DealCard = ({ deal, perspective, myProfessionalId, onRefresh }: Dea
               <Button size="sm" onClick={() => setCloseDialogOpen(true)} className="flex-1">
                 <Heart className="h-3 w-3 mr-1" />
                 Cerrar y Agradecer
+              </Button>
+            )}
+            {canConfirmClose && (
+              <Button size="sm" onClick={handleConfirmClose} className="flex-1 bg-green-600 hover:bg-green-700 text-white">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Confirmar Cierre ({deal.thanks_amount_selected}€)
               </Button>
             )}
             {canAcceptThanks && (

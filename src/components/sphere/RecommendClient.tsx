@@ -11,6 +11,7 @@ import { Send, UserPlus, Search, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { CreateDealDialog } from "@/components/deals/CreateDealDialog";
 import { DealsList } from "@/components/deals/DealsList";
+import { DealHistoryStats } from "@/components/deals/DealHistoryStats";
 
 interface Member {
   id: string;
@@ -165,7 +166,8 @@ export const RecommendClient = ({ professionalId, chapterId, sphereId }: Recomme
             Historial de clientes recomendados y tratos en curso
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <DealHistoryStats professionalId={professionalId} />
           <DealsList professionalId={professionalId} />
         </CardContent>
       </Card>
