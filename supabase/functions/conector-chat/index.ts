@@ -1619,18 +1619,55 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
     const aiMessages: any[] = [
       { role: "system", content: systemPrompt },
     ];
+    // Add user/assistant messages first
+    aiMessages.push(...finalMessages);
+
+    // CRITICAL: Add a FINAL system message AFTER user messages to force marker emission
+    // This is the last thing the model sees before generating, so it has maximum effect
+    const specNames = allSpecializations ? allSpecializations.map((s: any) => s.name).join(', ') : '';
+    
     if (isProfileIncomplete) {
+      const lastUserMsg = finalMessages.filter((m: any) => m.role === 'user').pop()?.content || '';
       aiMessages.push({
         role: "system",
-        content: `🚨 RECORDATORIO: A ${firstName} le falta ESPECIALIZACIÓN PROFESIONAL. Pregúntale su profesión de forma abierta (sin lista) y usa [PERFIL:profession_specialization=...]. Después pregúntale la ciudad.`
+        content: `⚠️ INSTRUCCIÓN TÉCNICA OBLIGATORIA - LEER ANTES DE RESPONDER:
+A ${firstName} le falta ESPECIALIZACIÓN. Si el usuario acaba de mencionar su profesión en su último mensaje ("${lastUserMsg}"), DEBES:
+1. Identificar la especialización más cercana de esta lista: ${specNames}
+2. Incluir el marcador EXACTO al final de tu respuesta: [PERFIL:profession_specialization=Nombre Exacto De La Lista]
+3. Si no estás seguro de cuál elegir, muestra las opciones del sector relevante y pide que elija.
+
+EJEMPLO: Si dice "inmobiliaria" → muestra opciones del sector Inmobiliaria: Inmobiliaria Residencial, Inmobiliaria Comercial, Inmobiliaria Industrial, etc.
+EJEMPLO: Si dice "dentista" → incluye [PERFIL:profession_specialization=Dentista] al final de tu respuesta.
+
+Si aún NO ha mencionado su profesión, pregúntale.
+Después de la especialización, pregúntale la ciudad.
+Los marcadores [PERFIL:...] son INVISIBLES para el usuario, solo los procesa el sistema. DEBES incluirlos.`
       });
     } else if (!profileInfo?.city && hasNoChapter) {
+      const lastUserMsg = finalMessages.filter((m: any) => m.role === 'user').pop()?.content || '';
       aiMessages.push({
         role: "system",
-        content: `🚨 RECORDATORIO: ${firstName} ya tiene especialización pero NO tiene ciudad. Pregúntale "¿En qué ciudad trabajas?" y usa [PERFIL:city=Ciudad,state=Comunidad Autónoma]. Después asigna tribu.`
+        content: `⚠️ INSTRUCCIÓN TÉCNICA OBLIGATORIA:
+${firstName} tiene especialización PERO le falta CIUDAD. Si acaba de decir una ciudad ("${lastUserMsg}"), DEBES:
+1. Deducir la Comunidad Autónoma de esa ciudad
+2. Incluir al final: [PERFIL:city=Ciudad,state=Comunidad Autónoma]
+EJEMPLO: "Madrid" → [PERFIL:city=Madrid,state=Comunidad de Madrid]
+EJEMPLO: "Barcelona" → [PERFIL:city=Barcelona,state=Cataluña]
+EJEMPLO: "Sevilla" → [PERFIL:city=Sevilla,state=Andalucía]
+Si NO ha dicho ciudad aún, pregúntale "¿En qué ciudad trabajas?".
+Los marcadores son INVISIBLES para el usuario. DEBES incluirlos siempre que tengas el dato.`
+      });
+    } else if (hasNoChapter && profileInfo?.city) {
+      aiMessages.push({
+        role: "system",
+        content: `⚠️ INSTRUCCIÓN TÉCNICA OBLIGATORIA:
+${firstName} tiene especialización y ciudad pero NO tiene Tribu asignada. DEBES asignarle Tribu AHORA.
+Busca el chapter más adecuado de la lista y usa: [ASIGNAR_TRIBU:chapter_id=ID_DEL_CHAPTER]
+Si hay conflicto de especialización, usa [CREAR_CONFLICTO:...].
+Si no hay chapter en su zona, usa [CREAR_TRIBU:...].
+Los marcadores son INVISIBLES para el usuario. DEBES incluirlos.`
       });
     }
-    aiMessages.push(...finalMessages);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -1799,12 +1836,23 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
               content: aiResponseContent.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '').replace(/\[PERFIL_PENDIENTE:[^\]]*\]/g, '').replace(/\[PEDIR_FOTO\]/g, '').replace(/\[PEDIR_LOGO\]/g, '').replace(/\[ASIGNAR_TRIBU:[^\]]*\]/g, '').replace(/\[CREAR_TRIBU:[^\]]*\]/g, '').trim().substring(0, 5000),
             });
             
-            // Process profile update markers - ONLY specialization is allowed from chat
+            // Process profile update markers - ONLY specialization and city are allowed from chat
             const profileUpdates: Record<string, string> = {};
-            const profileRegex = /\[PERFIL:(\w+)=([^\]]+)\]/g;
+            // Match both [PERFIL:key=value] and multi-key [PERFIL:city=X,state=Y]
+            const profileRegex = /\[PERFIL:([^\]]+)\]/g;
             let profileMatch;
             while ((profileMatch = profileRegex.exec(aiResponseContent)) !== null) {
-              profileUpdates[profileMatch[1]] = profileMatch[2].trim();
+              const content = profileMatch[1].trim();
+              // Parse key=value pairs, handling "city=Madrid,state=Comunidad de Madrid"
+              const parts = content.split(/,(?=\w+=)/); // split on comma followed by key=
+              for (const part of parts) {
+                const eqIdx = part.indexOf('=');
+                if (eqIdx > 0) {
+                  const key = part.substring(0, eqIdx).trim();
+                  const val = part.substring(eqIdx + 1).trim();
+                  profileUpdates[key] = val;
+                }
+              }
             }
             console.log('All markers in AI response:', JSON.stringify(aiResponseContent.match(/\[[A-Z_]+:[^\]]*\]/g) || []));
             console.log('Profile updates to apply:', JSON.stringify(profileUpdates));
@@ -1821,6 +1869,32 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
                 if (matched) {
                   safeUpdates['profession_specialization_id'] = matched.id;
                   safeUpdates['specialization_id'] = matched.specialization_id;
+                  
+                  // Auto-assign business_sphere_id based on specialization sector
+                  const specToSphere: Record<number, number> = {
+                    // Inmobiliaria sector → Esfera Inmobiliaria (1)
+                    10: 1, 11: 1, 12: 1,
+                    // Software, Ciberseg, Cloud, Marketing Digital, Diseño, Redes → Esfera Digital (2)
+                    1: 2, 2: 2, 3: 2, 16: 2, 17: 2, 18: 2,
+                    // Medicina, Nutrición, Deporte → Esfera Salud (3)
+                    7: 3, 8: 3, 9: 3,
+                    // Consultoría, Legal, Contabilidad, Banca, Seguros, Asesoría → Esfera Servicios Empresariales (4)
+                    4: 4, 5: 4, 6: 4, 25: 4, 26: 4, 27: 4,
+                    // Producción, Automatización → Esfera Producción (5)
+                    19: 5, 20: 5,
+                    // Restaurantes, Catering → Esfera Alimentación (6)
+                    23: 6, 24: 6,
+                    // E-commerce, Comercio Minorista → Esfera Retail (7)
+                    21: 7, 22: 7,
+                    // Formación, Coaching → Esfera Formación (8)
+                    13: 8, 14: 8, 15: 8,
+                  };
+                  const sphereId = specToSphere[matched.specialization_id];
+                  if (sphereId) {
+                    safeUpdates['business_sphere_id'] = sphereId;
+                    console.log('Auto-assigned business_sphere_id:', sphereId);
+                  }
+                  
                   console.log('Matched specialization:', specName, '→ ID:', matched.id);
                 } else {
                   console.log('Specialization NOT matched:', specName);
@@ -1845,6 +1919,52 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
               if (Object.keys(safeUpdates).length > 0) {
                 await supabaseBg.from('professionals').update(safeUpdates).eq('id', professionalId);
                 console.log('Profile updated via chat:', Object.keys(safeUpdates));
+              }
+            }
+
+            // AUTO-ASSIGN TRIBE: If city was just saved and professional has no chapter, auto-assign
+            const hasAssignMarker = /\[ASIGNAR_TRIBU:|CREAR_TRIBU:/.test(aiResponseContent);
+            if (profileUpdates['city'] && !hasAssignMarker && professionalId) {
+              const cityName = profileUpdates['city'].trim();
+              const stateName = profileUpdates['state']?.trim() || '';
+              
+              // Check if professional still has no chapter
+              const { data: currentPro } = await supabaseBg
+                .from('professionals')
+                .select('chapter_id')
+                .eq('id', professionalId)
+                .single();
+              
+              if (!currentPro?.chapter_id) {
+                // Find existing chapter in same city
+                const { data: existingChapters } = await supabaseBg
+                  .from('chapters')
+                  .select('id, name, city, state, member_count')
+                  .ilike('city', cityName)
+                  .order('member_count', { ascending: false })
+                  .limit(5);
+                
+                if (existingChapters && existingChapters.length > 0) {
+                  // Assign to first matching chapter
+                  const targetChapter = existingChapters[0];
+                  await supabaseBg.from('professionals').update({ chapter_id: targetChapter.id }).eq('id', professionalId);
+                  await supabaseBg.from('chapters').update({ member_count: (targetChapter.member_count || 0) + 1 }).eq('id', targetChapter.id);
+                  console.log('Auto-assigned to existing chapter:', targetChapter.id, targetChapter.name);
+                } else {
+                  // Create new chapter for this city
+                  const { data: newChapter } = await supabaseBg.from('chapters').insert({
+                    name: cityName,
+                    city: cityName,
+                    state: stateName,
+                    member_count: 1,
+                    leader_id: professionalId,
+                  }).select('id').single();
+                  
+                  if (newChapter) {
+                    await supabaseBg.from('professionals').update({ chapter_id: newChapter.id }).eq('id', professionalId);
+                    console.log('Auto-created chapter:', newChapter.id, 'for city:', cityName);
+                  }
+                }
               }
             }
 
