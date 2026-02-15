@@ -103,6 +103,7 @@ serve(async (req) => {
     let chapterName = '';
     let chapterCity = '';
     let chapterState = '';
+    let invitedProfessionals: any[] = [];
     
     // ===== NUEVAS MÉTRICAS DE ACTIVIDAD PARA KPIs =====
     let activityMetrics = {
@@ -328,7 +329,7 @@ serve(async (req) => {
         .limit(10);
       
       // Invitaciones: buscar profesionales que usaron el código de referido del usuario
-      let invitedProfessionals: any[] = [];
+      // invitedProfessionals declared at outer scope
       if (profile?.referral_code) {
         const { data: invited } = await supabase
           .from('professionals')
