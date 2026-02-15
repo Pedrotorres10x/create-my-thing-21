@@ -134,13 +134,13 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
 
   const isReferMode = total >= 10;
 
-  // Progressive: invite urgency decreases as tribe grows toward 50
+  // Progressive: 50 is optimal, no upper limit
   const getProgressMessage = () => {
-    if (total >= 50) return 'Tu Tribu está completa — toda la energía en generar negocio.';
-    if (total >= 35) return `${total}/50 miembros — casi completa. Cada referencia cuenta.`;
-    if (total >= 20) return `${total}/50 miembros — buen tamaño. Refiere mientras seguís creciendo.`;
-    if (total >= 10) return `${total}/50 miembros — ya sois viables. Refiere y sigue invitando para crecer.`;
-    return `${total}/50 miembros — tu Tribu empieza. Refiere lo que puedas e invita para hacerla crecer rápido.`;
+    if (total >= 50) return `${total} miembros — tamaño óptimo. Refiere y sigue sumando profesionales.`;
+    if (total >= 35) return `${total} miembros — casi en el óptimo de 50. Cada referencia cuenta.`;
+    if (total >= 20) return `${total} miembros — buen tamaño. Refiere mientras seguís creciendo.`;
+    if (total >= 10) return `${total} miembros — ya sois viables. Refiere y sigue invitando para crecer.`;
+    return `${total} miembros — tu Tribu empieza. Refiere lo que puedas e invita para hacerla crecer rápido.`;
   };
   
   // Invite visual weight: critical <10, secondary 10+, hidden at 50
@@ -173,16 +173,14 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
             Referir un cliente
             <ArrowRight className="h-4 w-4" />
           </Button>
-          {total < 50 && (
-            <Button 
-              variant={getInviteVariant()}
-              size={getInviteSize()}
-              onClick={() => navigate('/referrals')} 
-              className="w-full gap-2"
-            >
-              Invitar profesional ({total}/50)
-            </Button>
-          )}
+          <Button 
+            variant={getInviteVariant()}
+            size={getInviteSize()}
+            onClick={() => navigate('/referrals')} 
+            className="w-full gap-2"
+          >
+            Invitar profesional ({total} miembros)
+          </Button>
         </CardContent>
       </Card>
     );
@@ -208,46 +206,42 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
             Referir un cliente
             <ArrowRight className="h-4 w-4" />
           </Button>
-          {total < 50 && (
+          {total < 35 && needs.length > 0 && (
             <>
-              {total < 35 && needs.length > 0 && (
-                <>
-                  <p className="text-xs text-muted-foreground text-center">
-                    Para seguir creciendo, invita profesionales que faltan:
-                  </p>
-                  {needs.slice(0, 1).map((need) => (
-                    <div
-                      key={need.type}
-                      className="flex items-start gap-3 p-3 rounded-lg border bg-muted/30 border-border"
-                    >
-                      <span className="text-lg">{need.emoji}</span>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-semibold">{need.label}</span>
-                          {need.count === 0 ? (
-                            <Badge variant="destructive" className="text-xs">Ninguno</Badge>
-                          ) : (
-                            <Badge variant="secondary" className="text-xs">
-                              {need.count} de {need.total} ideales
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">{need.examples}</p>
-                      </div>
+              <p className="text-xs text-muted-foreground text-center">
+                Para seguir creciendo, invita profesionales que faltan:
+              </p>
+              {needs.slice(0, 1).map((need) => (
+                <div
+                  key={need.type}
+                  className="flex items-start gap-3 p-3 rounded-lg border bg-muted/30 border-border"
+                >
+                  <span className="text-lg">{need.emoji}</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold">{need.label}</span>
+                      {need.count === 0 ? (
+                        <Badge variant="destructive" className="text-xs">Ninguno</Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs">
+                          {need.count} de {need.total} ideales
+                        </Badge>
+                      )}
                     </div>
-                  ))}
-                </>
-              )}
-              <Button 
-                variant={getInviteVariant()}
-                size={getInviteSize()}
-                onClick={() => navigate('/referrals')} 
-                className="w-full gap-2"
-              >
-                Invitar profesional ({total}/50)
-              </Button>
+                    <p className="text-xs text-muted-foreground mt-1">{need.examples}</p>
+                  </div>
+                </div>
+              ))}
             </>
           )}
+          <Button 
+            variant={getInviteVariant()}
+            size={getInviteSize()}
+            onClick={() => navigate('/referrals')} 
+            className="w-full gap-2"
+          >
+            Invitar profesional ({total} miembros)
+          </Button>
         </CardContent>
       </Card>
     );
@@ -328,7 +322,7 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
           onClick={() => navigate('/referrals')} 
           className="w-full gap-2"
         >
-          Invitar profesional ({total}/50)
+          Invitar profesional ({total} miembros)
           <ArrowRight className="h-4 w-4" />
         </Button>
       </CardContent>
