@@ -95,25 +95,23 @@ export function ProfileForm() {
   });
 
   useEffect(() => {
-    if (hasProfile) {
-      const loadSpecializations = async () => {
-        const { data } = await supabase
-          .from("specializations")
-          .select("id, name")
-          .order("name");
-        if (data) setSpecializations(data);
-      };
-      const loadProfessionSpecializations = async () => {
-        const { data } = await supabase
-          .from("profession_specializations")
-          .select("id, name, specialization_id")
-          .order("name");
-        if (data) setProfessionSpecializations(data);
-      };
-      loadSpecializations();
-      loadProfessionSpecializations();
-    }
-  }, [hasProfile]);
+    const loadSpecializations = async () => {
+      const { data } = await supabase
+        .from("specializations")
+        .select("id, name")
+        .order("name");
+      if (data) setSpecializations(data);
+    };
+    const loadProfessionSpecializations = async () => {
+      const { data } = await supabase
+        .from("profession_specializations")
+        .select("id, name, specialization_id")
+        .order("name");
+      if (data) setProfessionSpecializations(data);
+    };
+    loadSpecializations();
+    loadProfessionSpecializations();
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -277,6 +275,16 @@ export function ProfileForm() {
         });
         setLoading(true);
 
+        if (!selectedSpecializationId || !selectedProfessionSpecId) {
+          toast({
+            title: "Selecciona tu oficio",
+            description: "Necesitamos saber a qué te dedicas para asignarte un grupo",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
         const profileData: any = {
           user_id: user.id,
           full_name: validated.full_name,
@@ -284,6 +292,8 @@ export function ProfileForm() {
           phone: validated.phone,
           referred_by_code: formData.referred_by_code || null,
           status: "waiting_approval",
+          specialization_id: selectedSpecializationId,
+          profession_specialization_id: selectedProfessionSpecId,
         };
 
         if (photoUrl) profileData.photo_url = photoUrl;
@@ -461,6 +471,48 @@ export function ProfileForm() {
                   className="h-12 text-base"
                 />
               </div>
+
+              {/* Specialization selectors */}
+              <div className="space-y-1.5">
+                <Label htmlFor="specialization" className="text-sm font-medium">¿A qué te dedicas? *</Label>
+                <Select
+                  value={selectedSpecializationId?.toString() || ""}
+                  onValueChange={(val) => {
+                    setSelectedSpecializationId(val ? parseInt(val) : null);
+                    setSelectedProfessionSpecId(null);
+                  }}
+                >
+                  <SelectTrigger className="h-12 text-base">
+                    <SelectValue placeholder="Selecciona tu sector" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {specializations.map((s) => (
+                      <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedSpecializationId && (
+                <div className="space-y-1.5 animate-fade-in">
+                  <Label htmlFor="profession_spec" className="text-sm font-medium">Tu especialización *</Label>
+                  <Select
+                    value={selectedProfessionSpecId?.toString() || ""}
+                    onValueChange={(val) => setSelectedProfessionSpecId(val ? parseInt(val) : null)}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder="Elige tu especialización" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {professionSpecializations
+                        .filter((ps) => ps.specialization_id === selectedSpecializationId)
+                        .map((ps) => (
+                          <SelectItem key={ps.id} value={ps.id.toString()}>{ps.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {/* Referral code — collapsed, subtle */}
               <div className="space-y-1.5">
