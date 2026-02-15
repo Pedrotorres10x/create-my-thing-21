@@ -188,7 +188,7 @@ export default function MyBusinessSphere() {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="directory" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Directorio</span>
@@ -200,10 +200,6 @@ export default function MyBusinessSphere() {
           <TabsTrigger value="references" className="flex items-center gap-2">
             <HandshakeIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Referencias</span>
-          </TabsTrigger>
-          <TabsTrigger value="projects" className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4" />
-            <span className="hidden sm:inline">Proyectos</span>
           </TabsTrigger>
         </TabsList>
 
@@ -219,13 +215,6 @@ export default function MyBusinessSphere() {
           {professionalId && (
             <SphereReferencesManager currentProfessionalId={professionalId} />
           )}
-        </TabsContent>
-
-        <TabsContent value="projects" className="mt-6">
-          <CollaborationOpportunities
-            sphereId={sphereInfo.id}
-            chapterId={chapterId}
-          />
         </TabsContent>
       </Tabs>
     </div>
