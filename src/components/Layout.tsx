@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import carbonPattern from "@/assets/carbon-pattern.png";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Button } from "@/components/ui/button";
@@ -47,8 +48,17 @@ export function Layout({ children }: LayoutProps) {
     <SidebarProvider defaultOpen>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-12 border-b border-border flex items-center justify-between px-5 bg-background/95 backdrop-blur-sm sticky top-0 z-10">
+        <div className="flex-1 flex flex-col min-w-0 relative">
+          {/* Subtle background pattern */}
+          <div 
+            className="absolute inset-0 opacity-[0.04] pointer-events-none z-0"
+            style={{ backgroundImage: `url(${carbonPattern})`, backgroundSize: '400px', backgroundRepeat: 'repeat' }}
+          />
+          {/* Top green gradient glow */}
+          <div className="absolute top-0 left-0 right-0 h-64 pointer-events-none z-0"
+            style={{ background: 'radial-gradient(ellipse 80% 100% at 50% -20%, hsl(145 65% 42% / 0.06) 0%, transparent 70%)' }}
+          />
+          <header className="h-12 border-b border-border flex items-center justify-between px-5 bg-background/95 backdrop-blur-sm sticky top-0 z-20">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <span className="text-xs font-bold tracking-[0.15em] uppercase text-muted-foreground">CONECTOR</span>
@@ -96,7 +106,7 @@ export function Layout({ children }: LayoutProps) {
               </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="flex-1 p-6 overflow-auto relative z-10">
             {children}
           </main>
         </div>
