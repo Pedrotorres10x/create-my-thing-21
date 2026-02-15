@@ -2366,6 +2366,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "professionals_specialization_id_fkey"
+            columns: ["specialization_id"]
+            isOneToOne: false
+            referencedRelation: "specializations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "professionals_subscription_plan_id_fkey"
             columns: ["subscription_plan_id"]
             isOneToOne: false
@@ -4359,6 +4366,13 @@ export type Database = {
             columns: ["sector_id"]
             isOneToOne: false
             referencedRelation: "sector_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professionals_specialization_id_fkey"
+            columns: ["specialization_id"]
+            isOneToOne: false
+            referencedRelation: "specializations"
             referencedColumns: ["id"]
           },
         ]
