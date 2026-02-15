@@ -748,6 +748,7 @@ export function AIChat() {
                     .replace(/\[PEDIR_FOTO\]/g, '')
                     .replace(/\[PEDIR_LOGO\]/g, '')
                     .replace(/\[IR_A_INVITADOS\]/g, '')
+                    .replace(/\[IR_A_RECOMENDACION\]/g, '')
                     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*(.+?)\*/g, '<em>$1</em>')
                 }} />
@@ -760,6 +761,18 @@ export function AIChat() {
                     >
                       <UserPlus className="h-4 w-4" />
                       Ir a Mis Invitados
+                    </Button>
+                  </div>
+                )}
+                {message.role === "assistant" && message.content.includes("[IR_A_RECOMENDACION]") && (
+                  <div className="mt-3">
+                    <Button
+                      onClick={() => navigate('/recomendacion')}
+                      className="alicia-gradient hover:opacity-90 text-white rounded-xl gap-2"
+                      size="sm"
+                    >
+                      <Send className="h-4 w-4" />
+                      Ir a Recomendación
                     </Button>
                   </div>
                 )}
