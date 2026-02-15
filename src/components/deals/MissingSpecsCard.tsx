@@ -94,34 +94,50 @@ export const MissingSpecsCard = ({ professionalId }: MissingSpecsProps) => {
       </CardHeader>
       <CardContent>
         {missing.length === 0 && covered.length > 0 ? (
-          <div className="flex items-center gap-2 text-sm text-primary">
-            <CheckCircle className="h-4 w-4" />
-            ¡Tu tribu cubre todas las profesiones de tu esfera!
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm text-primary">
+              <CheckCircle className="h-4 w-4" />
+              ¡Tu tribu cubre todas las profesiones de tu esfera!
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2">Ejemplos cubiertos</p>
+              <div className="flex flex-wrap gap-2">
+                {covered.slice(0, 5).map((name) => (
+                  <Badge key={name} variant="secondary">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    {name}
+                  </Badge>
+                ))}
+              </div>
+            </div>
           </div>
         ) : missing.length === 0 ? (
           <p className="text-sm text-muted-foreground">No hay datos de esfera configurados.</p>
         ) : (
           <div className="space-y-3">
-            {missing.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3" />
-                  {missing.length} {missing.length === 1 ? "profesión sin cubrir" : "profesiones sin cubrir"} — cada hueco es dinero que se pierde
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {missing.map((spec) => (
-                    <Badge key={spec.id} variant="outline" className="border-destructive text-destructive">
-                      {spec.name}
-                    </Badge>
-                  ))}
-                </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                {missing.length} {missing.length === 1 ? "profesión sin cubrir" : "profesiones sin cubrir"} — cada hueco es dinero que se pierde
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {missing.slice(0, 5).map((spec) => (
+                  <Badge key={spec.id} variant="outline" className="border-destructive text-destructive">
+                    {spec.name}
+                  </Badge>
+                ))}
               </div>
-            )}
+              {missing.length > 5 && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Y {missing.length - 5} más sin cubrir...
+                </p>
+              )}
+            </div>
             {covered.length > 0 && (
               <div className="mt-3">
                 <p className="text-xs font-medium text-muted-foreground mb-2">Cubiertas</p>
                 <div className="flex flex-wrap gap-2">
-                  {covered.map((name) => (
+                  {covered.slice(0, Math.max(0, 5 - Math.min(missing.length, 5))).map((name) => (
                     <Badge key={name} variant="secondary">
                       <CheckCircle className="h-3 w-3 mr-1" />
                       {name}
