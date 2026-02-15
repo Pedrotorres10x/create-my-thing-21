@@ -52,8 +52,11 @@ export function ProfileForm() {
   const [loading, setLoading] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [specializations, setSpecializations] = useState<Specialization[]>([]);
   const [selectedSpecializationId, setSelectedSpecializationId] = useState<number | null>(null);
 
@@ -101,7 +104,7 @@ export function ProfileForm() {
     const checkProfile = async () => {
       const { data } = await (supabase as any)
         .from("professionals")
-        .select("id, full_name, phone, referred_by_code, photo_url, position, bio, nif_cif, company_name, company_cif, company_address, business_description, address, city, state, postal_code, country, website, linkedin_url, years_experience, specialization_id")
+        .select("id, full_name, phone, referred_by_code, photo_url, logo_url, position, bio, nif_cif, company_name, company_cif, company_address, business_description, address, city, state, postal_code, country, website, linkedin_url, years_experience, specialization_id")
         .eq("user_id", user.id)
         .maybeSingle();
       
@@ -128,6 +131,7 @@ export function ProfileForm() {
           years_experience: data.years_experience?.toString() || "",
         });
         if (data.photo_url) setPhotoUrl(data.photo_url);
+        if (data.logo_url) setLogoUrl(data.logo_url);
         if (data.specialization_id) setSelectedSpecializationId(data.specialization_id);
       }
     };
@@ -179,6 +183,54 @@ export function ProfileForm() {
       toast({ title: "Error", description: "No se pudo subir la foto", variant: "destructive" });
     } finally {
       setUploadingPhoto(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Error", description: "El logo no debe superar 5MB", variant: "destructive" });
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Error", description: "Solo se permiten imágenes", variant: "destructive" });
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.id}/logo.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('photos')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('photos')
+        .getPublicUrl(filePath);
+
+      const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+      setLogoUrl(urlWithCacheBust);
+
+      if (hasProfile) {
+        await (supabase as any)
+          .from("professionals")
+          .update({ logo_url: urlWithCacheBust })
+          .eq("user_id", user.id);
+      }
+
+      toast({ title: "✅ Logo subido", description: "El logo de tu empresa se ha actualizado" });
+    } catch (error: any) {
+      console.error("Logo upload error:", error);
+      toast({ title: "Error", description: "No se pudo subir el logo", variant: "destructive" });
+    } finally {
+      setUploadingLogo(false);
     }
   };
 
@@ -484,6 +536,40 @@ export function ProfileForm() {
                 placeholder="Tu empresa S.L."
                 maxLength={200}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Logo de Empresa</Label>
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-16 h-16 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden cursor-pointer hover:border-primary/50 transition-colors bg-muted/30"
+                  onClick={() => logoInputRef.current?.click()}
+                >
+                  {uploadingLogo ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  ) : logoUrl ? (
+                    <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                  ) : (
+                    <Building2 className="h-6 w-6 text-muted-foreground/50" />
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => logoInputRef.current?.click()}
+                  disabled={uploadingLogo}
+                >
+                  {uploadingLogo ? "Subiendo..." : logoUrl ? "Cambiar logo" : "Subir logo"}
+                </Button>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleLogoUpload}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">

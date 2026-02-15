@@ -153,6 +153,7 @@ serve(async (req) => {
           phone,
           website,
           linkedin,
+          linkedin_url,
           position,
           profession_specializations(name)
         `)
@@ -569,9 +570,10 @@ serve(async (req) => {
     if (!isAutonomo && !typeUnknown && !profileInfo?.company_name && !profileInfo?.business_name) { profileMissing.push('NOMBRE DE EMPRESA'); criticalMissing.push('NOMBRE DE EMPRESA'); }
     if (!profileInfo?.business_description) { profileMissing.push('DESCRIPCIÓN DEL NEGOCIO/SERVICIOS'); secondaryMissing.push('DESCRIPCIÓN DEL NEGOCIO/SERVICIOS'); }
     if (!profileInfo?.phone) { profileMissing.push('TELÉFONO'); secondaryMissing.push('TELÉFONO'); }
-    if (!profileInfo?.website && !profileInfo?.linkedin) { profileMissing.push('WEB O LINKEDIN'); secondaryMissing.push('WEB O LINKEDIN'); }
+    if (!profileInfo?.website && !profileInfo?.linkedin && !profileInfo?.linkedin_url) { profileMissing.push('WEB O LINKEDIN'); secondaryMissing.push('WEB O LINKEDIN'); }
     if (!profileInfo?.years_experience) { profileMissing.push('AÑOS DE EXPERIENCIA'); secondaryMissing.push('AÑOS DE EXPERIENCIA'); }
     const isProfileIncomplete = profileMissing.length > 0;
+    console.log('PROFILE COMPLETENESS CHECK:', JSON.stringify({ isProfileIncomplete, profileMissing, professional_type: professionalType, business_description: !!profileInfo?.business_description, years_experience: profileInfo?.years_experience, website: profileInfo?.website, linkedin: profileInfo?.linkedin }));
     const hasCriticalMissing = criticalMissing.length > 0;
     const hasOnlySecondaryMissing = !hasCriticalMissing && secondaryMissing.length > 0;
     const hasNoPhoto = !profileInfo?.photo_url;
