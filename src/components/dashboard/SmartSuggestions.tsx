@@ -69,16 +69,6 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
           actionRoute: '/referrals',
           icon: UserPlus,
         },
-        {
-          id: 'founder-visibility',
-          type: 'growth',
-          priority: 2,
-          title: 'Que sepan a qué te dedicas',
-          description: 'Si no te conocen, no te refieren clientes. Una publicación tuya hoy puede ser tu próximo cliente mañana.',
-          action: 'Publicar',
-          actionRoute: '/somos-unicos',
-          icon: MessageSquare,
-        },
       ];
     }
 
