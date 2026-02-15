@@ -577,7 +577,18 @@ serve(async (req) => {
     }
     // Everything else (photo, phone, NIF, address, description, etc.) is filled by user directly in profile page
     const isProfileIncomplete = profileMissing.length > 0;
-    console.log('PROFILE COMPLETENESS CHECK:', JSON.stringify({ isProfileIncomplete, profileMissing, has_specialization: !!profileInfo?.profession_specialization_id || !!profileInfo?.specialization_id }));
+    
+    // Check if profile is complete enough for invitations/recommendations
+    const profileFieldsForActions: string[] = [];
+    if (!profileInfo?.photo_url) profileFieldsForActions.push('foto de perfil');
+    if (!professionalType) profileFieldsForActions.push('tipo de profesional');
+    if (!profileInfo?.phone) profileFieldsForActions.push('teléfono');
+    if (!profileInfo?.profession_specialization_id && !profileInfo?.specialization_id) profileFieldsForActions.push('sector/especialización');
+    if (!profileInfo?.business_description) profileFieldsForActions.push('descripción del negocio');
+    if (!profileInfo?.company_name && !profileInfo?.business_name) profileFieldsForActions.push('nombre de empresa');
+    const isProfileReadyForActions = profileFieldsForActions.length === 0;
+    
+    console.log('PROFILE COMPLETENESS CHECK:', JSON.stringify({ isProfileIncomplete, profileMissing, isProfileReadyForActions, profileFieldsForActions }));
     const hasCriticalMissing = criticalMissing.length > 0;
     const hasOnlySecondaryMissing = false;
     const hasNoPhoto = false;
@@ -809,12 +820,18 @@ Solo cuando el usuario envíe "[FOTO_SUBIDA]" puedes pasar al siguiente campo.` 
 ${!hasNoPhoto && typeUnknown ? `⚠️ SIGUIENTE PASO: Preguntar si es AUTÓNOMO o EMPRESA. Mensaje corto y directo.` : ''}
 ${!hasNoPhoto && !typeUnknown && hasNoLogo ? `⚠️ TIENE EMPRESA PERO SIN LOGO. Pide el logo. Si dice que no tiene, sáltalo.` : ''}
 ` : ''}
-${!isProfileIncomplete && !hasNoChapter && isAloneInChapter ? `
+${!isProfileIncomplete && !isProfileReadyForActions ? `
+🚫 PERFIL INCOMPLETO PARA ACCIONES: El usuario tiene especialización pero le faltan datos clave: ${profileFieldsForActions.join(', ')}.
+PROHIBIDO sugerir invitar, recomendar, reuniones o referidos. 
+Dile amablemente que complete su perfil desde "Mi Perfil" antes de poder hacer estas acciones.
+Ejemplo: "${firstName}, antes de invitar o recomendar necesitas completar tu perfil. Ve a Mi Perfil y rellena: ${profileFieldsForActions.join(', ')}. Cuando lo tengas, aquí te espero para lo bueno 🚀"
+` : ''}
+${!isProfileIncomplete && isProfileReadyForActions && !hasNoChapter && isAloneInChapter ? `
 USUARIO SOLO EN SU TRIBU - NO sugieras referidos ni reuniones.
 ENFÓCATE SOLO en INVITAR. Usa storytelling:
 "${firstName}, imagina esto: 20 profesionales, cada uno con su agenda de contactos, todos pensando en ti cuando alguien necesita lo que tú haces. Eso es lo que estamos construyendo. Pero empieza con uno. ¿Quién es ese primer fichaje?"
 ` : ''}
-${!isProfileIncomplete && hasNoChapter ? `
+${!isProfileIncomplete && isProfileReadyForActions && hasNoChapter ? `
 🚨 PERFIL COMPLETO PERO SIN TRIBU. PRIORIDAD: Ofrecer unirse a grupo o crear uno nuevo.
 NO hables de referidos, reuniones, invitaciones ni nada más hasta que tenga tribu.
 ` : ''}
