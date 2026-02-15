@@ -895,7 +895,7 @@ export function ProfileForm() {
                     setFormData(prev => ({
                       ...prev,
                       postal_code: val,
-                      city: prev.city || result.province,
+                      city: result.city,
                       state: result.state,
                     }));
                     toast({

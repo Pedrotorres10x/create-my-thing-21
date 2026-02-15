@@ -142,7 +142,97 @@ const PROVINCE_MAP: Record<string, { province: string; community: string }> = {
   "52": { province: "Melilla", community: "Melilla" },
 };
 
-export function lookupPostalCode(cp: string): { province: string; state: string } | null {
+// Major cities by CP range for smart city detection
+const CITY_MAP: Record<string, string> = {
+  // Madrid
+  "280": "Madrid", "281": "Madrid",
+  "282": "Alcalá de Henares", "283": "Aranjuez", "284": "Arganda del Rey",
+  "285": "Torrejón de Ardoz", "286": "Pozuelo de Alarcón", "287": "Majadahonda",
+  // Barcelona
+  "080": "Barcelona", "081": "Barcelona", "082": "Barcelona",
+  "083": "Sabadell", "084": "Terrassa", "085": "Badalona",
+  "086": "Mataró", "087": "Granollers", "088": "Sant Cugat del Vallès",
+  // Valencia
+  "460": "Valencia", "461": "Valencia", "462": "Valencia",
+  "463": "Burjassot", "467": "Torrent",
+  // Sevilla
+  "410": "Sevilla", "411": "Sevilla", "412": "Sevilla",
+  // Zaragoza
+  "500": "Zaragoza", "501": "Zaragoza", "502": "Zaragoza",
+  // Málaga
+  "290": "Málaga", "291": "Málaga", "292": "Málaga",
+  "295": "Marbella", "296": "Marbella",
+  // Murcia
+  "300": "Murcia", "301": "Murcia", "303": "Cartagena",
+  // Palma
+  "070": "Palma de Mallorca", "071": "Palma de Mallorca",
+  // Las Palmas
+  "350": "Las Palmas de Gran Canaria", "351": "Las Palmas de Gran Canaria",
+  // Bilbao
+  "480": "Bilbao", "481": "Bilbao",
+  // Alicante
+  "030": "Alicante", "031": "Alicante", "036": "Elche",
+  // Córdoba
+  "140": "Córdoba", "141": "Córdoba",
+  // Valladolid
+  "470": "Valladolid", "471": "Valladolid",
+  // Vigo
+  "362": "Vigo", "363": "Vigo",
+  // Gijón
+  "332": "Gijón", "333": "Gijón",
+  // A Coruña
+  "150": "A Coruña", "151": "A Coruña",
+  // Granada
+  "180": "Granada", "181": "Granada",
+  // Vitoria
+  "010": "Vitoria-Gasteiz", "011": "Vitoria-Gasteiz",
+  // Oviedo
+  "330": "Oviedo", "331": "Oviedo",
+  // Santander
+  "390": "Santander", "391": "Santander",
+  // San Sebastián
+  "200": "San Sebastián", "201": "San Sebastián",
+  // Pamplona
+  "310": "Pamplona", "311": "Pamplona",
+  // Cádiz
+  "110": "Cádiz", "116": "Jerez de la Frontera",
+  // Salamanca
+  "370": "Salamanca", "371": "Salamanca",
+  // Logroño
+  "260": "Logroño", "261": "Logroño",
+  // Tarragona
+  "430": "Tarragona", "431": "Tarragona",
+  // Lleida
+  "250": "Lleida", "251": "Lleida",
+  // Girona
+  "170": "Girona", "171": "Girona",
+  // Huelva
+  "210": "Huelva", "211": "Huelva",
+  // Almería
+  "040": "Almería", "041": "Almería",
+  // Jaén
+  "230": "Jaén", "231": "Jaén",
+  // Castellón
+  "120": "Castellón de la Plana", "121": "Castellón de la Plana",
+  // Badajoz
+  "060": "Badajoz", "061": "Badajoz",
+  // León
+  "240": "León", "241": "León",
+  // Burgos
+  "090": "Burgos", "091": "Burgos",
+  // Albacete
+  "020": "Albacete", "021": "Albacete",
+  // Ciudad Real
+  "130": "Ciudad Real",
+  // Toledo
+  "450": "Toledo", "451": "Toledo",
+  // Cáceres
+  "100": "Cáceres", "101": "Cáceres",
+  // Ceuta / Melilla
+  "510": "Ceuta", "520": "Melilla",
+};
+
+export function lookupPostalCode(cp: string): { city: string; province: string; state: string } | null {
   const cleaned = cp.trim().replace(/\s/g, "");
   if (!/^\d{5}$/.test(cleaned)) return null;
 
@@ -150,5 +240,9 @@ export function lookupPostalCode(cp: string): { province: string; state: string 
   const match = PROVINCE_MAP[prefix];
   if (!match) return null;
 
-  return { province: match.province, state: match.community };
+  // Try 3-digit prefix first for city match, fallback to province capital
+  const prefix3 = cleaned.substring(0, 3);
+  const city = CITY_MAP[prefix3] || match.province;
+
+  return { city, province: match.province, state: match.community };
 }
