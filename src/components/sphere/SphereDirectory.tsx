@@ -27,9 +27,10 @@ interface Professional {
 interface SphereDirectoryProps {
   sphereId: number;
   chapterId: string | null;
+  chapterIds?: string[] | null;
 }
 
-export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) => {
+export const SphereDirectory = ({ sphereId, chapterId, chapterIds }: SphereDirectoryProps) => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [filteredProfessionals, setFilteredProfessionals] = useState<Professional[]>([]);
   const [specializations, setSpecializations] = useState<Array<{ id: number; name: string }>>([]);
@@ -53,7 +54,7 @@ export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) =
   useEffect(() => {
     loadProfessionals();
     loadSpecializations();
-  }, [sphereId, chapterId]);
+  }, [sphereId, chapterId, chapterIds]);
 
   useEffect(() => {
     setFilteredProfessionals(professionals);
@@ -90,7 +91,12 @@ export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) =
         .eq("business_sphere_id", sphereId)
         .order("total_points", { ascending: false });
 
-      if (chapterId) {
+      // Use chapterIds array if provided, otherwise fall back to single chapterId
+      if (chapterIds && chapterIds.length > 0) {
+        query = query.in("chapter_id", chapterIds);
+      } else if (chapterIds === null) {
+        // null means no filter (show all)
+      } else if (chapterId) {
         query = query.eq("chapter_id", chapterId);
       }
 

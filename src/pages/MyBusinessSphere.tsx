@@ -5,8 +5,15 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Map, Briefcase, HandshakeIcon, MapPin, Calendar, UserPlus } from "lucide-react";
+import { Users, Map, Briefcase, HandshakeIcon, MapPin, Calendar, UserPlus, Globe } from "lucide-react";
 import { SphereDirectory } from "@/components/sphere/SphereDirectory";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SpecializationMap } from "@/components/sphere/SpecializationMap";
 import { CollaborationOpportunities } from "@/components/sphere/CollaborationOpportunities";
 import { SphereReferencesManager } from "@/components/sphere/SphereReferencesManager";
@@ -42,6 +49,11 @@ export default function MyBusinessSphere() {
   const [chapterId, setChapterId] = useState<string | null>(null);
   const [professionalId, setProfessionalId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("directory");
+  const [geoScope, setGeoScope] = useState<string>("chapter"); // chapter | city | province | community | country
+  const [allChapters, setAllChapters] = useState<ChapterInfo[]>([]);
+  const [selectedCity, setSelectedCity] = useState<string>("all");
+  const [selectedProvince, setSelectedProvince] = useState<string>("all");
+  const [selectedCommunity, setSelectedCommunity] = useState<string>("all");
 
   useEffect(() => {
     if (!user) {
@@ -73,12 +85,16 @@ export default function MyBusinessSphere() {
         setChapterId(professional.chapter_id);
         setProfessionalId(professional.id);
 
+        // Load all chapters for geographic filtering
+        const { data: chaptersData } = await supabase
+          .from("chapters")
+          .select("id, name, apellido, city, state, member_count, meeting_schedule, location_details")
+          .order("name");
+        
+        if (chaptersData) setAllChapters(chaptersData);
+
         if (professional.chapter_id) {
-          const { data: chapter } = await supabase
-            .from("chapters")
-            .select("id, name, apellido, city, state, member_count, meeting_schedule, location_details")
-            .eq("id", professional.chapter_id)
-            .single();
+          const chapter = chaptersData?.find(c => c.id === professional.chapter_id);
           if (chapter) setChapterInfo(chapter);
         }
       }
@@ -86,6 +102,46 @@ export default function MyBusinessSphere() {
       console.error("Error loading data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Compute geographic filter values
+  const cities = [...new Set(allChapters.map(c => c.city))].sort();
+  const provinces = [...new Set(allChapters.map(c => c.state))].sort();
+  // For now communities = provinces since we don't have a separate community field
+  const communities = provinces;
+
+  // Compute which chapter IDs to filter by based on geo scope
+  const getGeoFilteredChapterIds = (): string[] | null => {
+    switch (geoScope) {
+      case "chapter":
+        return chapterId ? [chapterId] : null;
+      case "city":
+        if (selectedCity === "all") return allChapters.map(c => c.id);
+        return allChapters.filter(c => c.city === selectedCity).map(c => c.id);
+      case "province":
+        if (selectedProvince === "all") return allChapters.map(c => c.id);
+        return allChapters.filter(c => c.state === selectedProvince).map(c => c.id);
+      case "community":
+        if (selectedCommunity === "all") return allChapters.map(c => c.id);
+        return allChapters.filter(c => c.state === selectedCommunity).map(c => c.id);
+      case "country":
+        return null; // All chapters = whole country
+      default:
+        return chapterId ? [chapterId] : null;
+    }
+  };
+
+  const geoChapterIds = getGeoFilteredChapterIds();
+
+  const getScopeLabel = () => {
+    switch (geoScope) {
+      case "chapter": return chapterInfo ? `${chapterInfo.name}` : "Tu Tribu";
+      case "city": return selectedCity === "all" ? "Todas las ciudades" : selectedCity;
+      case "province": return selectedProvince === "all" ? "Todas las provincias" : selectedProvince;
+      case "community": return selectedCommunity === "all" ? "Todas las CC.AA." : selectedCommunity;
+      case "country": return "Toda España";
+      default: return "Tu Tribu";
     }
   };
 
@@ -187,6 +243,73 @@ export default function MyBusinessSphere() {
         </div>
       )}
 
+      {/* Geographic scope selector */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Globe className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Alcance geográfico</span>
+            <Badge variant="outline" className="text-xs">{getScopeLabel()}</Badge>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            <Select value={geoScope} onValueChange={(v) => setGeoScope(v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Ámbito" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="chapter">Mi Tribu</SelectItem>
+                <SelectItem value="city">Ciudad</SelectItem>
+                <SelectItem value="province">Provincia</SelectItem>
+                <SelectItem value="community">Comunidad Autónoma</SelectItem>
+                <SelectItem value="country">Todo el País</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {geoScope === "city" && (
+              <Select value={selectedCity} onValueChange={setSelectedCity}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Ciudad" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las ciudades</SelectItem>
+                  {cities.map(city => (
+                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {geoScope === "province" && (
+              <Select value={selectedProvince} onValueChange={setSelectedProvince}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Provincia" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las provincias</SelectItem>
+                  {provinces.map(p => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {geoScope === "community" && (
+              <Select value={selectedCommunity} onValueChange={setSelectedCommunity}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Comunidad Autónoma" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las CC.AA.</SelectItem>
+                  {communities.map(c => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="directory" className="flex items-center gap-2">
@@ -204,7 +327,7 @@ export default function MyBusinessSphere() {
         </TabsList>
 
         <TabsContent value="directory" className="mt-6">
-          <SphereDirectory sphereId={sphereInfo.id} chapterId={chapterId} />
+          <SphereDirectory sphereId={sphereInfo.id} chapterId={chapterId} chapterIds={geoChapterIds} />
         </TabsContent>
 
         <TabsContent value="map" className="mt-6">
