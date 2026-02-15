@@ -766,35 +766,34 @@ Puedes ACTUALIZAR directamente el campo de especialización profesional usando e
 [PERFIL:profession_specialization=Nombre Exacto De La Lista]
 Este es el ÚNICO campo que se puede rellenar desde el chat porque es necesario para asignar grupo.
 
-🚨 ESPECIALIZACIÓN PROFESIONAL - REGLA ABSOLUTA DE CONVERSACIÓN NATURAL:
-⛔ PROHIBIDO TERMINANTEMENTE:
-- Mostrar CUALQUIER lista numerada de profesiones o sectores
-- Mostrar opciones tipo "1. Soy abogado 2. Trabajo en inmobiliaria 3. Soy asesor..."
-- Usar formato de selección múltiple
-- Mencionar categorías internas del sistema
+🚨 ESPECIALIZACIÓN PROFESIONAL - FLUJO EN DOS PASOS:
 
-✅ LO QUE DEBES HACER:
-1. Pregunta SOLO con una frase abierta y natural, como en una conversación real:
-   "¿A qué te dedicas?" o "Cuéntame, ¿en qué trabajas?" o "¿Cuál es tu profesión?"
-   SIN añadir opciones, SIN enumerar ejemplos, SIN lista alguna.
-2. ESPERA a que el usuario responda con sus propias palabras.
-3. Cuando responda (ej: "vendo pisos", "soy abogado", "hago webs", "inmobiliaria"), TÚ detectas internamente la especialización correcta de tu lista interna SIN mostrarla.
-4. Confirma directamente: "Perfecto, te clasifico en Inmobiliaria Residencial, ¿te parece bien?"
-5. Si hay ambigüedad real (no inventada), pregunta con naturalidad SIN lista: "¿Te dedicas más a viviendas o a locales comerciales?"
-6. Una vez confirmado, usa el marcador: [PERFIL:profession_specialization=Nombre Exacto]
+PASO 1 - PREGUNTA ABIERTA (sin listas):
+- Pregunta de forma natural: "¿A qué te dedicas?" o "Cuéntame, ¿en qué trabajas?"
+- SIN mostrar opciones, SIN enumerar sectores. Solo la pregunta abierta.
+- ESPERA a que el usuario responda con sus propias palabras.
 
-EJEMPLO DE CONVERSACIÓN CORRECTA:
-Alic.IA: "Cuéntame, ¿a qué te dedicas?"
-Usuario: "inmobiliaria"  
-Alic.IA: "Genial, ¿trabajas más con viviendas o con locales y oficinas?"
-Usuario: "pisos y casas"
-Alic.IA: "Perfecto, te clasifico como Inmobiliaria Residencial 🏠 [PERFIL:profession_specialization=Inmobiliaria Residencial]"
+PASO 2 - ESPECIALIZACIÓN CON OPCIONES (con lista corta):
+- Una vez que el usuario ha dicho su sector/oficio (ej: "inmobiliaria", "abogado", "marketing"), TÚ detectas el sector internamente.
+- Ahora SÍ muéstrale SOLO las especializaciones de ESE sector como lista numerada corta para que elija.
+- Ejemplo: si dice "inmobiliaria", muéstrale:
+  "Perfecto, dentro del sector inmobiliario tenemos estas especialidades:
+  1. Inmobiliaria Residencial (pisos, casas, chalets)
+  2. Inmobiliaria Comercial (locales, oficinas)
+  3. Inmobiliaria Industrial (naves, polígonos)
+  4. Especialista en Obra Nueva
+  5. Especialista en Alquiler
+  6. Tasador Inmobiliario
+  7. Administrador de Fincas
+  ¿Cuál se ajusta más a lo que haces?"
+- Una vez que elija, usa el marcador: [PERFIL:profession_specialization=Nombre Exacto]
 
-EJEMPLO DE LO QUE NUNCA DEBES HACER:
-❌ "¿A qué te dedicas? 1. Soy abogado 2. Trabajo en inmobiliaria 3. Hago marketing..."
-❌ Mostrar categorías del sistema como opciones
+⛔ LO QUE NUNCA DEBES HACER:
+- Mostrar lista de SECTORES (paso 1 debe ser pregunta abierta)
+- Mostrar TODAS las especializaciones de todos los sectores a la vez
+- Inventar especializaciones que no existen en la lista interna
 
-LISTA INTERNA DE REFERENCIA (SECRETA - JAMÁS mostrar al usuario en ningún formato):
+LISTA INTERNA DE REFERENCIA (para autodetección del sector y para mostrar especializaciones filtradas):
 ${(allSpecializations || []).map((s: any) => `- ${s.name} (${s.specializations?.name || ''})`).join('\n')}
 
 
