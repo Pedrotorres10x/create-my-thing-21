@@ -24,8 +24,6 @@ import {
 const miniProfileSchema = z.object({
   full_name: z.string().min(2, "Nombre muy corto").max(100, "Nombre muy largo"),
   phone: z.string().min(9, "Teléfono inválido").max(20, "Teléfono muy largo"),
-  address: z.string().min(5, "Dirección muy corta").max(300, "Dirección muy larga"),
-  city: z.string().min(2, "Ciudad obligatoria").max(100, "Ciudad muy larga"),
 });
 
 const profileSchema = z.object({
@@ -278,8 +276,6 @@ export function ProfileForm() {
         const validated = miniProfileSchema.parse({
           full_name: formData.full_name,
           phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
         });
         setLoading(true);
 
@@ -288,10 +284,6 @@ export function ProfileForm() {
           full_name: validated.full_name,
           email: user.email || "",
           phone: validated.phone,
-          address: validated.address,
-          city: validated.city,
-          state: formData.state || null,
-          postal_code: formData.postal_code || null,
           referred_by_code: formData.referred_by_code || null,
           status: "waiting_approval",
         };
@@ -472,71 +464,8 @@ export function ProfileForm() {
                 />
               </div>
 
-              {/* Address */}
-              <div className="space-y-1.5">
-                <Label htmlFor="mini_address" className="text-sm font-medium">Dirección profesional *</Label>
-                <Input
-                  id="mini_address"
-                  value={formData.address}
-                  onChange={(e) => updateField("address", e.target.value)}
-                  placeholder="Calle, número, piso..."
-                  required
-                  maxLength={300}
-                  className="h-12 text-base"
-                />
-                <p className="text-[11px] text-muted-foreground">Tu domicilio o lugar de trabajo. Genera confianza profesional.</p>
-              </div>
 
-              {/* City with autocomplete */}
-              <div className="space-y-1.5 relative">
-                <Label htmlFor="mini_city" className="text-sm font-medium">Ciudad *</Label>
-                <Input
-                  id="mini_city"
-                  value={formData.city}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    updateField("city", val);
-                    const results = searchCities(val);
-                    setCitySuggestions(results);
-                    setShowCitySuggestions(results.length > 0);
-                  }}
-                  onFocus={() => {
-                    if (citySuggestions.length > 0) setShowCitySuggestions(true);
-                  }}
-                  onBlur={() => {
-                    setTimeout(() => setShowCitySuggestions(false), 200);
-                  }}
-                  placeholder="Escribe tu ciudad..."
-                  required
-                  maxLength={100}
-                  className="h-12 text-base"
-                  autoComplete="off"
-                />
-                {showCitySuggestions && citySuggestions.length > 0 && (
-                  <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
-                    {citySuggestions.map((c, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        className="w-full text-left px-3 py-2 hover:bg-accent text-sm transition-colors"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          setFormData(prev => ({
-                            ...prev,
-                            city: c.city,
-                            state: c.community,
-                          }));
-                          setCitySuggestions([]);
-                          setShowCitySuggestions(false);
-                        }}
-                      >
-                        <span className="font-medium">{c.city}</span>
-                        <span className="text-muted-foreground ml-2 text-xs">{c.province}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+
 
               {/* Referral code — collapsed, subtle */}
               <div className="space-y-1.5">
