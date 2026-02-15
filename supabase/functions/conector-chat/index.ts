@@ -363,7 +363,8 @@ serve(async (req) => {
           .from('chapters')
           .select('id, name, city, state, member_count')
           .eq('city', profile.city)
-          .eq('state', profile.state);
+          .eq('state', profile.state)
+          .order('member_count', { ascending: false });
         
         if (chapters) {
           chaptersInArea = chapters;
@@ -1153,10 +1154,10 @@ ${!isProfileIncomplete && !hasNoChapter ? `
 ${!isProfileIncomplete && hasNoChapter ? `
 ASIGNACIÓN DE TRIBU (SOLO se muestra porque el perfil está 100% completo):
 
-El usuario necesita unirse a una Tribu o crear una nueva. Ofrécele las opciones:
+REGLA DE ORO - DENSIDAD: Siempre priorizar RELLENAR tribus existentes. Queremos grupos GRANDES y densos. NO nos interesa tener 2 grupos de 25 si podemos tener 1 de 50. Solo ofrecer crear una nueva tribu si NO hay ninguna en la zona o si TODAS las existentes tienen un conflicto de especialización irreconciliable (misma profesión + misma especialización).
 
 ${chaptersInArea.length > 0 ? 
-  `Hay ${chaptersInArea.length} Tribu(s) disponible(s) en su zona:
+  `Hay ${chaptersInArea.length} Tribu(s) disponible(s) en su zona (ordenadas por tamaño, de mayor a menor):
 ${chaptersInArea.map((ch: any) => {
   const existingPros = (ch as any).existing_professionals || [];
   const sameProfession = existingPros.filter((p: any) => 
@@ -1164,19 +1165,22 @@ ${chaptersInArea.map((ch: any) => {
     p.profession_specializations.name.toLowerCase() === profile.profession_specializations?.name?.toLowerCase()
   );
   const hasSameProfession = sameProfession.length > 0;
-  return '  · "' + ch.name + '" (' + ch.city + ') - ' + ch.member_count + ' miembros' + (hasSameProfession ? ' ⚠️ YA HAY ' + sameProfession.length + ' profesional(es) de ' + (sameProfession[0]?.profession_specializations?.name || '') + ': ' + sameProfession.map((p: any) => p.full_name).join(', ') : '');
+  return '  · "' + ch.name + '" (' + ch.city + ') - ' + ch.member_count + ' miembros' + (hasSameProfession ? ' ⚠️ YA HAY ' + sameProfession.length + ' profesional(es) de ' + (sameProfession[0]?.profession_specializations?.name || '') + ': ' + sameProfession.map((p: any) => p.full_name).join(', ') : ' ✅ SIN CONFLICTO');
 }).join('\n')}
 
-Presenta las opciones así:
-"${firstName}, perfil listo al 100% 🚀 Ahora toca lo MÁS importante: tu Tribu. Tienes estas opciones:
-${chaptersInArea.map((ch: any, i: number) => (i + 1) + '. Unirte a "' + ch.name + '" (' + ch.city + ') - ' + ch.member_count + ' miembros').join('\n')}
-${chaptersInArea.length + 1}. Crear una Tribu NUEVA en tu zona
-
-¿Cuál prefieres?"
+ESTRATEGIA DE PRESENTACIÓN:
+1. Si hay UNA tribu sin conflicto → RECOMIÉNDALA DIRECTAMENTE como la mejor opción. No ofrezcas crear nueva.
+   "${firstName}, perfil listo al 100% 🚀 Te recomiendo unirte a [nombre] ([ciudad]), que ya tiene [N] miembros y necesita un [profesión] como tú.
+   1) Unirme a [nombre] ✅ (recomendado)
+   2) Prefiero otra opción
+   ¿Qué dices?"
+2. Si hay VARIAS tribus sin conflicto → recomienda la MÁS GRANDE (más miembros) pero lista las demás.
+3. Si TODAS tienen conflicto de profesión → aplica la lógica de especialización (pregunta cerrada). Solo si el conflicto es irreconciliable (misma especialización exacta en TODAS), ofrece crear nueva.
+4. NUNCA ofrezcas "crear tribu nueva" como opción principal si hay tribus disponibles sin conflicto.
 
 CUANDO EL USUARIO ELIJA:
 - Si elige unirse a una tribu existente: usa el marcador [ASIGNAR_TRIBU:chapter_id=ID_DEL_CHAPTER] al final del mensaje
-- Si elige crear una nueva: pregúntale el nombre para la tribu, y usa [CREAR_TRIBU:name=NOMBRE,city=${profile?.city || ''},state=${profile?.state || ''}]
+- Si elige crear una nueva (solo si no hay otra opción viable): pregúntale el nombre para la tribu, y usa [CREAR_TRIBU:name=NOMBRE,city=${profile?.city || ''},state=${profile?.state || ''}]
 
 LÓGICA DE CONFLICTO DE PROFESIÓN (al unirse a tribu existente):
 - Si en esa tribu YA existe alguien con la MISMA profesión:
@@ -1184,7 +1188,7 @@ LÓGICA DE CONFLICTO DE PROFESIÓN (al unirse a tribu existente):
      Ejemplo inmobiliaria: "Ya hay un inmobiliario en esta Tribu. ¿Tu especialidad? 1) Residencial 2) Comercial 3) Naves industriales 4) Lujo 5) Alquiler 6) Otro"
   2. COMPARA con la especialización del miembro existente:
      - Si las especializaciones son CLARAMENTE DIFERENTES (ej: uno es residencial y otro naves industriales) → PUEDEN CONVIVIR pero necesitan aprobación.
-     - Si son IGUALES o MUY SIMILARES → NO pueden convivir, ofrecer otra tribu o crear una nueva.
+     - Si son IGUALES o MUY SIMILARES → NO pueden convivir, ofrecer otra tribu más grande O como último recurso crear una nueva.
   3. Si pueden convivir (especializaciones diferentes):
      a. Usa [CREAR_CONFLICTO:chapter_id=ID,existing_id=ID_EXISTENTE,specialization=LO_QUE_ELIGIÓ]
      b. Explica: "${firstName}, como ya hay un [profesión] en la Tribu (especializado en [X]), necesitamos 2 aprobaciones:
@@ -1198,7 +1202,7 @@ REGLA CLAVE DE CONVIVENCIA: Dos profesionales del MISMO oficio PUEDEN estar en l
 DATOS DE LOS CHAPTERS PARA MARCADORES (incluye especialización para detectar solapamientos):
 ${chaptersInArea.map((ch: any) => {
   const existingPros = (ch as any).existing_professionals || [];
-  return 'Chapter "' + ch.name + '" ID: ' + ch.id + (existingPros.length > 0 ? ' - Profesionales: ' + existingPros.map((p: any) => p.full_name + ' (ID: ' + p.id + ', ' + (p.profession_specializations?.name || 'sin especialidad') + ', espec: ' + (p.business_description || 'no definida') + ')').join('; ') : '');
+  return 'Chapter "' + ch.name + '" ID: ' + ch.id + ' (' + ch.member_count + ' miembros)' + (existingPros.length > 0 ? ' - Profesionales: ' + existingPros.map((p: any) => p.full_name + ' (ID: ' + p.id + ', ' + (p.profession_specializations?.name || 'sin especialidad') + ', espec: ' + (p.business_description || 'no definida') + ')').join('; ') : '');
 }).join('\n')}` :
   `No hay Tribus en su zona aún.
 Ofrécele crear una nueva:
