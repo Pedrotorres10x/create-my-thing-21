@@ -1461,6 +1461,26 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
     console.log('System prompt length:', systemPrompt.length, 'chars, approx', Math.round(systemPrompt.length / 4), 'tokens');
     console.log('Messages count:', messages.length);
 
+    // CRITICAL FIX: When profile is incomplete and it's a session start, force onboarding mode
+    let finalMessages = [...messages];
+    if (isProfileIncomplete && messages.length > 0 && messages[messages.length - 1].content === '[INICIO_SESION]') {
+      // Replace INICIO_SESION with ONBOARDING to trigger full profile completion flow
+      finalMessages[finalMessages.length - 1] = { ...finalMessages[finalMessages.length - 1], content: '[ONBOARDING]' };
+      console.log('FORCED ONBOARDING: Profile incomplete, replacing INICIO_SESION with ONBOARDING');
+    }
+
+    // Inject a hard system reminder about missing fields right before the AI call
+    const aiMessages: any[] = [
+      { role: "system", content: systemPrompt },
+    ];
+    if (isProfileIncomplete) {
+      aiMessages.push({
+        role: "system",
+        content: `🚨 RECORDATORIO OBLIGATORIO: El perfil de ${firstName} NO está completo. Le faltan estos campos: ${profileMissing.join(', ')}. Tu respuesta DEBE pedir el PRIMER campo de la lista. NO digas que el perfil está completo. NO hables de otra cosa que no sea completar el perfil. Usa marcadores [PERFIL:campo=valor] cuando el usuario dé la info. El PRIMER campo pendiente es: ${profileMissing[0]}.`
+      });
+    }
+    aiMessages.push(...finalMessages);
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -1469,10 +1489,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
+        messages: aiMessages,
         stream: true,
         max_tokens: 800,
       }),
