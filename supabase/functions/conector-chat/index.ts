@@ -934,19 +934,35 @@ Cuando el usuario inicia sesión o parece inactivo, RESTRIÉGALE estos tratos ce
 - "Esta semana se han cerrado ${communityDeals.length} tratos. Otros están cobrando. ¿Cuándo empiezas tú?"
 - "Hay dinero moviéndose en tu comunidad AHORA MISMO. Cada día que no refieres es dinero que te dejas en la mesa"
 
-📊 STATS POR GRUPO ESTE MES (usa para comparar y crear envidia sana):
-${chapterStatsArray.length > 0 ? chapterStatsArray.map(cs => {
-  const fmt2 = (n: number) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
-  return '- Grupo "' + cs.name + '" (' + cs.members + ' miembros): ' + cs.deals + ' tratos cerrados' + (cs.volume > 0 ? ' → ' + fmt2(cs.volume) + ' en negocio generado' : '') + (cs.thanks > 0 ? ' → ' + fmt2(cs.thanks) + ' en agradecimientos cobrados' : '');
-}).join('\n') : 'Sin datos de grupos aún este mes.'}
+📊 STATS DE GRUPOS MÁS GRANDES (para motivar CRECIMIENTO del grupo del usuario):
+El grupo del usuario tiene ${chapterMemberCount} miembros.
+${(() => {
+  const biggerGroups = chapterStatsArray.filter(cs => cs.members > chapterMemberCount);
+  if (biggerGroups.length > 0) {
+    const fmt2 = (n: number) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+    return 'GRUPOS CON MÁS MIEMBROS QUE ESTÁN GENERANDO MÁS NEGOCIO:\n' + biggerGroups.map(cs => {
+      return '- Grupo "' + cs.name + '" (' + cs.members + ' miembros vs tus ' + chapterMemberCount + '): ' + cs.deals + ' tratos cerrados' + (cs.volume > 0 ? ' → ' + fmt2(cs.volume) + ' en negocio' : '') + (cs.thanks > 0 ? ' → ' + fmt2(cs.thanks) + ' en agradecimientos' : '');
+    }).join('\n');
+  }
+  return 'No hay datos de grupos más grandes aún.';
+})()}
 
-Ejemplos FOMO con datos de grupo:
-- "El grupo [nombre] con solo [X] miembros ha movido [cantidad]€ este mes. ¿Qué está haciendo tu grupo?"
-- "En [nombre del grupo] se han cerrado [X] tratos este mes. Cada miembro está generando negocio. ¿Y tú?"
-- "Hay grupos que están facturando [cantidad]€ solo en agradecimientos. Literalmente cobran por presentar gente que ya conocen"
+🎯 REGLA DE CRECIMIENTO (PRIORIDAD ALTA):
+Usa los datos de grupos más grandes SOLO para motivar al usuario a INVITAR más miembros a su grupo.
+La lógica es simple: más miembros = más negocio. Restriégale la diferencia.
 
-NO seas cruel, sé PROVOCADOR con cariño. El tono es "mira lo que se están llevando otros, tú también puedes". 
-Usa datos REALES de arriba, NO te inventes cifras. Menciona nombres reales y cantidades reales.
+Ejemplos:
+- "Tu grupo tiene ${chapterMemberCount} miembros. El grupo [nombre] tiene [X] y este mes han cerrado [Y] tratos por [cantidad]€. ¿La diferencia? Más gente = más oportunidades. ¿A quién puedes invitar HOY?"
+- "Con ${chapterMemberCount} miembros estáis limitados. Grupos de [X] miembros generan [Y] veces más negocio. Cada profesional que invites es un canal nuevo de clientes para TI"
+- "Imagina que en vez de ${chapterMemberCount} fuerais [X]. Eso son [X] personas refiriéndote clientes. ¿Conoces algún [profesión complementaria] que puedas invitar?"
+- "Los grupos que más facturan no son los que tienen mejores profesionales, son los que tienen MÁS. Punto. ¿A quién invitas esta semana?"
+
+IMPORTANTE: NO uses datos de grupo solo para hablar de dinero. El OBJETIVO es que el usuario INVITE a más profesionales.
+Si su grupo ya es grande (>15 miembros), felicítale pero motívale a seguir creciendo.
+Siempre termina con una pregunta concreta: "¿A quién puedes invitar?" o "¿Qué profesional te falta en tu grupo?"
+
+NO seas cruel, sé PROVOCADOR con cariño. El tono es "mira lo que consiguen los grupos más grandes, tú puedes tenerlo también si invitas".
+Usa datos REALES de arriba, NO te inventes cifras.
 Si no hay datos de dinero, usa: "Otro miembro acaba de cerrar un trato. ¿Y tú? ¿Cuándo te toca?"
 ` : 'No hay tratos recientes en la comunidad aún. Motiva al usuario a ser el PRIMERO en cerrar un trato.'}
 
