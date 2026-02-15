@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { ArrowRight, Loader2, Sparkles, Camera, User, Building2, MapPin, FileText, Rocket, Users, TrendingUp, Shield } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles, Camera, User, Building2, MapPin, FileText, Rocket, Users, TrendingUp, Shield, CheckCircle2, XCircle } from "lucide-react";
+import { validateDNI, validateCIF, lookupPostalCode } from "@/lib/spanish-validators";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -72,7 +73,8 @@ export function ProfileForm() {
   const [professionSpecializations, setProfessionSpecializations] = useState<ProfessionSpecialization[]>([]);
   const [selectedSpecializationId, setSelectedSpecializationId] = useState<number | null>(null);
   const [selectedProfessionSpecId, setSelectedProfessionSpecId] = useState<number | null>(null);
-
+  const [nifValidation, setNifValidation] = useState<{ valid: boolean; message: string }>({ valid: false, message: "" });
+  const [cifValidation, setCifValidation] = useState<{ valid: boolean; message: string }>({ valid: false, message: "" });
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -656,10 +658,25 @@ export function ProfileForm() {
               <Input
                 id="nif_cif"
                 value={formData.nif_cif}
-                onChange={(e) => updateField("nif_cif", e.target.value.toUpperCase())}
-                placeholder="12345678A"
+                onChange={(e) => {
+                  const val = e.target.value.toUpperCase();
+                  updateField("nif_cif", val);
+                  const dniResult = validateDNI(val);
+                  if (dniResult.message) {
+                    setNifValidation({ valid: dniResult.valid, message: dniResult.message });
+                  } else {
+                    const cifResult = validateCIF(val);
+                    setNifValidation({ valid: cifResult.valid, message: cifResult.message });
+                  }
+                }}
+                placeholder="12345678A o B12345678"
                 maxLength={15}
               />
+              {nifValidation.message && (
+                <p className={`text-xs ${nifValidation.valid ? "text-green-600" : "text-destructive"}`}>
+                  {nifValidation.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -847,10 +864,19 @@ export function ProfileForm() {
               <Input
                 id="company_cif"
                 value={formData.company_cif}
-                onChange={(e) => updateField("company_cif", e.target.value.toUpperCase())}
+                onChange={(e) => {
+                  const val = e.target.value.toUpperCase();
+                  updateField("company_cif", val);
+                  setCifValidation(validateCIF(val));
+                }}
                 placeholder="B12345678"
                 maxLength={15}
               />
+              {cifValidation.message && (
+                <p className={`text-xs ${cifValidation.valid ? "text-green-600" : "text-destructive"}`}>
+                  {cifValidation.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2 sm:col-span-2">
@@ -915,7 +941,23 @@ export function ProfileForm() {
               <Input
                 id="postal_code"
                 value={formData.postal_code}
-                onChange={(e) => updateField("postal_code", e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  updateField("postal_code", val);
+                  const result = lookupPostalCode(val);
+                  if (result) {
+                    setFormData(prev => ({
+                      ...prev,
+                      postal_code: val,
+                      city: prev.city || result.province,
+                      state: result.state,
+                    }));
+                    toast({
+                      title: "📍 Ubicación detectada",
+                      description: `${result.province}, ${result.state}`,
+                    });
+                  }
+                }}
                 placeholder="28001"
                 maxLength={10}
               />
