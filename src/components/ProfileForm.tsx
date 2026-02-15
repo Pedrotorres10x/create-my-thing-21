@@ -77,6 +77,7 @@ export function ProfileForm() {
   const [cifValidation, setCifValidation] = useState<{ valid: boolean; message: string }>({ valid: false, message: "" });
   const [citySuggestions, setCitySuggestions] = useState<SpanishCity[]>([]);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -269,6 +270,7 @@ export function ProfileForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    setFieldErrors({});
 
     try {
       if (!hasProfile) {
@@ -352,8 +354,14 @@ export function ProfileForm() {
       }
     } catch (error: any) {
       if (error instanceof z.ZodError) {
+        const errors: Record<string, string> = {};
+        error.errors.forEach(err => {
+          const field = err.path[0]?.toString();
+          if (field) errors[field] = err.message;
+        });
+        setFieldErrors(errors);
         toast({
-          title: "Revisa los datos",
+          title: "Revisa los campos marcados en rojo",
           description: error.errors[0]?.message || "Datos inválidos",
           variant: "destructive",
         });
@@ -371,7 +379,18 @@ export function ProfileForm() {
 
   const updateField = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error for this field when user starts typing
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
   };
+
+  const fieldErrorClass = (field: string) =>
+    fieldErrors[field] ? "border-destructive ring-1 ring-destructive/30 focus-visible:ring-destructive" : "";
 
   const initials = formData.full_name
     ? formData.full_name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()
@@ -435,9 +454,10 @@ export function ProfileForm() {
                   placeholder="Nombre y apellidos"
                   required
                   maxLength={100}
-                  className="h-12 text-base"
+                  className={`h-12 text-base ${fieldErrorClass("full_name")}`}
                   autoFocus
                 />
+                {fieldErrors.full_name && <p className="text-xs text-destructive font-medium">{fieldErrors.full_name}</p>}
               </div>
 
               <div className="space-y-1.5">
@@ -460,8 +480,9 @@ export function ProfileForm() {
                   placeholder="+34 600 000 000"
                   required
                   maxLength={20}
-                  className="h-12 text-base"
+                  className={`h-12 text-base ${fieldErrorClass("phone")}`}
                 />
+                {fieldErrors.phone && <p className="text-xs text-destructive font-medium">{fieldErrors.phone}</p>}
               </div>
 
 
@@ -578,7 +599,9 @@ export function ProfileForm() {
                 placeholder="Tu nombre y apellidos"
                 required
                 maxLength={100}
+                className={fieldErrorClass("full_name")}
               />
+              {fieldErrors.full_name && <p className="text-xs text-destructive font-medium">{fieldErrors.full_name}</p>}
             </div>
 
             <div className="space-y-2">
@@ -601,7 +624,9 @@ export function ProfileForm() {
                 placeholder="+34 600 000 000"
                 required
                 maxLength={20}
+                className={fieldErrorClass("phone")}
               />
+              {fieldErrors.phone && <p className="text-xs text-destructive font-medium">{fieldErrors.phone}</p>}
             </div>
 
             <div className="space-y-2">
@@ -863,7 +888,9 @@ export function ProfileForm() {
                 placeholder="Calle, número, piso..."
                 required
                 maxLength={300}
+                className={fieldErrorClass("address")}
               />
+              {fieldErrors.address && <p className="text-xs text-destructive font-medium">{fieldErrors.address}</p>}
               <p className="text-xs text-muted-foreground">Tu domicilio o lugar de trabajo. Obligatoria para darte de alta.</p>
             </div>
 
@@ -883,13 +910,14 @@ export function ProfileForm() {
                   if (citySuggestions.length > 0) setShowCitySuggestions(true);
                 }}
                 onBlur={() => {
-                  // Delay to allow click on suggestion
                   setTimeout(() => setShowCitySuggestions(false), 200);
                 }}
                 placeholder="Escribe tu ciudad..."
                 maxLength={100}
                 autoComplete="off"
+                className={fieldErrorClass("city")}
               />
+              {fieldErrors.city && <p className="text-xs text-destructive font-medium">{fieldErrors.city}</p>}
               {showCitySuggestions && citySuggestions.length > 0 && (
                 <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
                   {citySuggestions.map((c, i) => (
