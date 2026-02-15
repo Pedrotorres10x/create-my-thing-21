@@ -2,49 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CONECTOR — Carbon + Green Professional System */
+/* CONECTOR — Mediterranean Coast */
 
 @layer base {
   :root {
-    /* CONECTOR — Mediterranean Professional */
-    --background: 30 12% 15%;
-    --foreground: 35 20% 92%;
-    --card: 30 10% 19%;
-    --card-foreground: 35 20% 92%;
-    --popover: 30 10% 19%;
-    --popover-foreground: 35 20% 92%;
-    --primary: 145 55% 38%;
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+    --primary: 24 90% 52%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 30 8% 24%;
-    --secondary-foreground: 35 15% 70%;
-    --muted: 30 8% 24%;
-    --muted-foreground: 30 8% 55%;
-    --accent: 30 8% 26%;
-    --accent-foreground: 35 15% 88%;
+    --secondary: 210 30% 94%;
+    --secondary-foreground: 215 20% 35%;
+    --muted: 210 20% 95%;
+    --muted-foreground: 215 10% 45%;
+    --accent: 205 80% 50%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 30 8% 26%;
-    --input: 30 8% 26%;
-    --ring: 145 55% 38%;
-    --radius: 0.5rem;
-    --shadow-card: 0 2px 8px hsl(30 20% 6% / 0.25), 0 0 0 1px hsl(30 8% 26%);
+    --border: 210 15% 90%;
+    --input: 210 15% 90%;
+    --ring: 24 90% 52%;
+    --radius: 0.75rem;
+    --shadow-card: 0 2px 12px hsl(210 20% 50% / 0.08), 0 0 0 1px hsl(210 15% 90%);
 
-    /* Alicia AI — olive green */
-    --alicia-primary: 145 55% 38%;
-    --alicia-secondary: 145 45% 44%;
-    --alicia-accent: 145 50% 40%;
-    --alicia-gradient: linear-gradient(135deg, hsl(145 55% 38%) 0%, hsl(150 40% 30%) 100%);
-    --alicia-glow: 0 0 24px hsl(145 55% 38% / 0.12);
-    --alicia-shadow: 0 4px 20px hsl(145 55% 38% / 0.08);
+    /* Alicia AI — Mediterranean orange */
+    --alicia-primary: 24 90% 52%;
+    --alicia-secondary: 205 80% 50%;
+    --alicia-accent: 24 85% 55%;
+    --alicia-gradient: linear-gradient(135deg, hsl(24 90% 52%) 0%, hsl(205 80% 50%) 100%);
+    --alicia-glow: 0 0 24px hsl(24 90% 52% / 0.15);
+    --alicia-shadow: 0 4px 20px hsl(205 80% 50% / 0.1);
 
-    --sidebar-background: 30 12% 12%;
-    --sidebar-foreground: 35 12% 68%;
-    --sidebar-primary: 145 55% 38%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 20% 35%;
+    --sidebar-primary: 24 90% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 10% 20%;
-    --sidebar-accent-foreground: 35 15% 88%;
-    --sidebar-border: 30 8% 22%;
-    --sidebar-ring: 145 55% 38%;
+    --sidebar-accent: 210 30% 96%;
+    --sidebar-accent-foreground: 215 25% 15%;
+    --sidebar-border: 210 15% 92%;
+    --sidebar-ring: 24 90% 52%;
   }
 }
 
@@ -64,7 +63,7 @@
   h1, h2, h3, h4, h5, h6 {
     letter-spacing: -0.025em;
     font-weight: 600;
-    color: hsl(0 0% 95%);
+    color: hsl(215 25% 15%);
   }
 }
 
@@ -105,7 +104,7 @@
 
   @keyframes pulse-glow {
     0%, 100% { box-shadow: var(--alicia-glow); }
-    50% { box-shadow: 0 0 36px hsl(145 65% 42% / 0.25); }
+    50% { box-shadow: 0 0 36px hsl(24 90% 52% / 0.2); }
   }
 
   @keyframes gradient {
@@ -114,14 +113,13 @@
   }
 
   .backdrop-glass {
-    background: hsl(30 12% 11% / 0.8);
+    background: hsl(0 0% 100% / 0.85);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid hsl(30 8% 20%);
+    border: 1px solid hsl(210 15% 92%);
   }
 
-  /* Success green glow for ranking/metrics */
   .glow-success {
-    box-shadow: 0 0 20px hsl(145 65% 42% / 0.15);
+    box-shadow: 0 0 20px hsl(24 90% 52% / 0.12);
   }
 }

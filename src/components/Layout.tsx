@@ -49,24 +49,24 @@ export function Layout({ children }: LayoutProps) {
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0 relative">
-          {/* Mediterranean background */}
+          {/* Mediterranean coast background */}
           <div 
             className="absolute inset-0 pointer-events-none z-0"
             style={{ 
               backgroundImage: `url(${mediterraneanBg})`, 
               backgroundSize: 'cover', 
-              backgroundPosition: 'center top',
-              opacity: 0.06
+              backgroundPosition: 'center',
+              opacity: 0.08
             }}
           />
-          {/* Warm top glow */}
-          <div className="absolute top-0 left-0 right-0 h-72 pointer-events-none z-0"
-            style={{ background: 'radial-gradient(ellipse 80% 100% at 50% -20%, hsl(30 40% 50% / 0.08) 0%, transparent 70%)' }}
+          {/* Soft blue-orange gradient overlay */}
+          <div className="absolute top-0 left-0 right-0 h-80 pointer-events-none z-0"
+            style={{ background: 'linear-gradient(180deg, hsl(205 80% 55% / 0.04) 0%, hsl(24 90% 52% / 0.02) 50%, transparent 100%)' }}
           />
           <header className="h-12 border-b border-border flex items-center justify-between px-5 bg-background/95 backdrop-blur-sm sticky top-0 z-20">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <span className="text-xs font-bold tracking-[0.15em] uppercase text-muted-foreground">CONECTOR</span>
+              <span className="text-xs font-bold tracking-[0.15em] uppercase text-primary">CONECTOR</span>
             </div>
             
             <div className="flex items-center gap-1">

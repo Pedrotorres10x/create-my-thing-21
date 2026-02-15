@@ -59,7 +59,11 @@ export default {
         },
         // Semantic success color
         success: {
-          DEFAULT: "hsl(145 65% 42%)",
+          DEFAULT: "hsl(145 60% 40%)",
+          foreground: "hsl(0 0% 100%)",
+        },
+        ocean: {
+          DEFAULT: "hsl(205 80% 50%)",
           foreground: "hsl(0 0% 100%)",
         },
       },
