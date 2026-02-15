@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Mail, Calendar, Eye, Briefcase, Award, Flag } from "lucide-react";
+import { Send, Calendar, Eye, Briefcase, Award, Flag } from "lucide-react";
 import { ReportUserDialog } from "@/components/ReportUserDialog";
 import { useNavigate } from "react-router-dom";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
@@ -230,7 +230,7 @@ export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) =
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => navigate(`/professionals/${professional.id}`)}
+                    onClick={() => navigate(`/profesional/${professional.id}`)}
                   >
                     <Eye className="h-4 w-4 mr-1" />
                     Ver
@@ -239,19 +239,20 @@ export const SphereDirectory = ({ sphereId, chapterId }: SphereDirectoryProps) =
                     variant="default"
                     size="sm"
                     className="flex-1"
-                    onClick={() => navigate(`/meetings?recipient=${professional.id}`)}
+                    onClick={() => navigate(`/meetings`)}
                   >
                     <Calendar className="h-4 w-4 mr-1" />
                     Reunión
                   </Button>
                   {currentProfessionalId && currentProfessionalId !== professional.id && (
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground"
-                      onClick={() => setReportTarget({ id: professional.id, name: professional.full_name })}
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => navigate(`/recomendacion?to=${professional.id}`)}
                     >
-                      <Flag className="h-4 w-4" />
+                      <Send className="h-4 w-4 mr-1" />
+                      Referir
                     </Button>
                   )}
                 </div>
