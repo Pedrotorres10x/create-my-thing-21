@@ -20,6 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const miniProfileSchema = z.object({
+  full_name: z.string().min(2, "Nombre muy corto").max(100, "Nombre muy largo"),
+  phone: z.string().min(9, "Teléfono inválido").max(20, "Teléfono muy largo"),
+});
+
 const profileSchema = z.object({
   full_name: z.string().min(2, "Nombre muy corto").max(100, "Nombre muy largo"),
   phone: z.string().min(9, "Teléfono inválido").max(20, "Teléfono muy largo"),
@@ -90,23 +95,25 @@ export function ProfileForm() {
   });
 
   useEffect(() => {
-    const loadSpecializations = async () => {
-      const { data } = await supabase
-        .from("specializations")
-        .select("id, name")
-        .order("name");
-      if (data) setSpecializations(data);
-    };
-    const loadProfessionSpecializations = async () => {
-      const { data } = await supabase
-        .from("profession_specializations")
-        .select("id, name, specialization_id")
-        .order("name");
-      if (data) setProfessionSpecializations(data);
-    };
-    loadSpecializations();
-    loadProfessionSpecializations();
-  }, []);
+    if (hasProfile) {
+      const loadSpecializations = async () => {
+        const { data } = await supabase
+          .from("specializations")
+          .select("id, name")
+          .order("name");
+        if (data) setSpecializations(data);
+      };
+      const loadProfessionSpecializations = async () => {
+        const { data } = await supabase
+          .from("profession_specializations")
+          .select("id, name, specialization_id")
+          .order("name");
+        if (data) setProfessionSpecializations(data);
+      };
+      loadSpecializations();
+      loadProfessionSpecializations();
+    }
+  }, [hasProfile]);
 
   useEffect(() => {
     if (!user) return;
@@ -150,6 +157,12 @@ export function ProfileForm() {
         if (data.logo_url) setLogoUrl(data.logo_url);
         if (data.specialization_id) setSelectedSpecializationId(data.specialization_id);
         if (data.profession_specialization_id) setSelectedProfessionSpecId(data.profession_specialization_id);
+      } else {
+        // Pre-fill name from auth metadata
+        const fullNameFromAuth = user.user_metadata?.full_name || user.user_metadata?.name || "";
+        if (fullNameFromAuth) {
+          setFormData(prev => ({ ...prev, full_name: fullNameFromAuth }));
+        }
       }
     };
     checkProfile();
@@ -256,63 +269,85 @@ export function ProfileForm() {
     if (!user) return;
 
     try {
-      const validated = profileSchema.parse({
-        ...formData,
-        years_experience: formData.years_experience ? parseInt(formData.years_experience) : null,
-      });
-      setLoading(true);
+      if (!hasProfile) {
+        // Mini profile: only name + phone
+        const validated = miniProfileSchema.parse({
+          full_name: formData.full_name,
+          phone: formData.phone,
+        });
+        setLoading(true);
 
-      const profileData: any = {
-        user_id: user.id,
-        full_name: validated.full_name,
-        email: user.email || "",
-        phone: validated.phone,
-        referred_by_code: formData.referred_by_code || null,
-        position: validated.position || null,
-        bio: validated.bio || null,
-        nif_cif: validated.nif_cif || null,
-        company_name: validated.company_name || null,
-        company_cif: validated.company_cif || null,
-        company_address: validated.company_address || null,
-        business_description: validated.business_description || null,
-        address: validated.address || null,
-        city: validated.city || null,
-        state: validated.state || null,
-        postal_code: validated.postal_code || null,
-        country: validated.country || null,
-        website: validated.website || null,
-        linkedin_url: validated.linkedin_url || null,
-        years_experience: validated.years_experience || null,
-        specialization_id: selectedSpecializationId,
-        profession_specialization_id: selectedProfessionSpecId,
-      };
+        const profileData: any = {
+          user_id: user.id,
+          full_name: validated.full_name,
+          email: user.email || "",
+          phone: validated.phone,
+          referred_by_code: formData.referred_by_code || null,
+          status: "waiting_approval",
+        };
 
-      if (photoUrl) {
-        profileData.photo_url = photoUrl;
-      }
+        if (photoUrl) profileData.photo_url = photoUrl;
 
-      let error;
-      if (hasProfile) {
-        ({ error } = await (supabase as any)
+        const { error } = await (supabase as any)
+          .from("professionals")
+          .insert(profileData);
+
+        if (error) throw error;
+
+        sessionStorage.setItem('conector-onboarding', 'true');
+
+        toast({
+          title: "¡Bienvenido a CONECTOR!",
+          description: "Alic.ia te guiará para completar tu perfil",
+        });
+
+        navigate("/dashboard");
+      } else {
+        // Full profile update for existing users
+        const validated = profileSchema.parse({
+          ...formData,
+          years_experience: formData.years_experience ? parseInt(formData.years_experience) : null,
+        });
+        setLoading(true);
+
+        const profileData: any = {
+          full_name: validated.full_name,
+          phone: validated.phone,
+          position: validated.position || null,
+          bio: validated.bio || null,
+          nif_cif: validated.nif_cif || null,
+          company_name: validated.company_name || null,
+          company_cif: validated.company_cif || null,
+          company_address: validated.company_address || null,
+          business_description: validated.business_description || null,
+          address: validated.address || null,
+          city: validated.city || null,
+          state: validated.state || null,
+          postal_code: validated.postal_code || null,
+          country: validated.country || null,
+          website: validated.website || null,
+          linkedin_url: validated.linkedin_url || null,
+          years_experience: validated.years_experience || null,
+          specialization_id: selectedSpecializationId,
+          profession_specialization_id: selectedProfessionSpecId,
+        };
+
+        if (photoUrl) profileData.photo_url = photoUrl;
+
+        const { error } = await (supabase as any)
           .from("professionals")
           .update(profileData)
-          .eq("user_id", user.id));
-      } else {
-        ({ error } = await (supabase as any)
-          .from("professionals")
-          .insert({ ...profileData, status: "waiting_approval" }));
+          .eq("user_id", user.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "✅ Perfil actualizado",
+          description: "Los cambios se han guardado",
+        });
+
+        navigate("/dashboard");
       }
-
-      if (error) throw error;
-
-      sessionStorage.setItem('conector-onboarding', 'true');
-      
-      toast({
-        title: hasProfile ? "✅ Perfil actualizado" : "¡Bienvenido a CONECTOR!",
-        description: hasProfile ? "Los cambios se han guardado" : "Alic.ia te guiará para completar tu perfil",
-      });
-
-      navigate("/dashboard");
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({
@@ -340,18 +375,108 @@ export function ProfileForm() {
     ? formData.full_name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()
     : "?";
 
+  // ==========================================
+  // MINI FORM: New users — name, phone, referral
+  // ==========================================
+  if (!hasProfile) {
+    return (
+      <Card className="w-full max-w-md mx-auto border-primary/20 shadow-xl">
+        <CardHeader className="text-center space-y-3">
+          <div className="mx-auto w-14 h-14 rounded-full alicia-gradient flex items-center justify-center">
+            <Sparkles className="h-7 w-7 text-white" />
+          </div>
+          <CardTitle className="text-2xl">Únete a CONECTOR</CardTitle>
+          <CardDescription className="text-base">
+            Solo necesitamos tu nombre y teléfono.<br />
+            <span className="text-primary font-medium">Alic.ia se encargará del resto 😉</span>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="full_name">Nombre Completo *</Label>
+              <Input
+                id="full_name"
+                value={formData.full_name}
+                onChange={(e) => updateField("full_name", e.target.value)}
+                placeholder="Tu nombre y apellidos"
+                required
+                maxLength={100}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={user?.email || ""}
+                disabled
+                className="bg-muted"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Teléfono *</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => updateField("phone", e.target.value)}
+                placeholder="+34 600 000 000"
+                required
+                maxLength={20}
+              />
+            </div>
+
+            {/* Referral code - subtle */}
+            <div className="space-y-2">
+              <Label htmlFor="referred_by_code" className="text-muted-foreground text-xs">¿Te invitó alguien? (Opcional)</Label>
+              <Input
+                id="referred_by_code"
+                type="text"
+                placeholder="Código de quien te invitó"
+                value={formData.referred_by_code}
+                onChange={(e) => updateField("referred_by_code", e.target.value.toUpperCase())}
+                maxLength={8}
+                className="h-9"
+              />
+            </div>
+
+            <Button type="submit" disabled={loading} className="w-full text-base py-5 gap-2">
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Creando tu cuenta...
+                </>
+              ) : (
+                <>
+                  Empezar con Alic.ia
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+
+            <p className="text-xs text-center text-muted-foreground">
+              En 30 segundos estarás dentro. Alic.ia te guiará paso a paso para elegir tu profesión, tu Tribu y completar tu perfil.
+            </p>
+          </form>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // ==========================================
+  // FULL FORM: Existing users editing profile
+  // ==========================================
   return (
     <Card className="w-full max-w-2xl mx-auto border-primary/20 shadow-xl">
       <CardHeader className="text-center space-y-3">
         <div className="mx-auto w-14 h-14 rounded-full alicia-gradient flex items-center justify-center">
           <Sparkles className="h-7 w-7 text-white" />
         </div>
-        <CardTitle className="text-2xl">{hasProfile ? "Tu Perfil Profesional" : "Únete a CONECTOR"}</CardTitle>
+        <CardTitle className="text-2xl">Tu Perfil Profesional</CardTitle>
         <CardDescription className="text-base">
-          {hasProfile 
-            ? "Completa tu perfil para generar más confianza en la red"
-            : "Completa tus datos profesionales. Alic.ia te ayudará con el resto."
-          }
+          Completa tu perfil para generar más confianza en la red
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -476,7 +601,7 @@ export function ProfileForm() {
                 onValueChange={(val) => {
                   const newId = val ? parseInt(val) : null;
                   setSelectedSpecializationId(newId);
-                  setSelectedProfessionSpecId(null); // Reset profession when sector changes
+                  setSelectedProfessionSpecId(null);
                 }}
               >
                 <SelectTrigger>
@@ -499,7 +624,6 @@ export function ProfileForm() {
                 onValueChange={(val) => {
                   const profSpecId = val ? parseInt(val) : null;
                   setSelectedProfessionSpecId(profSpecId);
-                  // Auto-set sector from the profession specialization
                   if (profSpecId) {
                     const match = professionSpecializations.find(ps => ps.id === profSpecId);
                     if (match && match.specialization_id !== selectedSpecializationId) {
@@ -719,7 +843,7 @@ export function ProfileForm() {
 
           {/* Código de referido */}
           <div className="space-y-2">
-            <Label htmlFor="referred_by_code">¿Te invitó alguien? (Opcional)</Label>
+            <Label htmlFor="referred_by_code">Código de referido</Label>
             <Input
               id="referred_by_code"
               type="text"
@@ -734,21 +858,15 @@ export function ProfileForm() {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {hasProfile ? "Guardando..." : "Creando tu cuenta..."}
+                Guardando...
               </>
             ) : (
               <>
-                {hasProfile ? "Guardar cambios" : "Empezar con Alic.ia"}
+                Guardar cambios
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
           </Button>
-
-          {!hasProfile && (
-            <p className="text-xs text-center text-muted-foreground">
-              Alic.ia te guiará para elegir tu profesión, tu Tribu y completar tu Perfil paso a paso
-            </p>
-          )}
         </form>
       </CardContent>
     </Card>
