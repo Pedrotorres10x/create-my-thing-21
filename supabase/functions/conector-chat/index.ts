@@ -1183,8 +1183,8 @@ ${chaptersInArea.length > 0 ?
 ${chaptersInArea.map((ch: any) => {
   const existingPros = (ch as any).existing_professionals || [];
   const sameProfession = existingPros.filter((p: any) => 
-    p.profession_specializations?.name && profile?.profession_specializations?.name && 
-    p.profession_specializations.name.toLowerCase() === profile.profession_specializations?.name?.toLowerCase()
+    p.profession_specializations?.name && profileInfo?.profession_specializations?.name && 
+    p.profession_specializations.name.toLowerCase() === profileInfo.profession_specializations?.name?.toLowerCase()
   );
   const hasSameProfession = sameProfession.length > 0;
   return '  · "' + ch.name + '" (' + ch.city + ') - ' + ch.member_count + ' miembros' + (hasSameProfession ? ' ⚠️ YA HAY ' + sameProfession.length + ' profesional(es) de ' + (sameProfession[0]?.profession_specializations?.name || '') + ': ' + sameProfession.map((p: any) => p.full_name).join(', ') : ' ✅ SIN CONFLICTO');
@@ -1202,7 +1202,7 @@ ESTRATEGIA DE PRESENTACIÓN:
 
 CUANDO EL USUARIO ELIJA:
 - Si elige unirse a una tribu existente: usa el marcador [ASIGNAR_TRIBU:chapter_id=ID_DEL_CHAPTER] al final del mensaje
-- Si elige crear una nueva (solo si no hay otra opción viable): pregúntale el nombre para la tribu, y usa [CREAR_TRIBU:name=NOMBRE,city=${profile?.city || ''},state=${profile?.state || ''}]
+- Si elige crear una nueva (solo si no hay otra opción viable): pregúntale el nombre para la tribu, y usa [CREAR_TRIBU:name=NOMBRE,city=${profileInfo?.city || ''},state=${profileInfo?.state || ''}]
 
 LÓGICA DE CONFLICTO DE PROFESIÓN (al unirse a tribu existente):
 - Si en esa tribu YA existe alguien con la MISMA profesión:
@@ -1229,7 +1229,7 @@ ${chaptersInArea.map((ch: any) => {
   `No hay Tribus en su zona aún.
 Ofrécele crear una nueva:
 "${firstName}, perfil listo al 100% 🚀 En tu zona aún no hay Tribu. Puedes ser el PRIMERO en crear una. ¿Cómo quieres llamarla?"
-Cuando diga el nombre, usa: [CREAR_TRIBU:name=NOMBRE,city=${profile?.city || ''},state=${profile?.state || ''}]
+Cuando diga el nombre, usa: [CREAR_TRIBU:name=NOMBRE,city=${profileInfo?.city || ''},state=${profileInfo?.state || ''}]
 Si no tiene ciudad/estado, pregúntaselos primero.`}
 ` : ''}
 
