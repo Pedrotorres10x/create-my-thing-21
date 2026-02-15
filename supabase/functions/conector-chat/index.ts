@@ -1627,13 +1627,21 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
               content: aiResponseContent.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '').replace(/\[PERFIL_PENDIENTE:[^\]]*\]/g, '').replace(/\[PEDIR_FOTO\]/g, '').replace(/\[PEDIR_LOGO\]/g, '').replace(/\[ASIGNAR_TRIBU:[^\]]*\]/g, '').replace(/\[CREAR_TRIBU:[^\]]*\]/g, '').trim().substring(0, 5000),
             });
             
-            // Process profile update markers
+            // Process profile update markers (both [PERFIL:] and [PERFIL_PENDIENTE:])
             const profileUpdates: Record<string, string> = {};
             const profileRegex = /\[PERFIL:(\w+)=([^\]]+)\]/g;
             let profileMatch;
             while ((profileMatch = profileRegex.exec(aiResponseContent)) !== null) {
               profileUpdates[profileMatch[1]] = profileMatch[2].trim();
             }
+            // Also process PERFIL_PENDIENTE markers as profile updates
+            const pendingRegex = /\[PERFIL_PENDIENTE:(\w+)=([^\]]+)\]/g;
+            let pendingMatch;
+            while ((pendingMatch = pendingRegex.exec(aiResponseContent)) !== null) {
+              profileUpdates[pendingMatch[1]] = pendingMatch[2].trim();
+            }
+            console.log('All markers in AI response:', JSON.stringify(aiResponseContent.match(/\[[A-Z_]+:[^\]]*\]/g) || []));
+            console.log('Profile updates to apply:', JSON.stringify(profileUpdates));
             
              if (Object.keys(profileUpdates).length > 0 && professionalId) {
               const allowedFields = [
