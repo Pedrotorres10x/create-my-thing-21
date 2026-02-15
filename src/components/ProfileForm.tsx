@@ -584,17 +584,6 @@ export function ProfileForm() {
             </div>
 
             <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="company_address">Dirección de Empresa</Label>
-              <Input
-                id="company_address"
-                value={formData.company_address}
-                onChange={(e) => updateField("company_address", e.target.value)}
-                placeholder="Calle, número, piso..."
-                maxLength={300}
-              />
-            </div>
-
-            <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="business_description">Descripción del Negocio</Label>
               <Textarea
                 id="business_description"
