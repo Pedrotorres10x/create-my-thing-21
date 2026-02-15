@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Heart, Tag } from "lucide-react";
@@ -24,6 +25,8 @@ interface BandInfo {
 export const CloseDealDialog = ({ open, onOpenChange, dealId, onSuccess }: CloseDealDialogProps) => {
   const [band, setBand] = useState<BandInfo | null>(null);
   const [selectedAmount, setSelectedAmount] = useState(0);
+  const [dealVolume, setDealVolume] = useState("");
+  const [originalVolume, setOriginalVolume] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingBand, setLoadingBand] = useState(true);
   const { toast } = useToast();
@@ -36,7 +39,7 @@ export const CloseDealDialog = ({ open, onOpenChange, dealId, onSuccess }: Close
     setLoadingBand(true);
     const { data: deal } = await (supabase as any)
       .from("deals")
-      .select("thanks_band_id, thanks_category_bands(display_label, min_thanks_amount, recommended_thanks_amount, max_thanks_amount)")
+      .select("thanks_band_id, estimated_total_volume, thanks_category_bands(display_label, min_thanks_amount, recommended_thanks_amount, max_thanks_amount)")
       .eq("id", dealId)
       .single();
 
@@ -47,11 +50,18 @@ export const CloseDealDialog = ({ open, onOpenChange, dealId, onSuccess }: Close
     } else {
       setBand(null);
     }
+    if (deal?.estimated_total_volume) {
+      setOriginalVolume(deal.estimated_total_volume);
+      setDealVolume(String(deal.estimated_total_volume));
+    }
     setLoadingBand(false);
   };
 
+  const volumeNum = parseFloat(dealVolume);
+  const isVolumeValid = !isNaN(volumeNum) && volumeNum > 0;
+
   const handleClose = async () => {
-    if (!band) return;
+    if (!band || !isVolumeValid) return;
     setLoading(true);
     try {
       // Get current user's professional id
@@ -70,6 +80,8 @@ export const CloseDealDialog = ({ open, onOpenChange, dealId, onSuccess }: Close
           thanks_amount_status: "proposed",
           thanks_proposed_at: new Date().toISOString(),
           close_initiated_by: myProf?.id,
+          estimated_total_volume: volumeNum,
+          deal_value: volumeNum,
         })
         .eq("id", dealId);
 
@@ -148,6 +160,27 @@ export const CloseDealDialog = ({ open, onOpenChange, dealId, onSuccess }: Close
         </DialogHeader>
 
         <div className="space-y-6 py-2">
+          <div className="space-y-2">
+            <Label htmlFor="deal-volume">Importe real del negocio (€) *</Label>
+            <Input
+              id="deal-volume"
+              type="number"
+              min="1"
+              step="100"
+              placeholder="Ej: 150000"
+              value={dealVolume}
+              onChange={(e) => setDealVolume(e.target.value)}
+            />
+            {originalVolume && originalVolume !== volumeNum && (
+              <p className="text-xs text-muted-foreground">
+                Estimado inicial: {originalVolume.toLocaleString("es-ES")}€
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Valor total del negocio cerrado. Este dato se usa para las métricas del grupo.
+            </p>
+          </div>
+
           <div className="flex items-center gap-2 text-sm">
             <Tag className="h-4 w-4 text-primary" />
             <span className="font-medium">{band.display_label}</span>
@@ -176,7 +209,7 @@ export const CloseDealDialog = ({ open, onOpenChange, dealId, onSuccess }: Close
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-col">
-          <Button onClick={handleClose} disabled={loading} className="w-full">
+          <Button onClick={handleClose} disabled={loading || !isVolumeValid} className="w-full">
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Proponer {selectedAmount}€ de agradecimiento
           </Button>
