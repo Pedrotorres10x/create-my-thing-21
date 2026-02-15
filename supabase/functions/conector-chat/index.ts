@@ -48,39 +48,30 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Initialize Supabase client with service role for admin operations
+    // Verify user authentication using proper JWT verification
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
-    // Extract user ID from JWT (already verified by Supabase when verify_jwt = true)
+
+    // Create auth client with user's token to verify identity
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
     const token = authHeader.replace('Bearer ', '');
-    console.log('Token first 50 chars:', token.substring(0, 50));
-    
-    let payload;
-    try {
-      payload = JSON.parse(atob(token.split('.')[1]));
-      console.log('Decoded payload:', JSON.stringify(payload));
-    } catch (error) {
-      console.error('Failed to decode token:', error);
-      return new Response(JSON.stringify({ error: 'Invalid token format' }), {
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
-    
-    const userId = payload.sub;
-    
-    if (!userId) {
-      console.error('No user ID in token. Payload:', JSON.stringify(payload));
-      return new Response(JSON.stringify({ error: 'Unauthorized - No user ID in token' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-    
-    console.log('Authenticated user ID:', userId);
+
+    const userId = claimsData.claims.sub as string;
     const user = { id: userId };
+
+    // Service role client for admin data operations (after auth is verified)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Verify user owns this professional profile
     const { data: professional, error: profError } = await supabase
@@ -171,7 +162,7 @@ serve(async (req) => {
       if (profileError) {
         console.error('Profile query error:', profileError);
       }
-      console.log('Profile loaded:', JSON.stringify({ full_name: profile?.full_name, specialization: profile?.profession_specializations }));
+      // Profile loaded successfully
       profileInfo = profile;
 
       // Load all available specializations for matching
@@ -357,15 +348,7 @@ serve(async (req) => {
         activityMetrics.activityScore = activityTrackingData.activity_score;
       }
 
-      // Logging para debugging
-      console.log('Activity calculation:', {
-        professionalId,
-        hasActivityTracking: !!activityTrackingData,
-        lastLogin: activityTrackingData?.last_login,
-        profileCreatedAt: profile?.created_at,
-        calculatedDaysInactive: activityMetrics.daysInactive,
-        engagementStatus: activityMetrics.engagementStatus
-      });
+      // Activity metrics calculated
       
       // Determinar si user es new in registration (no specialization or no chapter)
       isNewUser = !profile?.specialization_id || !profile?.chapter_id;
