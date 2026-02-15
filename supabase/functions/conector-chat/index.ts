@@ -743,7 +743,9 @@ Cuando confirmes que el usuario ha entrado o se le asigne una profesión/tribu, 
 3. Si hay compañeros, menciona QUIÉNES son y qué hacen (nombres y profesiones)
 4. Explica qué significa estar en esta Tribu: "Cada uno de estos profesionales puede mandarte clientes de su círculo. Y tú a ellos."
 5. Si la Tribu es pequeña (<10), conecta con la urgencia de invitar: "Somos pocos aún, y eso significa que cada profesional que invites será uno de los FUNDADORES. Eso tiene peso."
-EJEMPLO: "${firstName}, ya estás dentro de la Tribu '${chapterName || 'tu tribu'}' en ${chapterCity || 'tu ciudad'}. ${chapterMemberCount > 1 ? `Ahora mismo sois ${chapterMemberCount}: [listar nombres y profesiones]. Cada uno de ellos es alguien que puede mandarte clientes.` : 'De momento eres el primero. Eso te convierte en FUNDADOR. Los primeros siempre tienen ventaja.'}"
+6. INMEDIATAMENTE después de la bienvenida, si le faltan datos del perfil, dile con urgencia y presión social positiva:
+   "Ahora que ya estás dentro, tus compañeros van a ver tu perfil. Necesitan saber quién eres y qué haces para poder mandarte clientes. Pásate por Mi Perfil y complétalo: foto, descripción, empresa... Es como tu tarjeta de visita dentro del grupo. Sin eso, eres invisible para ellos."
+EJEMPLO: "${firstName}, ya estás dentro de la Tribu '${chapterName || 'tu tribu'}' en ${chapterCity || 'tu ciudad'}. ${chapterMemberCount > 1 ? `Ahora mismo sois ${chapterMemberCount}: [listar nombres y profesiones]. Cada uno de ellos es alguien que puede mandarte clientes.` : 'De momento eres el primero. Eso te convierte en FUNDADOR. Los primeros siempre tienen ventaja.'} Ahora completa tu perfil en Mi Perfil para que te conozcan 💪"
 
 ESTADO DEL PERFIL:
 - Perfil completo: ${isProfileIncomplete ? 'NO ❌' : 'SÍ ✅'}
@@ -1192,27 +1194,29 @@ El usuario debe ver la conexión directa: Acción → Clientes → Facturación.
     if (isNewUser) {
       systemPrompt += `\n━━━ USUARIO NUEVO - ONBOARDING ━━━
 
-PRIORIDAD: Asignarle TRIBU lo antes posible.
+PRIORIDAD: Especialización → Tribu → Perfil (en ese orden).
+La PSICOLOGÍA es: asignar tribu CUANTO ANTES para que el usuario se sienta DENTRO y tenga presión social para completar su perfil.
 
 FASE 1 - ESPECIALIZACIÓN (único dato que se pide en el chat):
 ${isProfileIncomplete ? `
-🚨 Le falta ESPECIALIZACIÓN. Pregúntale su profesión con opciones cerradas y usa [PERFIL:profession_specialization=...].
-Para todo lo demás del perfil, recuérdale que vaya a Mi Perfil cuando quiera. NO se lo pidas aquí.
+🚨 Le falta ESPECIALIZACIÓN. Pregúntale su profesión de forma abierta y usa [PERFIL:profession_specialization=...].
+Para todo lo demás del perfil, se le pedirá DESPUÉS de asignarle tribu, no antes.
 ` : `
-✅ Tiene especialización. Pasa a asignar Tribu.
+✅ Tiene especialización. Pasa INMEDIATAMENTE a asignar Tribu. NO esperes a que complete el perfil.
 `}
 
-FASE 2 - ELEGIR O CREAR GRUPO (SOLO cuando el perfil está 100% completo):
+FASE 2 - ASIGNAR TRIBU (INMEDIATAMENTE después de tener especialización):
 ${!isProfileIncomplete && hasNoChapter ? `
-🎯 EL PERFIL ESTÁ COMPLETO PERO NO TIENE TRIBU. AHORA toca elegir grupo.
+🎯 TIENE ESPECIALIZACIÓN PERO NO TIENE TRIBU. ASIGNA TRIBU AHORA MISMO.
 ⚠️ PROHIBIDO INVENTAR TIPOS DE TRIBU. NO existen "tribus por sector", "tribus especializadas", "tribus nacionales" ni nada parecido. SOLO existen Tribus LOCALES geográficas. NUNCA ofrezcas opciones que no estén en los datos reales de abajo. Ve DIRECTAMENTE a recomendar las tribus disponibles en su zona.
+🧠 PSICOLOGÍA: El usuario DEBE sentirse DENTRO del grupo ANTES de completar su perfil. Una vez dentro, la presión social le motivará a completar todo. "Ya estás dentro, ahora tus compañeros necesitan saber quién eres → ve a Mi Perfil a completar tus datos."
 ` : ''}
 ${!isProfileIncomplete && !hasNoChapter ? `
-✅ Ya tiene perfil completo Y tribu asignada. Pasa al onboarding de presentación de miembros.
+✅ Ya tiene especialización Y tribu asignada. Si le faltan datos del perfil, recuérdale que vaya a Mi Perfil.
 ` : ''}
 
 ${!isProfileIncomplete && hasNoChapter ? `
-ASIGNACIÓN DE TRIBU (SOLO se muestra porque el perfil está 100% completo):
+ASIGNACIÓN DE TRIBU (tiene especialización, ahora toca grupo):
 
 REGLA DE ORO - DENSIDAD: Siempre priorizar RELLENAR tribus existentes. Queremos grupos GRANDES y densos. NO nos interesa tener 2 grupos de 25 si podemos tener 1 de 50. Solo ofrecer crear una nueva tribu si NO hay ninguna en la zona o si TODAS las existentes tienen un conflicto de especialización irreconciliable (misma profesión + misma especialización).
 
