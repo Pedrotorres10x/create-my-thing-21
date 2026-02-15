@@ -83,6 +83,15 @@ function LayoutInner({ children }: { children: ReactNode }) {
           </div>
           
           <div className="flex items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 text-muted-foreground hover:text-primary"
+              onClick={restartTutorial}
+              title="Ver Tutorial"
+            >
+              <HelpCircle className="h-4 w-4" />
+            </Button>
             <PushNotificationToggle professionalId={professional?.id || null} />
             {professional?.business_sphere_id && professional?.id && (
               <SphereNotifications professionalId={professional.id} />
@@ -114,10 +123,6 @@ function LayoutInner({ children }: { children: ReactNode }) {
                 <DropdownMenuItem onClick={() => navigate("/dashboard")} className="text-xs cursor-pointer">
                   <Home className="mr-2 h-3.5 w-3.5" />
                   Inicio
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={restartTutorial} className="text-xs cursor-pointer">
-                  <HelpCircle className="mr-2 h-3.5 w-3.5" />
-                  Ver Tutorial
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive text-xs cursor-pointer">

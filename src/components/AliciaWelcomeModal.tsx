@@ -25,7 +25,8 @@ export const AliciaWelcomeModal = ({
 
   useEffect(() => {
     const checkSessionStorage = sessionStorage.getItem('alicia-greeting-shown');
-    if (checkSessionStorage) {
+    const tutorialPending = !localStorage.getItem('conector-sidebar-tutorial-done');
+    if (checkSessionStorage || tutorialPending) {
       setOpen(false);
       return;
     }
