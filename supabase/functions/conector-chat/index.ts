@@ -1180,15 +1180,25 @@ CUANDO EL USUARIO ELIJA:
 
 LÓGICA DE CONFLICTO DE PROFESIÓN (al unirse a tribu existente):
 - Si en esa tribu YA existe alguien con la MISMA profesión:
-  1. Pregúntale en qué se especializa dentro de su profesión
-  2. Usa [CREAR_CONFLICTO:chapter_id=ID,existing_id=ID_EXISTENTE,specialization=LO_QUE_DIJO]
-  3. Dile: "Tu solicitud se eleva al Comité de Sabios. Te avisaremos pronto."
-- Si NO hay conflicto, asigna directamente con [ASIGNAR_TRIBU:chapter_id=ID]
+  1. PRIMERO pregunta al nuevo usuario su especialización con PREGUNTA CERRADA (opciones adaptadas a la profesión).
+     Ejemplo inmobiliaria: "Ya hay un inmobiliario en esta Tribu. ¿Tu especialidad? 1) Residencial 2) Comercial 3) Naves industriales 4) Lujo 5) Alquiler 6) Otro"
+  2. COMPARA con la especialización del miembro existente:
+     - Si las especializaciones son CLARAMENTE DIFERENTES (ej: uno es residencial y otro naves industriales) → PUEDEN CONVIVIR pero necesitan aprobación.
+     - Si son IGUALES o MUY SIMILARES → NO pueden convivir, ofrecer otra tribu o crear una nueva.
+  3. Si pueden convivir (especializaciones diferentes):
+     a. Usa [CREAR_CONFLICTO:chapter_id=ID,existing_id=ID_EXISTENTE,specialization=LO_QUE_ELIGIÓ]
+     b. Explica: "${firstName}, como ya hay un [profesión] en la Tribu (especializado en [X]), necesitamos 2 aprobaciones:
+        1️⃣ La del miembro actual ([nombre del existente]) - le preguntaremos si está de acuerdo
+        2️⃣ La del Comité de Sabios - que valida que no haya solapamiento
+        Te avisaremos en cuanto tengamos respuesta."
+  4. Si NO hay nadie con la misma profesión → asigna directamente con [ASIGNAR_TRIBU:chapter_id=ID]
 
-DATOS DE LOS CHAPTERS PARA MARCADORES:
+REGLA CLAVE DE CONVIVENCIA: Dos profesionales del MISMO oficio PUEDEN estar en la misma Tribu SI sus especializaciones son diferentes y complementarias. Ejemplo: inmobiliaria residencial + inmobiliaria de naves industriales = OK. Inmobiliaria residencial + inmobiliaria residencial = NO.
+
+DATOS DE LOS CHAPTERS PARA MARCADORES (incluye especialización para detectar solapamientos):
 ${chaptersInArea.map((ch: any) => {
   const existingPros = (ch as any).existing_professionals || [];
-  return 'Chapter "' + ch.name + '" ID: ' + ch.id + (existingPros.length > 0 ? ' - Profesionales: ' + existingPros.map((p: any) => p.full_name + ' (ID: ' + p.id + ', ' + (p.profession_specializations?.name || 'sin especialidad') + ')').join(', ') : '');
+  return 'Chapter "' + ch.name + '" ID: ' + ch.id + (existingPros.length > 0 ? ' - Profesionales: ' + existingPros.map((p: any) => p.full_name + ' (ID: ' + p.id + ', ' + (p.profession_specializations?.name || 'sin especialidad') + ', espec: ' + (p.business_description || 'no definida') + ')').join('; ') : '');
 }).join('\n')}` :
   `No hay Tribus en su zona aún.
 Ofrécele crear una nueva:

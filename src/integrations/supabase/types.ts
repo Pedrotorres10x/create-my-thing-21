@@ -2883,6 +2883,7 @@ export type Database = {
           created_at: string
           decided_at: string | null
           decision_reason: string | null
+          existing_member_approval: string | null
           existing_professional_id: string
           existing_specialization: string
           id: string
@@ -2900,6 +2901,7 @@ export type Database = {
           created_at?: string
           decided_at?: string | null
           decision_reason?: string | null
+          existing_member_approval?: string | null
           existing_professional_id: string
           existing_specialization: string
           id?: string
@@ -2917,6 +2919,7 @@ export type Database = {
           created_at?: string
           decided_at?: string | null
           decision_reason?: string | null
+          existing_member_approval?: string | null
           existing_professional_id?: string
           existing_specialization?: string
           id?: string
