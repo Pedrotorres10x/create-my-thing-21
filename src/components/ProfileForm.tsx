@@ -161,7 +161,7 @@ export function ProfileForm() {
         if (data.specialization_id) setSelectedSpecializationId(data.specialization_id);
         if (data.profession_specialization_id) setSelectedProfessionSpecId(data.profession_specialization_id);
       } else {
-        // Pre-fill name from auth metadata
+        // Pre-fill name from auth metadata (works for both Google and email/password signup)
         const fullNameFromAuth = user.user_metadata?.full_name || user.user_metadata?.name || "";
         if (fullNameFromAuth) {
           setFormData(prev => ({ ...prev, full_name: fullNameFromAuth }));
