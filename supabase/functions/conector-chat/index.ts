@@ -399,20 +399,25 @@ serve(async (req) => {
 
       // Activity metrics calculated
       
-      // Determinar si user es new in registration (no specialization or no chapter)
-      isNewUser = !profile?.specialization_id || !profile?.chapter_id;
+      // Determinar si user es new in registration (no specialization, no city, or no chapter)
+      isNewUser = !profile?.specialization_id || !profile?.city || !profile?.chapter_id;
       
       // Determine if user is experienced (has completed at least 3 meetings)
       isExperiencedUser = completedMeetingsCount >= 3;
 
-      // If new user, get chapters in their area AND their members' professions
-      if (isNewUser && profile?.city && profile?.state) {
-        const { data: chapters } = await supabase
+      // If new user, get chapters - load from their area if city known, otherwise load ALL chapters
+      if (isNewUser) {
+        let chaptersQuery = supabase
           .from('chapters')
           .select('id, name, city, state, member_count')
-          .eq('city', profile.city)
-          .eq('state', profile.state)
           .order('member_count', { ascending: false });
+        
+        // If user has city, filter by it; otherwise load all so Alic.IA can recommend after asking city
+        if (profile?.city && profile?.state) {
+          chaptersQuery = chaptersQuery.eq('city', profile.city).eq('state', profile.state);
+        }
+        
+        const { data: chapters } = await chaptersQuery.limit(50);
         
         if (chapters) {
           chaptersInArea = chapters;
@@ -764,13 +769,14 @@ Si el usuario dice que no tiene local, establecimiento abierto al público, ofic
 - Responde con firmeza y empatía: "Entiendo que no tengas un local abierto al público, pero piensa en esto: ¿confiarías tú en un profesional sin dirección? Tu dirección genera confianza. Si trabajas desde casa, indica tu dirección particular. No la publicaremos, pero es necesaria para tu perfil profesional y para asignarte la Tribu más cercana."
 - Insiste en que vaya a Mi Perfil y la rellene.
 
-Puedes ACTUALIZAR directamente el campo de especialización profesional usando este marcador OCULTO:
-[PERFIL:profession_specialization=Nombre Exacto De La Lista]
-Este es el ÚNICO campo que se puede rellenar desde el chat porque es necesario para asignar grupo.
+Puedes ACTUALIZAR directamente estos campos desde el chat usando marcadores OCULTOS:
+[PERFIL:profession_specialization=Nombre Exacto De La Lista] — para especialización
+[PERFIL:city=Ciudad,state=Comunidad Autónoma] — para ciudad (necesario para asignar tribu)
+Estos son los ÚNICOS campos que se pueden rellenar desde el chat porque son necesarios para asignar grupo.
 
-🚨 ESPECIALIZACIÓN PROFESIONAL - FLUJO EN DOS PASOS:
+🚨 ONBOARDING - FLUJO EN TRES PASOS (profesión → especialización → ciudad → tribu):
 
-PASO 1 - PREGUNTA ABIERTA (sin listas):
+PASO 1 - PREGUNTA ABIERTA SOBRE PROFESIÓN (sin listas):
 - Pregunta de forma natural: "¿A qué te dedicas?" o "Cuéntame, ¿en qué trabajas?"
 - SIN mostrar opciones, SIN enumerar sectores. Solo la pregunta abierta.
 - ESPERA a que el usuario responda con sus propias palabras.
@@ -790,10 +796,21 @@ PASO 2 - ESPECIALIZACIÓN CON OPCIONES (con lista corta):
   ¿Cuál se ajusta más a lo que haces?"
 - Una vez que elija, usa el marcador: [PERFIL:profession_specialization=Nombre Exacto]
 
+PASO 3 - CIUDAD (pregunta directa y rápida):
+- Justo después de confirmar la especialización, pregunta la ciudad:
+  "Genial, ${firstName}. ¿En qué ciudad trabajas? Necesito saberlo para asignarte la Tribu más cercana."
+- Cuando responda (ej: "Madrid", "en Barcelona", "Sevilla"), usa el marcador: [PERFIL:city=Ciudad,state=Comunidad Autónoma]
+  Ejemplo: [PERFIL:city=Madrid,state=Comunidad de Madrid]
+  Ejemplo: [PERFIL:city=Barcelona,state=Cataluña]
+  Ejemplo: [PERFIL:city=Sevilla,state=Andalucía]
+- TÚ debes deducir la Comunidad Autónoma a partir de la ciudad. Si no estás seguro, pregunta.
+- INMEDIATAMENTE después de guardar la ciudad, pasa a ASIGNAR TRIBU (Fase 2 del onboarding).
+
 ⛔ LO QUE NUNCA DEBES HACER:
 - Mostrar lista de SECTORES (paso 1 debe ser pregunta abierta)
 - Mostrar TODAS las especializaciones de todos los sectores a la vez
 - Inventar especializaciones que no existen en la lista interna
+- Pedir la ciudad ANTES de la especialización (el orden es: profesión → especialización → ciudad)
 
 LISTA INTERNA DE REFERENCIA (para autodetección del sector y para mostrar especializaciones filtradas):
 ${(allSpecializations || []).map((s: any) => `- ${s.name} (${s.specializations?.name || ''})`).join('\n')}
@@ -801,8 +818,11 @@ ${(allSpecializations || []).map((s: any) => `- ${s.name} (${s.specializations?.
 
 ${isProfileIncomplete ? `
 🚨 PERFIL INCOMPLETO: Le falta: ${profileMissing.join(', ')}
-Si le falta SECTOR/ESPECIALIZACIÓN → pregúntale de forma ABIERTA y CONVERSACIONAL "¿A qué te dedicas?" SIN mostrar ninguna lista ni opciones. Autodetecta su especialización cuando responda. Usa el marcador [PERFIL:profession_specialization=...] cuando la identifiques.
-Para TODO lo demás (foto, teléfono, empresa, descripción, NIF, etc.) → dile que vaya a Mi Perfil a completarlo.
+Si le falta SECTOR/ESPECIALIZACIÓN → PASO 1: pregúntale de forma ABIERTA "¿A qué te dedicas?" SIN lista.
+Para TODO lo demás (foto, teléfono, empresa, descripción, NIF, etc.) → se le pide DESPUÉS de asignar tribu.
+` : ''}
+${!isProfileIncomplete && !profileInfo?.city ? `
+🚨 TIENE ESPECIALIZACIÓN PERO NO TIENE CIUDAD. Pregúntale: "¿En qué ciudad trabajas?" y usa [PERFIL:city=Ciudad,state=Comunidad Autónoma].
 ` : ''}
 ${!isProfileIncomplete && !isProfileReadyForActions ? `
 🚫 PERFIL INCOMPLETO PARA ACCIONES. Le faltan: ${profileFieldsForActions.join(', ')}.
@@ -1194,29 +1214,35 @@ El usuario debe ver la conexión directa: Acción → Clientes → Facturación.
     if (isNewUser) {
       systemPrompt += `\n━━━ USUARIO NUEVO - ONBOARDING ━━━
 
-PRIORIDAD: Especialización → Tribu → Perfil (en ese orden).
+PRIORIDAD: Especialización → Ciudad → Tribu → Perfil (en ese orden).
 La PSICOLOGÍA es: asignar tribu CUANTO ANTES para que el usuario se sienta DENTRO y tenga presión social para completar su perfil.
 
-FASE 1 - ESPECIALIZACIÓN (único dato que se pide en el chat):
+FASE 1 - ESPECIALIZACIÓN Y CIUDAD (datos que se piden en el chat):
 ${isProfileIncomplete ? `
 🚨 Le falta ESPECIALIZACIÓN. Pregúntale su profesión de forma abierta y usa [PERFIL:profession_specialization=...].
-Para todo lo demás del perfil, se le pedirá DESPUÉS de asignarle tribu, no antes.
+Después pregúntale la ciudad con [PERFIL:city=Ciudad,state=Comunidad].
+` : !profileInfo?.city ? `
+✅ Tiene especialización PERO le falta CIUDAD. Pregúntale: "¿En qué ciudad trabajas?" y usa [PERFIL:city=Ciudad,state=Comunidad Autónoma].
 ` : `
-✅ Tiene especialización. Pasa INMEDIATAMENTE a asignar Tribu. NO esperes a que complete el perfil.
+✅ Tiene especialización y ciudad. Pasa INMEDIATAMENTE a asignar Tribu.
 `}
 
-FASE 2 - ASIGNAR TRIBU (INMEDIATAMENTE después de tener especialización):
-${!isProfileIncomplete && hasNoChapter ? `
-🎯 TIENE ESPECIALIZACIÓN PERO NO TIENE TRIBU. ASIGNA TRIBU AHORA MISMO.
-⚠️ PROHIBIDO INVENTAR TIPOS DE TRIBU. NO existen "tribus por sector", "tribus especializadas", "tribus nacionales" ni nada parecido. SOLO existen Tribus LOCALES geográficas. NUNCA ofrezcas opciones que no estén en los datos reales de abajo. Ve DIRECTAMENTE a recomendar las tribus disponibles en su zona.
-🧠 PSICOLOGÍA: El usuario DEBE sentirse DENTRO del grupo ANTES de completar su perfil. Una vez dentro, la presión social le motivará a completar todo. "Ya estás dentro, ahora tus compañeros necesitan saber quién eres → ve a Mi Perfil a completar tus datos."
+FASE 2 - ASIGNAR TRIBU (después de tener especialización Y ciudad):
+${!isProfileIncomplete && profileInfo?.city && hasNoChapter ? `
+🎯 TIENE ESPECIALIZACIÓN Y CIUDAD (${profileInfo.city}). ASIGNA TRIBU AHORA MISMO.
+⚠️ PROHIBIDO INVENTAR TIPOS DE TRIBU. SOLO existen Tribus LOCALES geográficas. Ve DIRECTAMENTE a recomendar las tribus disponibles en su zona.
+🧠 PSICOLOGÍA: El usuario DEBE sentirse DENTRO del grupo ANTES de completar su perfil. Una vez dentro, la presión social le motivará a completar todo.
+Filtra las tribus de abajo por la ciudad del usuario (${profileInfo.city}, ${profileInfo.state || ''}).
+` : ''}
+${!isProfileIncomplete && !profileInfo?.city && hasNoChapter ? `
+⏳ TIENE ESPECIALIZACIÓN PERO AÚN NO HA DICHO SU CIUDAD. Pregúntale la ciudad antes de asignar tribu.
 ` : ''}
 ${!isProfileIncomplete && !hasNoChapter ? `
 ✅ Ya tiene especialización Y tribu asignada. Si le faltan datos del perfil, recuérdale que vaya a Mi Perfil.
 ` : ''}
 
-${!isProfileIncomplete && hasNoChapter ? `
-ASIGNACIÓN DE TRIBU (tiene especialización, ahora toca grupo):
+${!isProfileIncomplete && profileInfo?.city && hasNoChapter ? `
+ASIGNACIÓN DE TRIBU (tiene especialización y ciudad, ahora toca grupo):
 
 REGLA DE ORO - DENSIDAD: Siempre priorizar RELLENAR tribus existentes. Queremos grupos GRANDES y densos. NO nos interesa tener 2 grupos de 25 si podemos tener 1 de 50. Solo ofrecer crear una nueva tribu si NO hay ninguna en la zona o si TODAS las existentes tienen un conflicto de especialización irreconciliable (misma profesión + misma especialización).
 
@@ -1524,7 +1550,12 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
     if (isProfileIncomplete) {
       aiMessages.push({
         role: "system",
-        content: `🚨 RECORDATORIO: A ${firstName} le falta ESPECIALIZACIÓN PROFESIONAL. Pregúntale su profesión con opciones cerradas y usa [PERFIL:profession_specialization=...]. Para todo lo demás del perfil, dile que vaya a Mi Perfil.`
+        content: `🚨 RECORDATORIO: A ${firstName} le falta ESPECIALIZACIÓN PROFESIONAL. Pregúntale su profesión de forma abierta (sin lista) y usa [PERFIL:profession_specialization=...]. Después pregúntale la ciudad.`
+      });
+    } else if (!profileInfo?.city && hasNoChapter) {
+      aiMessages.push({
+        role: "system",
+        content: `🚨 RECORDATORIO: ${firstName} ya tiene especialización pero NO tiene ciudad. Pregúntale "¿En qué ciudad trabajas?" y usa [PERFIL:city=Ciudad,state=Comunidad Autónoma]. Después asigna tribu.`
       });
     }
     aiMessages.push(...finalMessages);
@@ -1709,7 +1740,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
              if (Object.keys(profileUpdates).length > 0 && professionalId) {
               const safeUpdates: Record<string, any> = {};
               
-              // Only handle profession_specialization from chat
+              // Only handle profession_specialization and city from chat
               if (profileUpdates['profession_specialization'] && allSpecializations) {
                 const specName = profileUpdates['profession_specialization'].trim();
                 const matched = allSpecializations.find((s: any) => 
@@ -1721,6 +1752,21 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
                   console.log('Matched specialization:', specName, '→ ID:', matched.id);
                 } else {
                   console.log('Specialization NOT matched:', specName);
+                }
+              }
+
+              // Handle city update from chat (needed for tribe assignment)
+              if (profileUpdates['city']) {
+                const cityParts = profileUpdates['city'].split(',');
+                const cityName = cityParts[0]?.trim();
+                // state might be in city value as "city,state" or as separate key
+                const stateName = profileUpdates['state']?.trim() || cityParts[1]?.trim();
+                if (cityName) {
+                  safeUpdates['city'] = cityName;
+                  if (stateName) {
+                    safeUpdates['state'] = stateName;
+                  }
+                  console.log('City updated from chat:', cityName, stateName);
                 }
               }
               
