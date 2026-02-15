@@ -29,11 +29,13 @@ interface Professional {
   sector_id: number;
   business_sphere_id: number | null;
   profession_specialization_id: number | null;
+  deals_completed: number;
   sector_catalog: {
     name: string;
   } | null;
   specializations: {
     name: string;
+    referral_role: string;
   } | null;
   profession_specializations: {
     name: string;
@@ -82,6 +84,7 @@ const Rankings = () => {
   const [sectorFilter, setSectorFilter] = useState<string>("all");
   const [sphereFilter, setSphereFilter] = useState<string>("all");
   const [profBadges, setProfBadges] = useState<Record<string, BadgeData[]>>({});
+  const [roleFilter, setRoleFilter] = useState<string>("all");
 
   useEffect(() => {
     loadData();
@@ -118,11 +121,13 @@ const Rankings = () => {
           sector_id,
           business_sphere_id,
           profession_specialization_id,
+          deals_completed,
           sector_catalog (
             name
           ),
           specializations (
-            name
+            name,
+            referral_role
           ),
           profession_specializations (
             name
@@ -174,6 +179,7 @@ const Rankings = () => {
     if (chapterFilter !== "all" && prof.chapter_id !== chapterFilter) return false;
     if (sectorFilter !== "all" && prof.sector_id.toString() !== sectorFilter) return false;
     if (sphereFilter !== "all" && prof.business_sphere_id?.toString() !== sphereFilter) return false;
+    if (roleFilter !== "all" && prof.specializations?.referral_role !== roleFilter) return false;
     return true;
   });
 
@@ -291,6 +297,20 @@ const Rankings = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Rol</label>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los roles</SelectItem>
+                  <SelectItem value="referrer">Referidores</SelectItem>
+                  <SelectItem value="receiver">Receptores</SelectItem>
+                  <SelectItem value="hybrid">Híbridos</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -388,6 +408,22 @@ const Rankings = () => {
                               {prof.sector_catalog.name}
                             </Badge>
                           ) : null}
+                          {prof.specializations?.referral_role && (
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${
+                                prof.specializations.referral_role === 'referrer' 
+                                  ? 'border-blue-500/50 text-blue-600' 
+                                  : prof.specializations.referral_role === 'receiver'
+                                  ? 'border-primary/50 text-primary'
+                                  : 'border-emerald-500/50 text-emerald-600'
+                              }`}
+                            >
+                              {prof.specializations.referral_role === 'referrer' ? '📡 Referidor' 
+                                : prof.specializations.referral_role === 'receiver' ? '🎯 Receptor' 
+                                : '🔄 Híbrido'}
+                            </Badge>
+                          )}
                           {prof.business_spheres && (
                             <Badge 
                               variant="outline" 

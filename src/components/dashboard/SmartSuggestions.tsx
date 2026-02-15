@@ -26,10 +26,13 @@ interface Suggestion {
 
 interface SmartSuggestionsProps {
   goals: WeeklyGoals | null;
+  referralRole?: string | null;
 }
 
-export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
+export const SmartSuggestions = ({ goals, referralRole }: SmartSuggestionsProps) => {
   const navigate = useNavigate();
+  const isReferrer = referralRole === 'referrer';
+  const isReceiver = referralRole === 'receiver';
 
   const calculateSuggestions = (): Suggestion[] => {
     if (!goals) {
@@ -127,9 +130,17 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
         id: 'amber-referral-main',
         type: 'opportunity',
         priority: 1,
-        title: `Ya sois ${memberCount}. Ahora toca mover negocio`,
-        description: `Tu Tribu ya tiene profesionales suficientes para generar clientes. El que refiere primero, recibe primero. ¿A quién puedes mandar un contacto hoy?`,
-        action: 'Referir contacto',
+        title: isReferrer
+          ? `Ya sois ${memberCount}. Tú eres clave: detecta leads`
+          : isReceiver
+          ? `Ya sois ${memberCount}. Ahora toca cerrar negocio`
+          : `Ya sois ${memberCount}. Ahora toca mover negocio`,
+        description: isReferrer
+          ? `Tu Tribu necesita tus contactos para generar negocio. Piensa en quién de tu entorno necesita un abogado, arquitecto o asesor de tu grupo.`
+          : isReceiver
+          ? `Tienes compañeros que te pueden mandar clientes. El que refiere primero, recibe primero. ¿A quién puedes derivar un contacto hoy?`
+          : `Tu Tribu ya tiene profesionales suficientes para generar clientes. El que refiere primero, recibe primero. ¿A quién puedes mandar un contacto hoy?`,
+        action: isReferrer ? 'Enviar lead' : 'Referir contacto',
         actionRoute: '/recomendacion',
         icon: Handshake,
       });
@@ -184,10 +195,18 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
         id: 'weekly-referral',
         type: 'opportunity',
         priority: 1,
-        title: '¿Quieres recibir clientes? Primero manda tú uno',
-        description: `Esta semana no has referido a nadie. Si no das, ¿por qué te van a dar a ti? Quedan ${goals.days_until_week_end} días.`,
-        action: 'Referir contacto',
-        actionRoute: '/referrals',
+        title: isReferrer
+          ? 'Tú eres el motor: detecta un lead esta semana'
+          : isReceiver
+          ? '¿Quieres recibir clientes? Refiere tú primero'
+          : '¿Quieres recibir clientes? Primero manda tú uno',
+        description: isReferrer
+          ? `Tus compañeros cierran negocio gracias a los contactos que tú generas. Piensa en quién de tu entorno necesita un servicio de la Tribu. Quedan ${goals.days_until_week_end} días.`
+          : isReceiver
+          ? `Si no das, ¿por qué te van a dar a ti? Manda un contacto a un referidor y activa el ciclo. Quedan ${goals.days_until_week_end} días.`
+          : `Esta semana no has referido a nadie. Si no das, ¿por qué te van a dar a ti? Quedan ${goals.days_until_week_end} días.`,
+        action: isReferrer ? 'Enviar lead' : 'Referir contacto',
+        actionRoute: '/recomendacion',
         icon: Handshake,
       });
     }

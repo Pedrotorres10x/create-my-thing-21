@@ -66,6 +66,7 @@ const Dashboard = () => {
       if (!user) return;
 
       try {
+        // @ts-ignore - Complex nested select
         const { data: professionalData } = await supabase
           .from("professionals")
           .select(`
@@ -81,11 +82,15 @@ const Dashboard = () => {
             photo_url,
             profession_specialization_id,
             professional_type,
+            specialization_id,
             subscription_plans (slug),
             business_spheres (
               name,
               icon,
               color
+            ),
+            specializations (
+              referral_role
             )
           `)
           .eq("user_id", user.id)
@@ -243,7 +248,7 @@ const Dashboard = () => {
           </div>
 
           {/* Smart Suggestions (invitar, etc.) */}
-          <SmartSuggestions goals={goals} />
+          <SmartSuggestions goals={goals} referralRole={(professional as any)?.specializations?.referral_role} />
 
           {/* KPI Grid — secondary, al fondo */}
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
