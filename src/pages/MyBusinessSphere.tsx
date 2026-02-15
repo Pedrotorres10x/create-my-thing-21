@@ -206,11 +206,11 @@ export default function MyBusinessSphere() {
             <span className="text-2xl">🌐</span>
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Mi Tribu</h1>
-            <p className="text-muted-foreground">
-              {sphereInfo.name}
+            <h1 className="text-xl sm:text-3xl font-bold">Mi Tribu</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Esfera {sphereInfo.name}
               {chapterInfo && (
-                <span className="ml-2">
+                <span className="block sm:inline sm:ml-2">
                   · <MapPin className="inline h-3 w-3" /> {chapterInfo.city}, {chapterInfo.state}
                   · <Users className="inline h-3 w-3" /> {chapterInfo.member_count} miembros
                 </span>
@@ -226,37 +226,37 @@ export default function MyBusinessSphere() {
 
       {/* Chapter quick stats */}
       {chapterInfo && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold">{chapterInfo.member_count}</p>
+            <CardContent className="p-3 sm:p-4 text-center">
+              <p className="text-xl sm:text-2xl font-bold">{chapterInfo.member_count}</p>
               <p className="text-xs text-muted-foreground">Miembros</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold">{chapterInfo.name}{chapterInfo.apellido ? ` ${chapterInfo.apellido}` : ''}</p>
+            <CardContent className="p-3 sm:p-4 text-center">
+              <p className="text-sm sm:text-lg font-bold truncate">{chapterInfo.name}{chapterInfo.apellido ? ` ${chapterInfo.apellido}` : ''}</p>
               <p className="text-xs text-muted-foreground">Tribu</p>
             </CardContent>
           </Card>
           {chapterInfo.meeting_schedule && (
             <Card>
-              <CardContent className="p-4 flex items-center gap-2">
+              <CardContent className="p-3 sm:p-4 flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Reuniones</p>
-                  <p className="text-sm font-medium truncate">{chapterInfo.meeting_schedule}</p>
+                  <p className="text-xs sm:text-sm font-medium truncate">{chapterInfo.meeting_schedule}</p>
                 </div>
               </CardContent>
             </Card>
           )}
           {chapterInfo.location_details && (
             <Card>
-              <CardContent className="p-4 flex items-center gap-2">
+              <CardContent className="p-3 sm:p-4 flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Ubicación</p>
-                  <p className="text-sm font-medium truncate">{chapterInfo.location_details}</p>
+                  <p className="text-xs sm:text-sm font-medium truncate">{chapterInfo.location_details}</p>
                 </div>
               </CardContent>
             </Card>
