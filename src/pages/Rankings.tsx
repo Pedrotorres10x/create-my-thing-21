@@ -294,7 +294,7 @@ const Rankings = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">Tu Posición</p>
                   <h3 className="text-2xl font-bold">#{myRank}</h3>
-                  <p className="text-sm font-medium">{myProfile.weighted_score || myProfile.total_points} puntos ponderados</p>
+                  <p className="text-sm font-medium">{myProfile.weighted_score || myProfile.total_points} puntos</p>
                 </div>
               </div>
               <div className="text-right">
@@ -357,20 +357,6 @@ const Rankings = () => {
                       {sphere.name}
                     </SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Rol</label>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los roles</SelectItem>
-                  <SelectItem value="referrer">Referidores</SelectItem>
-                  <SelectItem value="receiver">Receptores</SelectItem>
-                  <SelectItem value="hybrid">Híbridos</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -471,22 +457,6 @@ const Rankings = () => {
                               {prof.sector_catalog.name}
                             </Badge>
                           ) : null}
-                          {prof.specializations?.referral_role && (
-                            <Badge 
-                              variant="outline" 
-                              className={`text-xs ${
-                                prof.specializations.referral_role === 'referrer' 
-                                  ? 'border-blue-500/50 text-blue-600' 
-                                  : prof.specializations.referral_role === 'receiver'
-                                  ? 'border-primary/50 text-primary'
-                                  : 'border-emerald-500/50 text-emerald-600'
-                              }`}
-                            >
-                              {prof.specializations.referral_role === 'referrer' ? '📡 Referidor' 
-                                : prof.specializations.referral_role === 'receiver' ? '🎯 Receptor' 
-                                : '🔄 Híbrido'}
-                            </Badge>
-                          )}
                           {prof.business_spheres && (
                             <Badge 
                               variant="outline" 
@@ -504,17 +474,7 @@ const Rankings = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-xl font-bold">{prof.weighted_score || prof.total_points}</p>
-                        <p className="text-xs text-muted-foreground">puntos ponderados</p>
-                        {prof.referrals_sent || prof.deals_closed_as_receiver ? (
-                          <div className="flex gap-2 mt-1 justify-end text-xs text-muted-foreground">
-                            {(prof.referrals_sent ?? 0) > 0 && (
-                              <span>📡 {prof.referrals_sent} leads</span>
-                            )}
-                            {(prof.deals_closed_as_receiver ?? 0) > 0 && (
-                              <span>🎯 {prof.deals_closed_as_receiver} deals</span>
-                            )}
-                          </div>
-                        ) : null}
+                        <p className="text-xs text-muted-foreground">puntos</p>
                         <div className="mt-1">
                           <PointsLevelBadge points={prof.total_points} size="sm" />
                         </div>
@@ -538,7 +498,7 @@ const Rankings = () => {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardDescription>Puntos Ponderados Totales</CardDescription>
+            <CardDescription>Puntos Totales</CardDescription>
             <CardTitle className="text-3xl">
               {filteredProfessionals.reduce((sum, p) => sum + (p.weighted_score || p.total_points), 0)}
             </CardTitle>
@@ -546,7 +506,7 @@ const Rankings = () => {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardDescription>Promedio Ponderado</CardDescription>
+            <CardDescription>Promedio de Puntos</CardDescription>
             <CardTitle className="text-3xl">
               {Math.round(
                 filteredProfessionals.reduce((sum, p) => sum + (p.weighted_score || p.total_points), 0) / 

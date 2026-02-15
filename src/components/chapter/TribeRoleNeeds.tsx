@@ -4,8 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckCircle, Target, Star } from 'lucide-react';
 
-interface RoleNeed {
-  role: string;
+interface SpecNeed {
+  type: 'proximity' | 'services' | 'versatile';
   label: string;
   emoji: string;
   count: number;
@@ -19,10 +19,9 @@ interface TribeRoleNeedsProps {
 }
 
 export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
-  const [needs, setNeeds] = useState<RoleNeed[]>([]);
+  const [needs, setNeeds] = useState<SpecNeed[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const [idealRatio, setIdealRatio] = useState('');
 
   useEffect(() => {
     if (!chapterId) {
@@ -50,82 +49,81 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
       const t = roles.length;
       setTotal(t);
 
-      // Calculate ideal ratio: ~40% referrers, ~40% receivers, ~20% hybrids
-      const idealRef = Math.round(t * 0.4);
-      const idealRec = Math.round(t * 0.4);
-      const idealHyb = Math.round(t * 0.2);
-      setIdealRatio(`Ideal: ~${idealRef} ref / ~${idealRec} rec / ~${idealHyb} híb`);
+      // Calculate ideal composition
+      const idealProximity = Math.round(t * 0.4);
+      const idealServices = Math.round(t * 0.4);
+      const idealVersatile = Math.round(t * 0.2);
 
-      const roleNeeds: RoleNeed[] = [];
+      const specNeeds: SpecNeed[] = [];
 
-      // Referrers analysis
-      const refGap = idealRef - referrers;
+      // Proximity businesses (mapped from referrers)
+      const proxGap = idealProximity - referrers;
       if (referrers === 0) {
-        roleNeeds.push({
-          role: 'referrer',
-          label: 'Referidores',
-          emoji: '📡',
+        specNeeds.push({
+          type: 'proximity',
+          label: 'Negocios de proximidad',
+          emoji: '🏪',
           count: 0,
-          total: idealRef,
-          examples: 'Bares, restaurantes, gimnasios, tiendas, nutricionistas… Profesionales que detectan necesidades en sus clientes y las derivan.',
+          total: idealProximity,
+          examples: 'Bares, restaurantes, gimnasios, peluquerías, tiendas, farmacias… Profesionales con gran tráfico de clientes que detectan necesidades.',
           priority: 'critical',
         });
-      } else if (refGap >= 2) {
-        roleNeeds.push({
-          role: 'referrer',
-          label: 'Más referidores',
-          emoji: '📡',
+      } else if (proxGap >= 2) {
+        specNeeds.push({
+          type: 'proximity',
+          label: 'Más negocios de proximidad',
+          emoji: '🏪',
           count: referrers,
-          total: idealRef,
-          examples: 'Negocios de proximidad que generen leads: peluquerías, fisios, farmacias…',
-          priority: refGap >= 3 ? 'critical' : 'medium',
+          total: idealProximity,
+          examples: 'Peluquerías, fisioterapeutas, farmacias… Negocios que ven muchos clientes al día.',
+          priority: proxGap >= 3 ? 'critical' : 'medium',
         });
       }
 
-      // Receivers analysis
-      const recGap = idealRec - receivers;
+      // Professional services (mapped from receivers)
+      const svcGap = idealServices - receivers;
       if (receivers === 0) {
-        roleNeeds.push({
-          role: 'receiver',
-          label: 'Receptores',
-          emoji: '🎯',
+        specNeeds.push({
+          type: 'services',
+          label: 'Profesionales de servicios',
+          emoji: '💼',
           count: 0,
-          total: idealRec,
+          total: idealServices,
           examples: 'Abogados, arquitectos, asesores financieros, inmobiliarias… Profesionales que cierran tratos de alto valor.',
           priority: 'critical',
         });
-      } else if (recGap >= 2) {
-        roleNeeds.push({
-          role: 'receiver',
-          label: 'Más receptores',
-          emoji: '🎯',
+      } else if (svcGap >= 2) {
+        specNeeds.push({
+          type: 'services',
+          label: 'Más profesionales de servicios',
+          emoji: '💼',
           count: receivers,
-          total: idealRec,
-          examples: 'Servicios profesionales que conviertan leads en negocio cerrado.',
-          priority: recGap >= 3 ? 'critical' : 'medium',
+          total: idealServices,
+          examples: 'Servicios profesionales especializados que conviertan oportunidades en negocio.',
+          priority: svcGap >= 3 ? 'critical' : 'medium',
         });
       }
 
-      // Hybrids analysis
+      // Versatile profiles (mapped from hybrids)
       if (hybrids === 0 && t >= 8) {
-        roleNeeds.push({
-          role: 'hybrid',
-          label: 'Híbridos',
-          emoji: '🔄',
+        specNeeds.push({
+          type: 'versatile',
+          label: 'Perfiles versátiles',
+          emoji: '🔗',
           count: 0,
-          total: idealHyb,
-          examples: 'Marketing, diseño, coaching, contabilidad… Profesionales versátiles que refieren y reciben.',
+          total: idealVersatile,
+          examples: 'Marketing, diseño, coaching, contabilidad… Profesionales que conectan con todo tipo de clientes.',
           priority: 'medium',
         });
       }
 
       // Sort by priority
       const priorityOrder = { critical: 0, medium: 1, low: 2 };
-      roleNeeds.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+      specNeeds.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
 
-      setNeeds(roleNeeds);
+      setNeeds(specNeeds);
     } catch (e) {
-      console.error('Error loading tribe role needs:', e);
+      console.error('Error loading tribe needs:', e);
     } finally {
       setLoading(false);
     }
@@ -139,9 +137,9 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
         <CardContent className="p-4 flex items-center gap-3">
           <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0" />
           <div>
-            <p className="text-sm font-medium">Tu Tribu tiene buen equilibrio de roles</p>
+            <p className="text-sm font-medium">Tu Tribu tiene buena variedad de perfiles</p>
             <p className="text-xs text-muted-foreground">
-              Hay referidores, receptores e híbridos. Sigue invitando para cubrir más profesiones.
+              Hay negocios de proximidad, servicios profesionales y perfiles versátiles. Sigue invitando para cubrir más profesiones.
             </p>
           </div>
         </CardContent>
@@ -154,19 +152,19 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
           <Target className="h-5 w-5" />
-          ¿A quién invitar para equilibrar tu Tribu?
+          ¿A quién invitar para que tu Tribu crezca mejor?
         </CardTitle>
         <p className="text-xs text-muted-foreground mt-1">
-          Tu Tribu tiene {total} miembros. {idealRatio}
+          Tu Tribu tiene {total} miembros. Cuanta más variedad, más negocio para todos.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground">
-          Prioriza invitar estos perfiles para que los referidos fluyan mejor y todos cerréis más negocio:
+          Prioriza invitar estos tipos de profesionales para que las recomendaciones fluyan:
         </p>
         {needs.map((need, i) => (
           <div
-            key={need.role}
+            key={need.type}
             className={`flex items-start gap-3 p-3 rounded-lg border ${
               need.priority === 'critical'
                 ? 'bg-destructive/5 border-destructive/20'
@@ -187,7 +185,7 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
                   <Badge variant="destructive" className="text-xs">Ninguno</Badge>
                 ) : (
                   <Badge variant="secondary" className="text-xs">
-                    {need.count}/{need.total} (faltan {need.total - need.count})
+                    {need.count} de {need.total} ideales
                   </Badge>
                 )}
               </div>
@@ -196,7 +194,7 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
           </div>
         ))}
         <p className="text-xs text-muted-foreground italic pt-1">
-          💡 Piensa en tus contactos: ¿quién encaja en estos perfiles? Cada rol que cubras multiplica las oportunidades de negocio para toda la Tribu.
+          💡 Piensa en tus contactos: ¿quién encaja en estos perfiles? Cada profesión nueva multiplica las oportunidades de negocio para toda la Tribu.
         </p>
       </CardContent>
     </Card>

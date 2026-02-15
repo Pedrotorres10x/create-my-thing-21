@@ -1,6 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { 
   UserPlus, 
@@ -31,8 +30,6 @@ interface SmartSuggestionsProps {
 
 export const SmartSuggestions = ({ goals, referralRole }: SmartSuggestionsProps) => {
   const navigate = useNavigate();
-  const isReferrer = referralRole === 'referrer';
-  const isReceiver = referralRole === 'receiver';
 
   const calculateSuggestions = (): Suggestion[] => {
     if (!goals) {
@@ -51,15 +48,9 @@ export const SmartSuggestions = ({ goals, referralRole }: SmartSuggestionsProps)
     const hasCompanions = goals.chapter_member_count > 1;
     const memberCount = goals.chapter_member_count;
 
-    // Semáforo de salud del grupo:
-    // 🔴 <10 = peligro de desaparición
-    // 🟡 10-19 = cuidado
-    // 🟢 20+ = sano (ideal 50)
     const isRedZone = memberCount < 10;
     const isAmberZone = memberCount >= 10 && memberCount < 20;
-    const remaining50 = 50 - memberCount;
 
-    // === SOLO: sin compañeros ===
     if (!hasCompanions) {
       return [
         {
@@ -75,7 +66,6 @@ export const SmartSuggestions = ({ goals, referralRole }: SmartSuggestionsProps)
       ];
     }
 
-    // === ZONA ROJA: 2-9 miembros — peligro de desaparición ===
     if (isRedZone) {
       const suggestions: Suggestion[] = [];
       const toSafe = 10 - memberCount;
@@ -120,27 +110,17 @@ export const SmartSuggestions = ({ goals, referralRole }: SmartSuggestionsProps)
       return suggestions.slice(0, 2);
     }
 
-    // === ZONA ÁMBAR: 10-19 miembros — ya hay masa, prioridad = REFERIR ===
     if (isAmberZone) {
       const suggestions: Suggestion[] = [];
       const toGreen = 20 - memberCount;
 
-      // Prioridad 1: REFERIR (ya pasamos la barrera de crecimiento básico)
       suggestions.push({
         id: 'amber-referral-main',
         type: 'opportunity',
         priority: 1,
-        title: isReferrer
-          ? `Ya sois ${memberCount}. Tú eres clave: detecta leads`
-          : isReceiver
-          ? `Ya sois ${memberCount}. Ahora toca cerrar negocio`
-          : `Ya sois ${memberCount}. Ahora toca mover negocio`,
-        description: isReferrer
-          ? `Tu Tribu necesita tus contactos para generar negocio. Piensa en quién de tu entorno necesita un abogado, arquitecto o asesor de tu grupo.`
-          : isReceiver
-          ? `Tienes compañeros que te pueden mandar clientes. El que refiere primero, recibe primero. ¿A quién puedes derivar un contacto hoy?`
-          : `Tu Tribu ya tiene profesionales suficientes para generar clientes. El que refiere primero, recibe primero. ¿A quién puedes mandar un contacto hoy?`,
-        action: isReferrer ? 'Enviar lead' : 'Referir contacto',
+        title: `Ya sois ${memberCount}. Ahora toca mover negocio`,
+        description: `Tu Tribu ya tiene profesionales suficientes para generar clientes. El que refiere primero, recibe primero. ¿A quién puedes mandar un contacto hoy?`,
+        action: 'Referir contacto',
         actionRoute: '/recomendacion',
         icon: Handshake,
       });
@@ -187,7 +167,7 @@ export const SmartSuggestions = ({ goals, referralRole }: SmartSuggestionsProps)
       return suggestions.sort((a, b) => a.priority - b.priority).slice(0, 2);
     }
 
-    // === ZONA VERDE: 20+ miembros — grupo sano ===
+    // === ZONA VERDE: 20+ miembros ===
     const suggestions: Suggestion[] = [];
 
     if (goals.referrals_this_week === 0) {
@@ -195,17 +175,9 @@ export const SmartSuggestions = ({ goals, referralRole }: SmartSuggestionsProps)
         id: 'weekly-referral',
         type: 'opportunity',
         priority: 1,
-        title: isReferrer
-          ? 'Tú eres el motor: detecta un lead esta semana'
-          : isReceiver
-          ? '¿Quieres recibir clientes? Refiere tú primero'
-          : '¿Quieres recibir clientes? Primero manda tú uno',
-        description: isReferrer
-          ? `Tus compañeros cierran negocio gracias a los contactos que tú generas. Piensa en quién de tu entorno necesita un servicio de la Tribu. Quedan ${goals.days_until_week_end} días.`
-          : isReceiver
-          ? `Si no das, ¿por qué te van a dar a ti? Manda un contacto a un referidor y activa el ciclo. Quedan ${goals.days_until_week_end} días.`
-          : `Esta semana no has referido a nadie. Si no das, ¿por qué te van a dar a ti? Quedan ${goals.days_until_week_end} días.`,
-        action: isReferrer ? 'Enviar lead' : 'Referir contacto',
+        title: '¿Quieres recibir clientes? Primero manda tú uno',
+        description: `Esta semana no has referido a nadie. Si no das, ¿por qué te van a dar a ti? Quedan ${goals.days_until_week_end} días.`,
+        action: 'Referir contacto',
         actionRoute: '/recomendacion',
         icon: Handshake,
       });
