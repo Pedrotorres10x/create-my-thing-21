@@ -570,22 +570,18 @@ serve(async (req) => {
     const profileMissing: string[] = [];
     const criticalMissing: string[] = [];
     const secondaryMissing: string[] = [];
-    // CRITICAL fields - block onboarding until filled
-    if (!profileInfo?.photo_url) { profileMissing.push('FOTO DE PERFIL'); criticalMissing.push('FOTO DE PERFIL'); }
-    if (typeUnknown) { profileMissing.push('TIPO DE PROFESIONAL (autónomo o empresa)'); criticalMissing.push('TIPO DE PROFESIONAL'); }
-    if (isEmpresa && !profileInfo?.company_name && !profileInfo?.business_name) { profileMissing.push('NOMBRE DE EMPRESA'); criticalMissing.push('NOMBRE DE EMPRESA'); }
-    if (!isAutonomo && !typeUnknown && !profileInfo?.company_name && !profileInfo?.business_name) { profileMissing.push('NOMBRE DE EMPRESA'); criticalMissing.push('NOMBRE DE EMPRESA'); }
-    if (!profileInfo?.phone) { profileMissing.push('TELÉFONO'); criticalMissing.push('TELÉFONO'); }
-    if (!profileInfo?.profession_specialization_id && !profileInfo?.specialization_id) { profileMissing.push('SECTOR / ESPECIALIZACIÓN PROFESIONAL'); criticalMissing.push('SECTOR / ESPECIALIZACIÓN'); }
-    if (!profileInfo?.business_description) { profileMissing.push('DESCRIPCIÓN DEL NEGOCIO (ÚLTIMA - GENERAR AUTOMÁTICAMENTE)'); secondaryMissing.push('DESCRIPCIÓN DEL NEGOCIO'); }
-    // OPTIONAL fields - NOT blocking, user can fill later from profile page
-    // NIF/CIF, company_cif, address, company_address, logo, website, linkedin, years_experience
+    // ONLY critical field: sector/specialization - needed to assign to a group
+    if (!profileInfo?.profession_specialization_id && !profileInfo?.specialization_id) { 
+      profileMissing.push('SECTOR / ESPECIALIZACIÓN PROFESIONAL'); 
+      criticalMissing.push('SECTOR / ESPECIALIZACIÓN'); 
+    }
+    // Everything else (photo, phone, NIF, address, description, etc.) is filled by user directly in profile page
     const isProfileIncomplete = profileMissing.length > 0;
-    console.log('PROFILE COMPLETENESS CHECK:', JSON.stringify({ isProfileIncomplete, profileMissing, professional_type: professionalType, business_description: !!profileInfo?.business_description, years_experience: profileInfo?.years_experience, website: profileInfo?.website, linkedin: profileInfo?.linkedin }));
+    console.log('PROFILE COMPLETENESS CHECK:', JSON.stringify({ isProfileIncomplete, profileMissing, has_specialization: !!profileInfo?.profession_specialization_id || !!profileInfo?.specialization_id }));
     const hasCriticalMissing = criticalMissing.length > 0;
-    const hasOnlySecondaryMissing = !hasCriticalMissing && secondaryMissing.length > 0;
-    const hasNoPhoto = !profileInfo?.photo_url;
-    const hasNoLogo = isEmpresa && !profileInfo?.logo_url;
+    const hasOnlySecondaryMissing = false;
+    const hasNoPhoto = false;
+    const hasNoLogo = false;
 
     // Robust first name extraction with JWT fallback
     const fullNameFromProfile = profileInfo?.full_name || '';
