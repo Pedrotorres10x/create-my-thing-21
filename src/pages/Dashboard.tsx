@@ -16,6 +16,7 @@ import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { AliciaWelcomeModal } from "@/components/AliciaWelcomeModal";
 import { DealLimitBanner } from "@/components/subscription/DealLimitBanner";
 import { DealUpgradePrompt } from "@/components/subscription/DealUpgradePrompt";
+import { TribeRoleNeeds } from "@/components/chapter/TribeRoleNeeds";
 
 interface DashboardStats {
   referralsSent: number;
@@ -249,6 +250,9 @@ const Dashboard = () => {
 
           {/* Smart Suggestions (invitar, etc.) */}
           <SmartSuggestions goals={goals} referralRole={(professional as any)?.specializations?.referral_role} />
+
+          {/* Tribe needs - guide invitations */}
+          <TribeRoleNeeds chapterId={professional?.chapter_id} />
 
           {/* KPI Grid — secondary, al fondo */}
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">

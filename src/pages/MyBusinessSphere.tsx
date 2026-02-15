@@ -22,6 +22,7 @@ import { SphereReferencesManager } from "@/components/sphere/SphereReferencesMan
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { TribeBalanceIndicator } from "@/components/chapter/TribeBalanceIndicator";
+import { TribeRoleNeeds } from "@/components/chapter/TribeRoleNeeds";
 
 interface SphereInfo {
   id: number;
@@ -270,6 +271,9 @@ export default function MyBusinessSphere() {
       {isAdmin && roleBalance && roleBalance.total > 0 && (
         <TribeBalanceIndicator balance={roleBalance} />
       )}
+
+      {/* Public: suggestions on who to invite */}
+      <TribeRoleNeeds chapterId={chapterInfo?.id || null} />
 
       {/* Geographic scope selector */}
       <Card>
