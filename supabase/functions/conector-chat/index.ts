@@ -99,6 +99,7 @@ serve(async (req) => {
     // Load user context and profile info
     let userContextStr = '';
     let profileInfo: any = null;
+    let allSpecializations: any[] | null = null;
     let isNewUser = false;
     let activeConversationId: string | null = conversationId || null;
     let isExperiencedUser = false;
@@ -174,11 +175,11 @@ serve(async (req) => {
       profileInfo = profile;
 
       // Load all available specializations for matching
-      const { data: allSpecializations } = await supabase
+      const { data: loadedSpecializations } = await supabase
         .from('profession_specializations')
         .select('id, name, specialization_id, specializations(name)')
         .order('name');
-      
+      allSpecializations = loadedSpecializations;
 
       // Get chapter info
       if (profile?.chapter_id) {
