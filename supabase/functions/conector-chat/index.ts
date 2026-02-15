@@ -172,7 +172,14 @@ serve(async (req) => {
       }
       console.log('Profile loaded:', JSON.stringify({ full_name: profile?.full_name, specialization: profile?.profession_specializations }));
       profileInfo = profile;
+
+      // Load all available specializations for matching
+      const { data: allSpecializations } = await supabase
+        .from('profession_specializations')
+        .select('id, name, specialization_id, specializations(name)')
+        .order('name');
       
+
       // Get chapter info
       if (profile?.chapter_id) {
         const { data: chapterData } = await supabase
@@ -709,6 +716,7 @@ RELLENA el campo correspondiente usando este marcador OCULTO al final de tu mens
 [PERFIL:campo=valor]
 
 Campos disponibles (usa el nombre exacto):
+- profession_specialization = Especialización profesional (usa el NOMBRE EXACTO de la lista de abajo) - IMPORTANTÍSIMO PARA ASIGNAR GRUPO
 - professional_type = Tipo de profesional ("autonomo" o "empresa") - IMPORTANTÍSIMO
 - company_name = Nombre de la empresa (SOLO si es empresa)
 - business_description = Descripción del negocio/servicios (qué les diferencia, en qué se especializan) - TANTO autónomo como empresa
@@ -726,6 +734,15 @@ Campos disponibles (usa el nombre exacto):
 - linkedin_url = URL de LinkedIn
 - years_experience = Años de experiencia (solo número)
 - phone = Teléfono
+
+🚨 ESPECIALIZACIÓN PROFESIONAL - LISTA COMPLETA (usa SOLO estos nombres exactos):
+${(allSpecializations || []).map((s: any) => `- ${s.name} (${s.specializations?.name || ''})`).join('\n')}
+
+Cuando el usuario te dice su profesión, BÚSCALA en la lista anterior y usa:
+[PERFIL:profession_specialization=Nombre Exacto De La Lista]
+Ejemplo: Si dice "soy inmobiliaria residencial" → [PERFIL:profession_specialization=Inmobiliaria Residencial]
+Si dice "hago SEO" → [PERFIL:profession_specialization=SEO/SEM]
+Si NO encuentras su profesión exacta en la lista, pregúntale cuál de las opciones se acerca más.
 
 Puedes usar VARIOS marcadores en un mensaje:
 [PERFIL:company_name=Mi Empresa S.L.][PERFIL:position=CEO][PERFIL:city=Madrid]
@@ -1717,6 +1734,23 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
                 'country', 'address', 'website', 'linkedin_url', 'years_experience', 'phone'
               ];
               const safeUpdates: Record<string, any> = {};
+              
+              // Handle profession_specialization name → ID lookup
+              if (profileUpdates['profession_specialization'] && allSpecializations) {
+                const specName = profileUpdates['profession_specialization'].trim();
+                const matched = allSpecializations.find((s: any) => 
+                  s.name.toLowerCase() === specName.toLowerCase()
+                );
+                if (matched) {
+                  safeUpdates['profession_specialization_id'] = matched.id;
+                  safeUpdates['specialization_id'] = matched.specialization_id;
+                  console.log('Matched specialization:', specName, '→ ID:', matched.id);
+                } else {
+                  console.log('Specialization NOT matched:', specName);
+                }
+                delete profileUpdates['profession_specialization'];
+              }
+              
               for (const [key, value] of Object.entries(profileUpdates)) {
                 if (allowedFields.includes(key)) {
                   safeUpdates[key] = key === 'years_experience' ? parseInt(value) || null : value;
