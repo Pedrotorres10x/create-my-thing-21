@@ -6,7 +6,7 @@ import { useEthicsCommittee } from "@/hooks/useEthicsCommittee";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-
+import { useSidebarTutorial } from "@/components/SidebarTutorialContext";
 import {
   Sidebar,
   SidebarContent,
@@ -42,6 +42,7 @@ export function AppSidebar() {
   const { isAdmin } = useAdmin();
   const { isCommitteeMember } = useEthicsCommittee();
   const [hasProfile, setHasProfile] = useState(false);
+  const { active: tutorialActive, highlightedUrl, showingExplanation, onHighlightedClick } = useSidebarTutorial();
 
   useEffect(() => {
     if (!user) return;
@@ -56,7 +57,7 @@ export function AppSidebar() {
     check();
   }, [user]);
 
-  const mainItems = hasProfile ? [...coreItems, ...expandedMainItems] : coreItems;
+  const mainItems = (hasProfile || tutorialActive) ? [...coreItems, ...expandedMainItems] : coreItems;
 
   const linkBase = [
     "sidebar-key",
@@ -86,21 +87,35 @@ export function AppSidebar() {
 
   const renderItems = (items: typeof coreItems) => (
     <SidebarMenu className="space-y-1.5 px-2.5">
-      {items.map((item) => (
-        <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton asChild>
-            <NavLink to={item.url} end className={linkBase} activeClassName={linkActive}>
-              <item.icon className="h-4 w-4 shrink-0" />
-              {open && <span>{item.title}</span>}
-            </NavLink>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      ))}
+      {items.map((item) => {
+        const isHighlighted = tutorialActive && !showingExplanation && highlightedUrl === item.url;
+        return (
+          <SidebarMenuItem key={item.title}>
+            <SidebarMenuButton asChild>
+              <NavLink
+                to={item.url}
+                end
+                className={`${linkBase} ${isHighlighted ? "relative z-[95] ring-2 ring-primary ring-offset-2 ring-offset-background animate-pulse shadow-[0_0_20px_hsl(24_90%_52%/0.4)]" : ""}`}
+                activeClassName={linkActive}
+                onClick={(e) => {
+                  if (isHighlighted) {
+                    e.preventDefault();
+                    onHighlightedClick();
+                  }
+                }}
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                {open && <span>{item.title}</span>}
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        );
+      })}
     </SidebarMenu>
   );
 
   return (
-    <Sidebar className={open ? "w-56" : "w-14"} collapsible="icon">
+    <Sidebar className={`${open ? "w-56" : "w-14"} ${tutorialActive ? "z-[95]" : ""}`} collapsible="icon">
       <SidebarContent
         className="pt-0 border-r border-border/40"
         style={{
@@ -135,7 +150,7 @@ export function AppSidebar() {
           <SidebarGroupContent>{renderItems(mainItems)}</SidebarGroupContent>
         </SidebarGroup>
 
-        {hasProfile && (
+        {(hasProfile || tutorialActive) && (
           <>
             <Divider />
             <SidebarGroup>
