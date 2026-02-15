@@ -401,7 +401,7 @@ export function ProfileForm() {
   // ==========================================
   if (!hasProfile) {
     const benefits = [
-      { icon: Users, text: "Tu Tribu de profesionales que te refieren clientes" },
+      { icon: Users, text: "Se acabó ir suplicando detrás de los clientes" },
       { icon: TrendingUp, text: "Genera negocio desde el primer día" },
       { icon: Shield, text: "Red exclusiva y verificada" },
     ];
