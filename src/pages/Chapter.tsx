@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Users, Calendar, Award, Handshake, UserPlus } from "lucide-react";
 import { TribeBalanceIndicator } from "@/components/chapter/TribeBalanceIndicator";
+import { useAdmin } from "@/hooks/useAdmin";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
 import { RequestMeetingDialog } from "@/components/meetings/RequestMeetingDialog";
 import { CreateDealDialog } from "@/components/deals/CreateDealDialog";
@@ -41,6 +42,7 @@ interface ChapterMember {
 }
 
 const Chapter = () => {
+  const { isAdmin } = useAdmin();
   const [loading, setLoading] = useState(true);
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [members, setMembers] = useState<ChapterMember[]>([]);
@@ -225,7 +227,7 @@ const Chapter = () => {
       </div>
 
       {/* Balance Indicator */}
-      {members.length > 0 && (
+      {isAdmin && members.length > 0 && (
         <TribeBalanceIndicator
           balance={{
             referrers: members.filter(m => m.specializations?.referral_role === 'referrer').length,

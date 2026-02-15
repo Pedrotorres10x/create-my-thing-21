@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -42,6 +43,7 @@ interface ChapterInfo {
 
 export default function MyBusinessSphere() {
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
@@ -265,7 +267,7 @@ export default function MyBusinessSphere() {
       )}
 
       {/* Tribe balance indicator */}
-      {roleBalance && roleBalance.total > 0 && (
+      {isAdmin && roleBalance && roleBalance.total > 0 && (
         <TribeBalanceIndicator balance={roleBalance} />
       )}
 
