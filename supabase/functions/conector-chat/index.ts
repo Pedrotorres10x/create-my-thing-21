@@ -157,7 +157,8 @@ serve(async (req) => {
           postal_code,
           country,
           profession_specialization_id,
-          profession_specializations(name)
+          profession_specializations(name),
+          specializations(referral_role)
         `)
         .eq('id', professionalId)
         .single();
@@ -536,6 +537,10 @@ serve(async (req) => {
           userContextStr += `- Tribu asignada: Sí\n`;
         }
 
+        // Referral role from specialization
+        const referralRole = (profileInfo as any)?.specializations?.referral_role || 'hybrid';
+        userContextStr += `- Rol en ecosistema: ${referralRole === 'referrer' ? 'REFERIDOR (genera leads/contactos)' : referralRole === 'receiver' ? 'RECEPTOR (recibe leads y cierra tratos)' : 'HÍBRIDO (genera y recibe leads)'}\n`;
+
         if (chaptersInArea.length > 0) {
           userContextStr += `\nTRIBUS DISPONIBLES EN ${profileInfo.city}, ${profileInfo.state}:\n`;
           chaptersInArea.forEach((ch: any) => {
@@ -785,6 +790,64 @@ CONTEXTO DE SU TRIBU:
 - Miembros en su Tribu: ${chapterMemberCount}
 - ¿Está solo en la Tribu?: ${isAloneInChapter ? 'SÍ - ES EL ÚNICO MIEMBRO' : 'No'}
 ${professionsInChapter.length > 0 ? `- Compañeros en la Tribu: ${professionsInChapter.map((p: any) => `${p.full_name} (${p.profession_specializations?.name || 'sin especialidad'})`).join(', ')}` : '- No hay otros miembros aún'}
+
+━━━ COACHING ADAPTADO POR ROL (REFERIDOR / RECEPTOR / HÍBRIDO) ━━━
+
+ROL DEL USUARIO: ${(profileInfo as any)?.specializations?.referral_role || 'hybrid'}
+
+${((profileInfo as any)?.specializations?.referral_role === 'referrer') ? `
+🟢 ESTE USUARIO ES REFERIDOR (genera leads para otros):
+Su negocio (bar, restaurante, gimnasio, comercio, nutricionista...) tiene TRÁFICO DE PERSONAS.
+Ve gente todos los días. Escucha conversaciones. Detecta necesidades.
+
+COACHING ESPECÍFICO PARA REFERIDORES:
+- Su SUPERPODER es el VOLUMEN de contactos diarios. Hazle consciente de ello.
+- "Cada persona que entra en tu negocio tiene una necesidad que alguien de tu Tribu puede resolver"
+- "Tú no vendes seguros ni casas. Pero ESCUCHAS a gente que los necesita. Eso vale ORO"
+- "Un cliente te dice que se muda → referido para inmobiliario. Te dice que se divorcia → referido para abogado. Te dice que quiere perder peso → referido para nutricionista"
+- ENSÉÑALE A DETECTAR LEADS en conversaciones cotidianas:
+  * "¿Tu cliente habló de reformar su casa? → Arquitecto de tu Tribu"
+  * "¿Alguien mencionó problemas con Hacienda? → Gestor/asesor fiscal"
+  * "¿Un cliente se quejó de dolor de espalda? → Fisioterapeuta"
+  * "¿Alguien preguntó por un buen dentista? → El dentista de tu Tribu"
+- NO le presiones para CERRAR tratos (eso es trabajo del receptor). Su trabajo es DETECTAR y PASAR el contacto.
+- RECOMPENSA: "Cada contacto que pases vale MÍNIMO 100€ cuando se cierra. Y tú no tienes que hacer NADA más que dar el nombre"
+- MÉTRICA CLAVE: número de contactos referidos, NO volumen de negocio cerrado
+- Celebra cada lead detectado como si fuera un gol
+` : ((profileInfo as any)?.specializations?.referral_role === 'receiver') ? `
+🔴 ESTE USUARIO ES RECEPTOR (recibe leads y cierra tratos):
+Su negocio (inmobiliaria, abogado, arquitecto, asesor financiero...) NECESITA clientes cualificados.
+Cada cliente cerrado puede valer miles de euros.
+
+COACHING ESPECÍFICO PARA RECEPTORES:
+- Su RETO es conseguir que le LLEGUEN leads. Para eso necesita DAR PRIMERO.
+- "La reciprocidad no falla. Pero alguien tiene que empezar. Y ese eres tú"
+- "¿Quieres que te manden clientes? Primero manda TÚ uno. Piensa en alguien que conozcas que necesite algo"
+- ENSÉÑALE A CERRAR BIEN los leads que recibe:
+  * "Cuando te llegue un referido, llama EN MENOS DE 24H. El 80% de los tratos se pierden por tardar"
+  * "Agradece SIEMPRE al que te mandó el contacto, aunque no cierre. Eso garantiza que te mande más"
+  * "Cierra el trato en la plataforma para que quede registrado y tu compañero cobre su comisión"
+- PRESIONA para que TAMBIÉN REFIERA (aunque sea receptor, puede detectar necesidades en sus clientes):
+  * "Tu cliente de inmobiliaria seguro que necesita un seguro de hogar → Pasa el contacto al corredor"
+  * "Tu cliente legal seguro que necesita un gestor → Pasa el contacto"
+  * "El que te compra una casa necesita un arquitecto para reformarla → Refiere"
+- MÉTRICA CLAVE: ratio de leads recibidos vs tratos cerrados, y agradecimientos pagados
+- URGENCIA: "Cada lead que no cierras es dinero que se escapa. Y un compañero que deja de mandarte"
+` : `
+🟡 ESTE USUARIO ES HÍBRIDO (genera y recibe leads):
+Su negocio (marketing, coaching, contabilidad, diseño...) puede tanto generar como recibir clientes.
+
+COACHING ESPECÍFICO PARA HÍBRIDOS:
+- Tiene la VENTAJA de jugar en los dos bandos. Hazle consciente.
+- "Tú puedes hacer las dos cosas: detectar necesidades en tus clientes Y recibir clientes de otros"
+- ALTERNA consejos de detección de leads con consejos de cierre
+- ENSÉÑALE a usar sus sesiones con clientes para detectar necesidades:
+  * "En cada reunión con un cliente, pregúntale: ¿necesitas algo más?"
+  * "Un cliente de coaching que necesita mejorar su web → Diseñador web de tu Tribu"
+  * "Un cliente de contabilidad que quiere invertir → Asesor financiero de tu Tribu"
+- MÉTRICA CLAVE: equilibrio entre leads enviados y recibidos
+- "El híbrido perfecto manda 1 referido por cada 1 que recibe. Ese equilibrio es tu objetivo"
+`}
 
 REGLA DE BIENVENIDA A LA TRIBU (MÁXIMA PSICOLOGÍA):
 Cuando confirmes que el usuario ha entrado o se le asigne una profesión/tribu, aplica TODAS estas técnicas en un solo mensaje:
