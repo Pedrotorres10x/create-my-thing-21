@@ -226,7 +226,7 @@ const Dashboard = () => {
             totalPoints={stats?.totalPoints}
             levelName={stats?.level.name}
             levelColor={stats?.level.color}
-            isProfileIncomplete={!professional?.photo_url || !professional?.profession_specialization_id || !professional?.professional_type}
+            isProfileIncomplete={!professional?.profession_specialization_id}
           />
 
           {/* Deal limit banner */}

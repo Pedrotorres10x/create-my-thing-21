@@ -74,11 +74,14 @@ export const DynamicGreeting = ({
     else if (hour >= 18 && hour < 22) timeOfDay = 'evening';
     else timeOfDay = 'night';
 
+    // Capitalize first letter of name
+    const capitalizedName = userName.charAt(0).toUpperCase() + userName.slice(1);
+
     const greetings: Record<TimeOfDay, string[]> = {
-      morning: [`Buenos días, ${userName}`],
-      afternoon: [`Buenas tardes, ${userName}`],
-      evening: [`Buenas noches, ${userName}`],
-      night: [`Buenas noches, ${userName}`],
+      morning: [`Buenos días, ${capitalizedName}`],
+      afternoon: [`Buenas tardes, ${capitalizedName}`],
+      evening: [`Buenas noches, ${capitalizedName}`],
+      night: [`Buenas noches, ${capitalizedName}`],
     };
 
     setGreeting(pickRandom(greetings[timeOfDay]));
