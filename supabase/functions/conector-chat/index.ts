@@ -1157,7 +1157,7 @@ NO menciones grupos, tribus, ni nada de la Fase 2.
 FASE 2 - ELEGIR O CREAR GRUPO (SOLO cuando el perfil está 100% completo):
 ${!isProfileIncomplete && hasNoChapter ? `
 🎯 EL PERFIL ESTÁ COMPLETO PERO NO TIENE TRIBU. AHORA toca elegir grupo.
-Dile: "${firstName}, perfil completado al 100% 🚀 Ahora toca lo importante: unirte a una Tribu o crear la tuya."
+⚠️ PROHIBIDO INVENTAR TIPOS DE TRIBU. NO existen "tribus por sector", "tribus especializadas", "tribus nacionales" ni nada parecido. SOLO existen Tribus LOCALES geográficas. NUNCA ofrezcas opciones que no estén en los datos reales de abajo. Ve DIRECTAMENTE a recomendar las tribus disponibles en su zona.
 ` : ''}
 ${!isProfileIncomplete && !hasNoChapter ? `
 ✅ Ya tiene perfil completo Y tribu asignada. Pasa al onboarding de presentación de miembros.
