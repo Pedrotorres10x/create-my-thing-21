@@ -2,107 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Apple Dark Premium Design System — all colors HSL */
+/* Enterprise Dark Premium — Linear/Vercel inspired */
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 9%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
+    --card-foreground: 0 0% 3.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover-foreground: 0 0% 3.9%;
 
-    --primary: 211 100% 50%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 9%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 9% 46%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 9% 20%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 92%;
-    --input: 0 0% 92%;
-    --ring: 211 100% 50%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 221 83% 53%;
 
-    --radius: 0.875rem;
+    --radius: 0.5rem;
 
-    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.04), 0 1px 2px hsl(0 0% 0% / 0.06);
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 
-    /* Alicia AI Assistant Theme */
-    --alicia-primary: 211 100% 50%;
-    --alicia-secondary: 211 80% 60%;
-    --alicia-accent: 211 90% 55%;
-    --alicia-gradient: linear-gradient(135deg, hsl(211 100% 50%) 0%, hsl(211 80% 60%) 100%);
-    --alicia-glow: 0 0 30px hsl(211 100% 50% / 0.2);
-    --alicia-shadow: 0 8px 30px hsl(211 100% 50% / 0.15);
+    /* Alicia */
+    --alicia-primary: 221 83% 53%;
+    --alicia-secondary: 221 70% 60%;
+    --alicia-accent: 221 80% 55%;
+    --alicia-gradient: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(221 70% 60%) 100%);
+    --alicia-glow: 0 0 20px hsl(221 83% 53% / 0.15);
+    --alicia-shadow: 0 4px 20px hsl(221 83% 53% / 0.1);
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 9%;
-    --sidebar-primary: 211 100% 50%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 3.9%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 0 0% 92%;
-    --sidebar-ring: 211 100% 50%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 220 9% 20%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 221 83% 53%;
   }
 
   .dark {
-    --background: 0 0% 7%;
-    --foreground: 0 0% 93%;
+    --background: 228 10% 6%;
+    --foreground: 220 13% 91%;
 
-    --card: 0 0% 11%;
-    --card-foreground: 0 0% 93%;
+    --card: 225 10% 8.5%;
+    --card-foreground: 220 13% 91%;
 
-    --popover: 0 0% 11%;
-    --popover-foreground: 0 0% 93%;
+    --popover: 225 10% 8.5%;
+    --popover-foreground: 220 13% 91%;
 
-    --primary: 211 100% 50%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 0 0% 93%;
+    --secondary: 225 10% 12%;
+    --secondary-foreground: 220 13% 70%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 55%;
+    --muted: 225 10% 12%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 93%;
+    --accent: 225 10% 14%;
+    --accent-foreground: 220 13% 91%;
 
     --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 93%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 16%;
-    --input: 0 0% 16%;
-    --ring: 211 100% 50%;
+    --border: 225 10% 14%;
+    --input: 225 10% 14%;
+    --ring: 221 83% 53%;
 
-    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.3), 0 1px 2px hsl(0 0% 0% / 0.4);
+    --shadow-card: 0 0 0 1px hsl(220 10% 16%), 0 1px 2px hsl(0 0% 0% / 0.4);
 
-    /* Alicia AI Assistant Theme - Dark Mode */
-    --alicia-primary: 211 100% 55%;
-    --alicia-secondary: 211 80% 65%;
-    --alicia-accent: 211 90% 60%;
-    --alicia-gradient: linear-gradient(135deg, hsl(211 100% 55%) 0%, hsl(211 80% 65%) 100%);
-    --alicia-glow: 0 0 40px hsl(211 100% 55% / 0.3);
-    --alicia-shadow: 0 8px 30px hsl(211 100% 55% / 0.2);
+    /* Alicia */
+    --alicia-primary: 221 83% 56%;
+    --alicia-secondary: 221 70% 62%;
+    --alicia-accent: 221 80% 58%;
+    --alicia-gradient: linear-gradient(135deg, hsl(221 83% 56%) 0%, hsl(260 60% 55%) 100%);
+    --alicia-glow: 0 0 30px hsl(221 83% 53% / 0.2);
+    --alicia-shadow: 0 4px 24px hsl(221 83% 53% / 0.15);
 
-    --sidebar-background: 0 0% 9%;
-    --sidebar-foreground: 0 0% 93%;
-    --sidebar-primary: 211 100% 50%;
+    --sidebar-background: 228 10% 7.5%;
+    --sidebar-foreground: 220 13% 80%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 14%;
-    --sidebar-accent-foreground: 0 0% 93%;
-    --sidebar-border: 0 0% 16%;
-    --sidebar-ring: 211 100% 50%;
+    --sidebar-accent: 225 10% 12%;
+    --sidebar-accent-foreground: 220 13% 91%;
+    --sidebar-border: 225 10% 13%;
+    --sidebar-ring: 221 83% 53%;
   }
 }
 
@@ -113,10 +113,10 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    letter-spacing: -0.01em;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -158,12 +158,12 @@
 
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-6px); }
+    50% { transform: translateY(-4px); }
   }
 
   @keyframes pulse-glow {
     0%, 100% { box-shadow: var(--alicia-glow); }
-    50% { box-shadow: 0 0 50px hsl(211 100% 50% / 0.35); }
+    50% { box-shadow: 0 0 40px hsl(221 83% 53% / 0.3); }
   }
 
   @keyframes gradient {
@@ -171,18 +171,40 @@
     50% { background-position: 100% 50%; }
   }
 
-  /* Glassmorphism - refined */
+  /* Glassmorphism */
   .backdrop-glass {
     background: hsl(0 0% 100% / 0.6);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid hsl(0 0% 0% / 0.06);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
   }
 
   .dark .backdrop-glass {
-    background: hsl(0 0% 0% / 0.4);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid hsl(0 0% 100% / 0.08);
+    background: hsl(225 10% 10% / 0.7);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid hsl(220 10% 18%);
+  }
+
+  /* Enterprise gradient border */
+  .gradient-border {
+    position: relative;
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      hsl(220 10% 20%) 0%,
+      hsl(220 10% 14%) 50%,
+      hsl(220 10% 20%) 100%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
   }
 }
