@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TrendingUp, Zap, Crown } from 'lucide-react';
+import { Crown, Zap } from 'lucide-react';
 
 interface DynamicGreetingProps {
   userName: string;
@@ -100,28 +100,28 @@ export const DynamicGreeting = ({
 
   return (
     <div className="flex items-center justify-between gap-4">
-      <div className="space-y-0.5">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+      <div className="space-y-1">
+        <h1 className="text-lg font-semibold tracking-tight">
           {greeting}
         </h1>
-        <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-          <Zap className="h-3.5 w-3.5 flex-shrink-0" />
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5 max-w-xl">
+          <Zap className="h-3 w-3 flex-shrink-0 text-primary" />
           <span>{insight}</span>
         </p>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1.5 rounded-lg border border-border/50 px-3 py-1.5 bg-card/50">
-          <Crown className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-semibold">#{ranking || '—'}</span>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 bg-card">
+          <Crown className="h-3.5 w-3.5 text-primary" />
+          <span className="text-sm font-bold text-foreground">#{ranking || '—'}</span>
         </div>
-        <div className="flex items-center gap-1.5 rounded-lg border border-border/50 px-3 py-1.5 bg-card/50">
+        <div className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 bg-card">
           <div 
-            className="w-2.5 h-2.5 rounded-full"
+            className="w-2 h-2 rounded-full"
             style={{ backgroundColor: levelColor }}
           />
-          <span className="text-sm font-medium">{levelName}</span>
-          <span className="text-xs text-muted-foreground">{totalPoints}</span>
+          <span className="text-xs font-medium text-muted-foreground">{levelName}</span>
+          <span className="text-xs font-bold text-foreground">{totalPoints}</span>
         </div>
       </div>
     </div>

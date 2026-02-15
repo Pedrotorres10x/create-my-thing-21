@@ -48,10 +48,10 @@ export function Layout({ children }: LayoutProps) {
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-12 border-b border-border flex items-center justify-between px-4 bg-background sticky top-0 z-10">
+          <header className="h-12 border-b border-border flex items-center justify-between px-5 bg-background/95 backdrop-blur-sm sticky top-0 z-10">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <span className="text-sm font-semibold tracking-tight text-foreground">CONECTOR</span>
+              <span className="text-xs font-bold tracking-[0.15em] uppercase text-muted-foreground">CONECTOR</span>
             </div>
             
             <div className="flex items-center gap-1">
@@ -70,25 +70,25 @@ export function Layout({ children }: LayoutProps) {
                       </AvatarFallback>
                     </Avatar>
                     {professional?.full_name && (
-                      <span className="hidden lg:inline text-xs max-w-[120px] truncate">
+                      <span className="hidden lg:inline text-xs text-muted-foreground max-w-[120px] truncate">
                         {professional.full_name}
                       </span>
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52">
-                  <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">Mi Cuenta</DropdownMenuLabel>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Mi Cuenta</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate("/profile")} className="text-sm cursor-pointer">
+                  <DropdownMenuItem onClick={() => navigate("/profile")} className="text-xs cursor-pointer">
                     <User className="mr-2 h-3.5 w-3.5" />
                     Mi Perfil
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/dashboard")} className="text-sm cursor-pointer">
+                  <DropdownMenuItem onClick={() => navigate("/dashboard")} className="text-xs cursor-pointer">
                     <Home className="mr-2 h-3.5 w-3.5" />
                     Inicio
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive text-sm cursor-pointer">
+                  <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive text-xs cursor-pointer">
                     <LogOut className="mr-2 h-3.5 w-3.5" />
                     Cerrar Sesión
                   </DropdownMenuItem>

@@ -1,4 +1,4 @@
-import { Home, Users, Handshake, Calendar, MessageSquare, Trophy, UserCircle, Shield, AlertTriangle, Scale, Send } from "lucide-react";
+import { Home, Users, Handshake, Calendar, MessageSquare, UserCircle, Shield, AlertTriangle, Scale, Send } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -56,30 +56,29 @@ export function AppSidebar() {
     check();
   }, [user]);
 
-  const currentPath = location.pathname;
-  const isActive = (path: string) => currentPath === path;
-
   const mainItems = hasProfile ? [...coreItems, ...expandedMainItems] : coreItems;
 
-  const linkClass = "rounded-md text-[13px] transition-colors text-muted-foreground hover:text-foreground hover:bg-accent";
-  const activeClass = "bg-accent text-foreground font-medium";
+  const linkClass = "rounded-md text-[13px] transition-colors text-sidebar-foreground hover:text-foreground hover:bg-sidebar-accent h-8";
+  const activeClass = "bg-sidebar-accent text-primary font-medium";
 
   return (
-    <Sidebar className={open ? "w-56" : "w-14"} collapsible="icon">
-      <SidebarContent className="pt-3 border-r border-border">
+    <Sidebar className={open ? "w-52" : "w-14"} collapsible="icon">
+      <SidebarContent className="pt-4 border-r border-sidebar-border bg-sidebar">
+        {/* Logo area */}
+        {open && (
+          <div className="px-4 pb-4 mb-2 border-b border-sidebar-border">
+            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-primary">CONECTOR</span>
+          </div>
+        )}
+
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium px-3 mb-1">Principal</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground/60 font-medium px-3 mb-0.5">Mi Juego</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-px px-2">
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end
-                      className={linkClass}
-                      activeClassName={activeClass}
-                    >
+                    <NavLink to={item.url} end className={linkClass} activeClassName={activeClass}>
                       <item.icon className="h-4 w-4" />
                       {open && <span>{item.title}</span>}
                     </NavLink>
@@ -92,18 +91,13 @@ export function AppSidebar() {
 
         {hasProfile && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium px-3 mb-1">Comunidad</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground/60 font-medium px-3 mb-0.5">La Tribu</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-px px-2">
                 {communityItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <NavLink
-                        to={item.url}
-                        end
-                        className={linkClass}
-                        activeClassName={activeClass}
-                      >
+                      <NavLink to={item.url} end className={linkClass} activeClassName={activeClass}>
                         <item.icon className="h-4 w-4" />
                         {open && <span>{item.title}</span>}
                       </NavLink>
@@ -117,17 +111,12 @@ export function AppSidebar() {
 
         {isCommitteeMember && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium px-3 mb-1">Ética</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground/60 font-medium px-3 mb-0.5">Ética</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-px px-2">
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <NavLink
-                      to="/ethics-committee"
-                      end
-                      className={linkClass}
-                      activeClassName={activeClass}
-                    >
+                    <NavLink to="/ethics-committee" end className={linkClass} activeClassName={activeClass}>
                       <Scale className="h-4 w-4" />
                       {open && <span>Comité Ética</span>}
                     </NavLink>
@@ -140,17 +129,12 @@ export function AppSidebar() {
 
         {isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium px-3 mb-1">Admin</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground/60 font-medium px-3 mb-0.5">Admin</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-px px-2">
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <NavLink
-                      to="/admin"
-                      end
-                      className={linkClass}
-                      activeClassName={activeClass}
-                    >
+                    <NavLink to="/admin" end className={linkClass} activeClassName={activeClass}>
                       <Shield className="h-4 w-4" />
                       {open && <span>Admin</span>}
                     </NavLink>
@@ -158,11 +142,7 @@ export function AppSidebar() {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <NavLink
-                      to="/admin/moderation"
-                      className={linkClass}
-                      activeClassName={activeClass}
-                    >
+                    <NavLink to="/admin/moderation" className={linkClass} activeClassName={activeClass}>
                       <AlertTriangle className="h-4 w-4" />
                       {open && <span>Moderación</span>}
                     </NavLink>
