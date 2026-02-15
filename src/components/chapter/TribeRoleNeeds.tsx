@@ -132,19 +132,115 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
     }
   };
 
+  const isReferMode = total >= 10;
+
   if (loading || !chapterId || total === 0) return null;
 
+  // ═══ TRIBU ≥10: MODO REFERIR ═══
+  if (isReferMode && needs.length === 0) {
+    return (
+      <Card className="border-primary/30">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium">Tu Tribu tiene buena variedad — es momento de generar negocio</p>
+              <p className="text-xs text-muted-foreground">
+                Con {total} miembros, cada contacto que pases puede convertirse en dinero. ¿A quién conoces que necesite algo?
+              </p>
+            </div>
+          </div>
+          <Button 
+            onClick={() => navigate('/recomendacion')} 
+            className="w-full gap-2"
+          >
+            Referir un cliente
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isReferMode) {
+    // Has needs but tribe is big enough — show refer as primary, invite as secondary
+    return (
+      <Card className="border-primary/30">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Target className="h-5 w-5" />
+            Tu Tribu está lista para generar negocio
+          </CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">
+            Con {total} miembros, la prioridad es referir clientes entre compañeros. Cada contacto que pases vale dinero.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button 
+            onClick={() => navigate('/recomendacion')} 
+            className="w-full gap-2"
+          >
+            Referir un cliente
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+          <p className="text-xs text-muted-foreground text-center">
+            Para seguir creciendo, también puedes invitar profesionales que faltan:
+          </p>
+          {needs.slice(0, 1).map((need) => (
+            <div
+              key={need.type}
+              className="flex items-start gap-3 p-3 rounded-lg border bg-muted/30 border-border"
+            >
+              <span className="text-lg">{need.emoji}</span>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-semibold">{need.label}</span>
+                  {need.count === 0 ? (
+                    <Badge variant="destructive" className="text-xs">Ninguno</Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-xs">
+                      {need.count} de {need.total} ideales
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">{need.examples}</p>
+              </div>
+            </div>
+          ))}
+          <Button 
+            variant="outline"
+            onClick={() => navigate('/referrals')} 
+            className="w-full gap-2"
+          >
+            Invitar profesional
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // ═══ TRIBU <10: MODO INVITAR ═══
   if (needs.length === 0) {
     return (
-      <Card className="border-emerald-500/30">
-        <CardContent className="p-4 flex items-center gap-3">
-          <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-medium">Tu Tribu tiene buena variedad de perfiles</p>
-            <p className="text-xs text-muted-foreground">
-              Hay negocios de proximidad, servicios profesionales y perfiles versátiles. Sigue invitando para cubrir más profesiones.
-            </p>
+      <Card className="border-primary/30">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium">Tu Tribu tiene buena variedad de perfiles</p>
+              <p className="text-xs text-muted-foreground">
+                Sigue invitando para llegar a 10 miembros y desbloquear todo el potencial de negocio.
+              </p>
+            </div>
           </div>
+          <Button 
+            onClick={() => navigate('/referrals')} 
+            className="w-full gap-2"
+          >
+            Invitar profesional
+            <ArrowRight className="h-4 w-4" />
+          </Button>
         </CardContent>
       </Card>
     );
