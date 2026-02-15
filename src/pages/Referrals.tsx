@@ -9,12 +9,14 @@ import { Copy, Share2, Mail, Gift, CheckCircle, Clock, Users, UserPlus } from "l
 import { MissingSpecsCard } from "@/components/deals/MissingSpecsCard";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { TribeRoleNeeds } from "@/components/chapter/TribeRoleNeeds";
 
 
 interface Professional {
   id: string;
   referral_code: string;
   full_name: string;
+  chapter_id: string | null;
 }
 
 interface Referral {
@@ -50,7 +52,7 @@ const Referrals = () => {
   const fetchProfessionalData = async () => {
     const { data, error } = await (supabase as any)
       .from('professionals')
-      .select('id, referral_code, full_name')
+      .select('id, referral_code, full_name, chapter_id')
       .eq('user_id', user?.id)
       .single();
 
@@ -220,6 +222,7 @@ const Referrals = () => {
       </div>
 
       {professional && <MissingSpecsCard professionalId={professional.id} />}
+      {professional && <TribeRoleNeeds chapterId={professional.chapter_id} />}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
