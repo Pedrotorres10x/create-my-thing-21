@@ -568,10 +568,10 @@ serve(async (req) => {
     if (isEmpresa && !profileInfo?.company_name && !profileInfo?.business_name) { profileMissing.push('NOMBRE DE EMPRESA'); criticalMissing.push('NOMBRE DE EMPRESA'); }
     if (isEmpresa && !profileInfo?.logo_url) { profileMissing.push('LOGO DE EMPRESA'); criticalMissing.push('LOGO DE EMPRESA'); }
     if (!isAutonomo && !typeUnknown && !profileInfo?.company_name && !profileInfo?.business_name) { profileMissing.push('NOMBRE DE EMPRESA'); criticalMissing.push('NOMBRE DE EMPRESA'); }
-    if (!profileInfo?.business_description) { profileMissing.push('DESCRIPCIÓN DEL NEGOCIO/SERVICIOS'); secondaryMissing.push('DESCRIPCIÓN DEL NEGOCIO/SERVICIOS'); }
     if (!profileInfo?.phone) { profileMissing.push('TELÉFONO'); secondaryMissing.push('TELÉFONO'); }
     if (!profileInfo?.website && !profileInfo?.linkedin && !profileInfo?.linkedin_url) { profileMissing.push('WEB O LINKEDIN'); secondaryMissing.push('WEB O LINKEDIN'); }
     if (!profileInfo?.years_experience) { profileMissing.push('AÑOS DE EXPERIENCIA'); secondaryMissing.push('AÑOS DE EXPERIENCIA'); }
+    if (!profileInfo?.business_description) { profileMissing.push('DESCRIPCIÓN DEL NEGOCIO (ÚLTIMA - GENERAR AUTOMÁTICAMENTE)'); secondaryMissing.push('DESCRIPCIÓN DEL NEGOCIO'); }
     const isProfileIncomplete = profileMissing.length > 0;
     console.log('PROFILE COMPLETENESS CHECK:', JSON.stringify({ isProfileIncomplete, profileMissing, professional_type: professionalType, business_description: !!profileInfo?.business_description, years_experience: profileInfo?.years_experience, website: profileInfo?.website, linkedin: profileInfo?.linkedin }));
     const hasCriticalMissing = criticalMissing.length > 0;
@@ -730,15 +730,17 @@ REGLAS:
      Ejemplo diseñador: "¿Tu especialidad? 1) Web 2) Branding 3) UI/UX 4) Packaging 5) Otro"
      Ejemplo gestor: "¿Tu área? 1) Fiscal 2) Laboral 3) Contable 4) Integral 5) Otro"
      SIEMPRE incluye "Otro (dime cuál)" como última opción.
-   - 🟢 DESCRIPCIÓN DEL NEGOCIO (business_description): ESTA ES LA ÚNICA PREGUNTA ABIERTA PERMITIDA.
-     Pregunta directamente: "Cuéntame en 1-2 frases qué hace tu negocio y qué os diferencia"
-     NO des opciones para esto. Es una pregunta ABIERTA porque cada negocio es único.
-     Guarda la respuesta tal cual con [PERFIL:business_description=lo que diga el usuario].
+   - 🟢 DESCRIPCIÓN DEL NEGOCIO (business_description): ESTA ES LA ÚLTIMA PREGUNTA DEL PERFIL. SIEMPRE SE HACE AL FINAL.
+      NO la preguntes de forma abierta. En su lugar, TÚ GENERAS una descripción profesional breve (2-3 frases) basándote en TODA la información que ya tienes del usuario (tipo de profesional, especialización, empresa, años de experiencia, ciudad, etc.).
+      Presentas esa descripción generada y preguntas: "He preparado esta descripción para tu perfil: '[descripción generada]'. ¿Te parece bien? 1) Sí, perfecto 2) Quiero cambiar algo"
+      Si dice 1 o sí → guarda con [PERFIL:business_description=la descripción generada]
+      Si dice 2 o quiere cambiar → pregunta qué cambiaría, ajusta y vuelve a preguntar.
+      IMPORTANTE: La descripción generada debe destacar lo que DIFERENCIA al profesional, no ser genérica. Usa los datos recopilados para hacerla específica.
    - EXPERIENCIA: "¿Cuántos años llevas? 1) Menos de 2 2) 2-5 3) 5-10 4) 10-20 5) Más de 20"
    - WEB: "¿Tienes web o LinkedIn? 1) Web 2) LinkedIn 3) Ambos 4) Ninguno"
    Si elige "Otro" en especialización, ENTONCES y SOLO ENTONCES pide que especifique.
-14. RAPIDEZ ANTE TODO: Si puedes deducir la respuesta del contexto, NO preguntes. Pero la descripción del negocio SIEMPRE se pregunta abiertamente porque es personal y única de cada profesional.
-15. NO construyas la descripción automáticamente a partir de la especialización. PREGUNTA al usuario que describa su negocio en sus propias palabras.
+14. RAPIDEZ ANTE TODO: Si puedes deducir la respuesta del contexto, NO preguntes.
+15. La DESCRIPCIÓN DEL NEGOCIO (business_description) es SIEMPRE la ÚLTIMA pregunta del perfil. Primero recopila TODO lo demás y SOLO al final genera tú una descripción profesional basándote en los datos recopilados y pregunta al usuario si le parece bien (opción cerrada: 1) Sí 2) Quiero cambiar algo).
 16. PERSISTENCIA TOTAL: Una vez empezado el onboarding, NO pares hasta completar el perfil al 100%. SIEMPRE pregunta el siguiente campo pendiente. NUNCA termines un mensaje sin preguntar por el siguiente dato que falta. Solo para si el usuario EXPLÍCITAMENTE dice que quiere continuar en otro momento ("luego", "después", "ahora no puedo", etc.). Si el usuario no dice eso, TÚ sigues preguntando hasta que esté TODO relleno.
 17. REVISA SIEMPRE qué campos faltan antes de cada respuesta. Si faltan datos, PREGUNTA. Si no faltan, pasa a la fase de Tribu. NUNCA des el perfil por completado si hay campos vacíos.
 
