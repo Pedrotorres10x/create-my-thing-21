@@ -1094,6 +1094,14 @@ ESTILO EN CONVERSACIONES NORMALES:
 - NUNCA redirijas fuera del chat
 - SIEMPRE conecta acción con beneficio de negocio claro
 
+REGLA INQUEBRANTABLE DE PROACTIVIDAD:
+⚠️ NUNCA dejes un mensaje sin una pregunta final concreta. Si tu mensaje no termina en "?" estás haciéndolo MAL.
+⚠️ NUNCA cortes un mensaje a medias. Si vas a preguntar algo, COMPLETA la pregunta entera con todas las opciones.
+⚠️ Tu papel es SIEMPRE proactivo: tú lideras la conversación, tú propones, tú preguntas. El usuario NUNCA debe quedarse sin saber qué hacer.
+⚠️ Si estás en onboarding, SIEMPRE incluye la pregunta completa con todas sus opciones numeradas en el MISMO mensaje.
+⚠️ EJEMPLO CORRECTO: "Tu perfil necesita una foto. Sin cara visible nadie confía. ¿La subimos ahora?"
+⚠️ EJEMPLO INCORRECTO: "Tu perfil necesita..." (cortado, sin pregunta, sin acción)
+
 FÓRMULA OBLIGATORIA: [Observación amable] + [Beneficio] + [Propuesta específica] + [Pregunta motivadora]
 
 EJEMPLOS CORRECTOS:
@@ -1458,7 +1466,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
           ...messages,
         ],
         stream: true,
-        max_tokens: 500,
+        max_tokens: 800,
       }),
     });
 
@@ -1492,13 +1500,28 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
         const decoder = new TextDecoder();
         const encoder = new TextEncoder();
         let markerBuffer = '';
+        const KNOWN_MARKERS = ['[CREAR_CONFLICTO:', '[PERFIL:', '[PEDIR_FOTO]', '[PEDIR_LOGO]', '[ASIGNAR_TRIBU:', '[CREAR_TRIBU:'];
         
         try {
           while (true) {
             const { done, value } = await reader.read();
-            if (done) break;
+            if (done) {
+              // Flush any remaining buffer on stream end
+              if (markerBuffer) {
+                const cleaned = markerBuffer
+                  .replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '')
+                  .replace(/\[PERFIL:[^\]]*\]/g, '')
+                  .replace(/\[ASIGNAR_TRIBU:[^\]]*\]/g, '')
+                  .replace(/\[CREAR_TRIBU:[^\]]*\]/g, '');
+                if (cleaned) {
+                  const fakeChunk = `data: ${JSON.stringify({ choices: [{ delta: { content: cleaned } }] })}\n`;
+                  controller.enqueue(encoder.encode(fakeChunk));
+                }
+                markerBuffer = '';
+              }
+              break;
+            }
             
-            // Parse SSE to capture AI content and filter out markers
             const text = decoder.decode(value, { stream: true });
             let filteredText = '';
             
@@ -1517,39 +1540,64 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
                 const content = parsed.choices?.[0]?.delta?.content;
                 if (content) {
                   aiResponseContent += content;
-                  // Buffer potential marker content and strip from output
                   markerBuffer += content;
-                  if (markerBuffer.includes('[CREAR_CONFLICTO:') || markerBuffer.includes('[PERFIL:') || markerBuffer.includes('[PEDIR_FOTO]') || markerBuffer.includes('[PEDIR_LOGO]')) {
-                    // Check for complete markers
-                    const allMarkersComplete = !markerBuffer.includes('[') || 
-                      (markerBuffer.match(/\[/g)?.length === markerBuffer.match(/\]/g)?.length);
-                    const endIdx = markerBuffer.lastIndexOf(']');
-                    if (allMarkersComplete && endIdx !== -1) {
-                      // Strip all markers but keep PEDIR_FOTO for frontend
-                      const hasPedirFoto = markerBuffer.includes('[PEDIR_FOTO]');
-                      markerBuffer = markerBuffer.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '');
-                      // Keep [PEDIR_FOTO] - frontend will handle it
-                      if (markerBuffer) {
-                        const cleanChunk = { ...parsed, choices: [{ ...parsed.choices[0], delta: { content: markerBuffer } }] };
+                  
+                  // Check if buffer contains a known marker prefix
+                  const hasKnownMarker = KNOWN_MARKERS.some(m => markerBuffer.includes(m));
+                  const endsWithPartialMarker = markerBuffer.endsWith('[') || 
+                    KNOWN_MARKERS.some(m => {
+                      for (let i = 2; i <= m.length; i++) {
+                        if (markerBuffer.endsWith(m.substring(0, i))) return true;
+                      }
+                      return false;
+                    });
+                  
+                  if (hasKnownMarker) {
+                    // Check if all markers are complete (balanced brackets for known markers)
+                    const allComplete = KNOWN_MARKERS.every(m => {
+                      if (!markerBuffer.includes(m)) return true;
+                      // For markers with content (ending with :), check for closing ]
+                      if (m.endsWith(':')) {
+                        const idx = markerBuffer.indexOf(m);
+                        const closeIdx = markerBuffer.indexOf(']', idx);
+                        return closeIdx !== -1;
+                      }
+                      return true; // Simple markers like [PEDIR_FOTO] are self-contained
+                    });
+                    
+                    if (allComplete) {
+                      // Strip internal markers, keep [PEDIR_FOTO] and [PEDIR_LOGO] for frontend
+                      let cleaned = markerBuffer
+                        .replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '')
+                        .replace(/\[PERFIL:[^\]]*\]/g, '')
+                        .replace(/\[ASIGNAR_TRIBU:[^\]]*\]/g, '')
+                        .replace(/\[CREAR_TRIBU:[^\]]*\]/g, '');
+                      
+                      if (cleaned) {
+                        const cleanChunk = { ...parsed, choices: [{ ...parsed.choices[0], delta: { content: cleaned } }] };
                         filteredText += `data: ${JSON.stringify(cleanChunk)}\n`;
                       }
                       markerBuffer = '';
-                      continue;
                     }
-                    // Partial marker, keep buffering (don't send yet)
+                    // else keep buffering for incomplete markers
                     continue;
                   }
-                  // No marker, flush buffer
-                  if (markerBuffer && !markerBuffer.includes('[')) {
-                    filteredText += line + '\n';
-                    markerBuffer = '';
-                  } else if (!markerBuffer.includes('[')) {
-                    filteredText += line + '\n';
-                    markerBuffer = '';
-                  } else {
-                    // Might be start of marker, keep buffering
+                  
+                  if (endsWithPartialMarker) {
+                    // Might be the start of a known marker, buffer it
+                    // But timeout after accumulating too much (safety valve)
+                    if (markerBuffer.length > 200) {
+                      // Not a real marker, flush everything
+                      const cleanChunk = { ...parsed, choices: [{ ...parsed.choices[0], delta: { content: markerBuffer } }] };
+                      filteredText += `data: ${JSON.stringify(cleanChunk)}\n`;
+                      markerBuffer = '';
+                    }
                     continue;
                   }
+                  
+                  // No marker detected, flush buffer immediately
+                  filteredText += line + '\n';
+                  markerBuffer = '';
                 } else {
                   filteredText += line + '\n';
                 }
