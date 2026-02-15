@@ -155,6 +155,12 @@ serve(async (req) => {
           linkedin,
           linkedin_url,
           position,
+          nif_cif,
+          company_cif,
+          company_address,
+          address,
+          postal_code,
+          country,
           profession_specializations(name)
         `)
         .eq('id', professionalId)
@@ -568,9 +574,13 @@ serve(async (req) => {
     if (isEmpresa && !profileInfo?.company_name && !profileInfo?.business_name) { profileMissing.push('NOMBRE DE EMPRESA'); criticalMissing.push('NOMBRE DE EMPRESA'); }
     if (isEmpresa && !profileInfo?.logo_url) { profileMissing.push('LOGO DE EMPRESA'); criticalMissing.push('LOGO DE EMPRESA'); }
     if (!isAutonomo && !typeUnknown && !profileInfo?.company_name && !profileInfo?.business_name) { profileMissing.push('NOMBRE DE EMPRESA'); criticalMissing.push('NOMBRE DE EMPRESA'); }
+    if (!profileInfo?.nif_cif) { profileMissing.push('NIF/CIF PERSONAL'); secondaryMissing.push('NIF/CIF PERSONAL'); }
+    if (isEmpresa && !profileInfo?.company_cif) { profileMissing.push('CIF DE EMPRESA'); secondaryMissing.push('CIF DE EMPRESA'); }
+    if (isEmpresa && !profileInfo?.company_address) { profileMissing.push('DIRECCIÓN DE EMPRESA'); secondaryMissing.push('DIRECCIÓN DE EMPRESA'); }
     if (!profileInfo?.phone) { profileMissing.push('TELÉFONO'); secondaryMissing.push('TELÉFONO'); }
     if (!profileInfo?.website && !profileInfo?.linkedin && !profileInfo?.linkedin_url) { profileMissing.push('WEB O LINKEDIN'); secondaryMissing.push('WEB O LINKEDIN'); }
     if (!profileInfo?.years_experience) { profileMissing.push('AÑOS DE EXPERIENCIA'); secondaryMissing.push('AÑOS DE EXPERIENCIA'); }
+    if (!profileInfo?.address && !isEmpresa) { profileMissing.push('DIRECCIÓN'); secondaryMissing.push('DIRECCIÓN'); }
     if (!profileInfo?.business_description) { profileMissing.push('DESCRIPCIÓN DEL NEGOCIO (ÚLTIMA - GENERAR AUTOMÁTICAMENTE)'); secondaryMissing.push('DESCRIPCIÓN DEL NEGOCIO'); }
     const isProfileIncomplete = profileMissing.length > 0;
     console.log('PROFILE COMPLETENESS CHECK:', JSON.stringify({ isProfileIncomplete, profileMissing, professional_type: professionalType, business_description: !!profileInfo?.business_description, years_experience: profileInfo?.years_experience, website: profileInfo?.website, linkedin: profileInfo?.linkedin }));
