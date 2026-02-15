@@ -194,7 +194,7 @@ const Admin = () => {
       .select(`
         *,
         sector_catalog(name),
-        specializations(name)
+        profession_specializations(name)
       `)
       .order('created_at', { ascending: false });
 
