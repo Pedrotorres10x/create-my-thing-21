@@ -52,6 +52,15 @@ const Dashboard = () => {
   
   const { goals } = useWeeklyGoals(professional?.id || null);
 
+  // Auto-scroll to Alic.IA chat after onboarding
+  useEffect(() => {
+    if (professional && chatRef.current && sessionStorage.getItem('conector-onboarding') === 'true') {
+      setTimeout(() => {
+        chatRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 500);
+    }
+  }, [professional]);
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!user) return;
