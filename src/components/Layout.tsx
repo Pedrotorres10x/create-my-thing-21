@@ -47,14 +47,14 @@ export function Layout({ children }: LayoutProps) {
     <SidebarProvider defaultOpen>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
-        <div className="flex-1 flex flex-col">
-          <header className="h-14 border-b border-border/50 flex items-center justify-between px-6 bg-background/80 backdrop-blur-xl sticky top-0 z-10">
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-12 border-b border-border flex items-center justify-between px-4 bg-background sticky top-0 z-10">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <div className="text-lg font-semibold tracking-tight">CONECTOR</div>
+              <span className="text-sm font-semibold tracking-tight text-foreground">CONECTOR</span>
             </div>
             
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               <PushNotificationToggle professionalId={professional?.id || null} />
               {professional?.business_sphere_id && professional?.id && (
                 <SphereNotifications professionalId={professional.id} />
@@ -62,41 +62,41 @@ export function Layout({ children }: LayoutProps) {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-2 h-9 rounded-full hover:bg-accent px-2">
-                    <Avatar className="h-7 w-7">
+                  <Button variant="ghost" size="sm" className="gap-2 h-8 px-2">
+                    <Avatar className="h-6 w-6">
                       <AvatarImage src={professional?.photo_url || ""} />
-                      <AvatarFallback className="text-xs bg-muted">
-                        {professional?.full_name?.charAt(0) || <User className="h-3.5 w-3.5" />}
+                      <AvatarFallback className="text-[10px] bg-secondary text-secondary-foreground">
+                        {professional?.full_name?.charAt(0) || <User className="h-3 w-3" />}
                       </AvatarFallback>
                     </Avatar>
                     {professional?.full_name && (
-                      <span className="hidden lg:inline text-sm max-w-[140px] truncate font-medium">
+                      <span className="hidden lg:inline text-xs max-w-[120px] truncate">
                         {professional.full_name}
                       </span>
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 rounded-xl p-1.5">
-                  <DropdownMenuLabel className="text-xs text-muted-foreground font-normal px-2">Mi Cuenta</DropdownMenuLabel>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">Mi Cuenta</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate("/profile")} className="rounded-lg cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
+                  <DropdownMenuItem onClick={() => navigate("/profile")} className="text-sm cursor-pointer">
+                    <User className="mr-2 h-3.5 w-3.5" />
                     Mi Perfil
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/dashboard")} className="rounded-lg cursor-pointer">
-                    <Home className="mr-2 h-4 w-4" />
+                  <DropdownMenuItem onClick={() => navigate("/dashboard")} className="text-sm cursor-pointer">
+                    <Home className="mr-2 h-3.5 w-3.5" />
                     Inicio
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive rounded-lg cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
+                  <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive text-sm cursor-pointer">
+                    <LogOut className="mr-2 h-3.5 w-3.5" />
                     Cerrar Sesión
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 p-5 md:p-8 bg-background overflow-auto">
+          <main className="flex-1 p-6 overflow-auto">
             {children}
           </main>
         </div>

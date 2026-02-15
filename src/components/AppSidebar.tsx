@@ -61,16 +61,16 @@ export function AppSidebar() {
 
   const mainItems = hasProfile ? [...coreItems, ...expandedMainItems] : coreItems;
 
-  const linkClass = "rounded-xl transition-all duration-200 hover:bg-accent";
-  const activeClass = "bg-accent text-foreground font-semibold";
+  const linkClass = "rounded-md text-[13px] transition-colors text-muted-foreground hover:text-foreground hover:bg-accent";
+  const activeClass = "bg-accent text-foreground font-medium";
 
   return (
-    <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
-      <SidebarContent className="pt-2">
+    <Sidebar className={open ? "w-56" : "w-14"} collapsible="icon">
+      <SidebarContent className="pt-3 border-r border-border">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[11px] uppercase tracking-widest text-muted-foreground/70 font-medium px-3">Mi Tierra</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium px-3 mb-1">Principal</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-0.5 px-2">
+            <SidebarMenu className="space-y-px px-2">
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
@@ -92,9 +92,9 @@ export function AppSidebar() {
 
         {hasProfile && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-[11px] uppercase tracking-widest text-muted-foreground/70 font-medium px-3">La Tribu</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium px-3 mb-1">Comunidad</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu className="space-y-0.5 px-2">
+              <SidebarMenu className="space-y-px px-2">
                 {communityItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
@@ -117,9 +117,9 @@ export function AppSidebar() {
 
         {isCommitteeMember && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-[11px] uppercase tracking-widest text-muted-foreground/70 font-medium px-3">Comité de Ética</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium px-3 mb-1">Ética</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu className="space-y-0.5 px-2">
+              <SidebarMenu className="space-y-px px-2">
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <NavLink
@@ -140,9 +140,9 @@ export function AppSidebar() {
 
         {isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-[11px] uppercase tracking-widest text-muted-foreground/70 font-medium px-3">Administración</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium px-3 mb-1">Admin</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu className="space-y-0.5 px-2">
+              <SidebarMenu className="space-y-px px-2">
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <NavLink
