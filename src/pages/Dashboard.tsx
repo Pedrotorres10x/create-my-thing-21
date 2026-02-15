@@ -248,9 +248,6 @@ const Dashboard = () => {
             <AIChat />
           </div>
 
-          {/* Smart Suggestions (invitar, etc.) */}
-          <SmartSuggestions goals={goals} referralRole={(professional as any)?.specializations?.referral_role} />
-
           {/* Tribe needs - guide invitations */}
           <TribeRoleNeeds chapterId={professional?.chapter_id} />
 
