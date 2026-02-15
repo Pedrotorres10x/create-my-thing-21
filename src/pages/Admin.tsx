@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Shield, Activity, Heart, AlertTriangle as AlertTriangleIcon } from "lucide-react";
+import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Shield, Activity, Heart, AlertTriangle as AlertTriangleIcon, UserCheck, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
@@ -32,11 +32,27 @@ import { RegistrationTrendChart } from "@/components/admin/RegistrationTrendChar
 import { ChapterManagement } from "@/components/admin/ChapterManagement";
 import { EngagementAnalytics } from "@/components/admin/EngagementAnalytics";
 import { RedFlagsDashboard } from "@/components/admin/RedFlagsDashboard";
-
-
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LovableEmotionalDashboard } from "@/components/admin/LovableEmotionalDashboard";
 import { ThanksAdminPanel } from "@/components/admin/ThanksAdminPanel";
 import { BarChart3 } from "lucide-react";
+
+interface AuthUser {
+  auth_id: string;
+  email: string;
+  auth_created_at: string;
+  last_sign_in_at: string | null;
+  email_confirmed: boolean;
+  professional: {
+    id: string;
+    full_name: string;
+    status: string;
+    email: string;
+    phone: string | null;
+    city: string | null;
+    created_at: string;
+  } | null;
+}
 
 interface Professional {
   id: string;
@@ -90,6 +106,8 @@ const Admin = () => {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [authUsers, setAuthUsers] = useState<AuthUser[]>([]);
+  const [authUsersLoading, setAuthUsersLoading] = useState(false);
   const [stats, setStats] = useState({
     totalProfessionals: 0,
     pendingApproval: 0,
@@ -110,8 +128,24 @@ const Admin = () => {
 
   const loadData = async () => {
     setLoading(true);
-    await Promise.all([loadProfessionals(), loadReferrals(), loadReportsStats()]);
+    await Promise.all([loadProfessionals(), loadReferrals(), loadReportsStats(), loadAuthUsers()]);
     setLoading(false);
+  };
+
+  const loadAuthUsers = async () => {
+    setAuthUsersLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('list-auth-users');
+      if (error) {
+        console.error('Error loading auth users:', error);
+        return;
+      }
+      setAuthUsers(data || []);
+    } catch (err) {
+      console.error('Error loading auth users:', err);
+    } finally {
+      setAuthUsersLoading(false);
+    }
   };
 
   const loadProfessionals = async () => {
@@ -493,6 +527,10 @@ const Admin = () => {
             Engagement
           </TabsTrigger>
           <TabsTrigger value="professionals">Profesionales</TabsTrigger>
+          <TabsTrigger value="users">
+            <Users className="w-4 h-4 mr-2" />
+            Usuarios
+          </TabsTrigger>
           <TabsTrigger value="chapters">Capítulos</TabsTrigger>
           <TabsTrigger value="redflags">
             <AlertTriangleIcon className="w-4 h-4 mr-2" />
@@ -882,6 +920,73 @@ const Admin = () => {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="users" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Todos los Usuarios Registrados</CardTitle>
+              <CardDescription>
+                Usuarios autenticados ({authUsers.length}) — incluye los que aún no completaron su perfil profesional
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {authUsersLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Registrado</TableHead>
+                      <TableHead>Último acceso</TableHead>
+                      <TableHead>Email confirmado</TableHead>
+                      <TableHead>Perfil profesional</TableHead>
+                      <TableHead>Estado</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {authUsers.map((u) => (
+                      <TableRow key={u.auth_id}>
+                        <TableCell className="font-medium">{u.email}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(u.auth_created_at).toLocaleDateString("es-ES")}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {u.last_sign_in_at
+                            ? new Date(u.last_sign_in_at).toLocaleDateString("es-ES")
+                            : "—"}
+                        </TableCell>
+                        <TableCell>
+                          {u.email_confirmed ? (
+                            <UserCheck className="w-4 h-4 text-primary" />
+                          ) : (
+                            <UserX className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {u.professional ? (
+                            <span className="text-sm">{u.professional.full_name}</span>
+                          ) : (
+                            <Badge variant="outline" className="text-muted-foreground">Sin perfil</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {u.professional ? (
+                            getStatusBadge(u.professional.status)
+                          ) : (
+                            <Badge variant="secondary">Solo registro</Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
