@@ -134,14 +134,22 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
 
   const isReferMode = total >= 10;
 
-  // Progressive urgency: higher = more focus on referring
-  const referUrgency = Math.min(Math.round(((total - 10) / 40) * 100), 100); // 0% at 10, 100% at 50
+  // Progressive: invite urgency decreases as tribe grows toward 50
   const getProgressMessage = () => {
     if (total >= 50) return 'Tu Tribu está completa — toda la energía en generar negocio.';
-    if (total >= 35) return `${total}/50 miembros — casi completa. Prioridad máxima: referir clientes.`;
-    if (total >= 20) return `${total}/50 miembros — buen tamaño. Referir es cada vez más importante.`;
-    return `${total}/50 miembros — ya sois viables. Empieza a referir mientras seguís creciendo.`;
+    if (total >= 35) return `${total}/50 miembros — casi completa. Cada referencia cuenta.`;
+    if (total >= 20) return `${total}/50 miembros — buen tamaño. Refiere mientras seguís creciendo.`;
+    if (total >= 10) return `${total}/50 miembros — ya sois viables. Refiere y sigue invitando para crecer.`;
+    return `${total}/50 miembros — tu Tribu empieza. Refiere lo que puedas e invita para hacerla crecer rápido.`;
   };
+  
+  // Invite visual weight: critical <10, important 10-19, secondary 20-34, minimal 35-49, hidden 50+
+  const getInviteVariant = (): "default" | "outline" | "ghost" => {
+    if (total < 10) return 'default';
+    if (total < 20) return 'outline';
+    return 'ghost';
+  };
+  const getInviteSize = (): "default" | "sm" => total >= 20 ? 'sm' : 'default';
 
   if (loading || !chapterId || total === 0) return null;
 
@@ -168,10 +176,10 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
           </Button>
           {total < 50 && (
             <Button 
-              variant="ghost"
-              size="sm"
+              variant={getInviteVariant()}
+              size={getInviteSize()}
               onClick={() => navigate('/referrals')} 
-              className={`w-full gap-2 ${total >= 35 ? 'text-muted-foreground/60' : 'text-muted-foreground'}`}
+              className="w-full gap-2"
             >
               Invitar profesional ({total}/50)
             </Button>
@@ -203,10 +211,10 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
           </Button>
           {total < 50 && (
             <>
-              {total < 35 && (
+              {total < 35 && needs.length > 0 && (
                 <>
                   <p className="text-xs text-muted-foreground text-center">
-                    Para seguir creciendo, también puedes invitar profesionales que faltan:
+                    Para seguir creciendo, invita profesionales que faltan:
                   </p>
                   {needs.slice(0, 1).map((need) => (
                     <div
@@ -232,10 +240,10 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
                 </>
               )}
               <Button 
-                variant={total >= 35 ? "ghost" : "outline"}
-                size={total >= 35 ? "sm" : "default"}
+                variant={getInviteVariant()}
+                size={getInviteSize()}
                 onClick={() => navigate('/referrals')} 
-                className={`w-full gap-2 ${total >= 35 ? 'text-muted-foreground/60' : ''}`}
+                className="w-full gap-2"
               >
                 Invitar profesional ({total}/50)
               </Button>
@@ -246,86 +254,82 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
     );
   }
 
-  // ═══ TRIBU <10: MODO INVITAR ═══
-  if (needs.length === 0) {
-    return (
-      <Card className="border-primary/30">
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center gap-3">
-            <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-            <div>
-              <p className="text-sm font-medium">Tu Tribu tiene buena variedad de perfiles</p>
-              <p className="text-xs text-muted-foreground">
-                Sigue invitando para llegar a 10 miembros y desbloquear todo el potencial de negocio.
-              </p>
-            </div>
-          </div>
-          <Button 
-            onClick={() => navigate('/referrals')} 
-            className="w-full gap-2"
-          >
-            Invitar profesional
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
+  // ═══ TRIBU <10: REFERIR + INVITAR URGENTE ═══
   return (
-    <Card className="border-amber-500/30">
+    <Card className={needs.length > 0 ? "border-amber-500/30" : "border-primary/30"}>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
           <Target className="h-5 w-5" />
-          ¿A quién invitar para que tu Tribu crezca mejor?
+          Genera negocio y haz crecer tu Tribu
         </CardTitle>
         <p className="text-xs text-muted-foreground mt-1">
-          Tu Tribu tiene {total} miembros. Cuanta más variedad, más negocio para todos.
+          {getProgressMessage()}
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground">
-          Prioriza invitar estos tipos de profesionales para que las recomendaciones fluyan:
-        </p>
-        {needs.map((need, i) => (
-          <div
-            key={need.type}
-            className={`flex items-start gap-3 p-3 rounded-lg border ${
-              need.priority === 'critical'
-                ? 'bg-destructive/5 border-destructive/20'
-                : 'bg-amber-500/5 border-amber-500/20'
-            }`}
-          >
-            <span className="text-lg">{need.emoji}</span>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                {i === 0 && (
-                  <Badge variant="default" className="text-xs gap-1">
-                    <Star className="h-3 w-3" />
-                    Prioridad #1
-                  </Badge>
-                )}
-                <span className="text-sm font-semibold">{need.label}</span>
-                {need.count === 0 ? (
-                  <Badge variant="destructive" className="text-xs">Ninguno</Badge>
-                ) : (
-                  <Badge variant="secondary" className="text-xs">
-                    {need.count} de {need.total} ideales
-                  </Badge>
-                )}
+        {/* Referir siempre es el motor */}
+        <Button 
+          onClick={() => navigate('/recomendacion')} 
+          className="w-full gap-2"
+        >
+          Referir un cliente
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+
+        {/* Invitar es urgente <10 */}
+        {needs.length > 0 && (
+          <>
+            <p className="text-sm text-muted-foreground font-medium">
+              ⚡ Tu Tribu necesita crecer — invita estos perfiles para que las referencias fluyan:
+            </p>
+            {needs.map((need, i) => (
+              <div
+                key={need.type}
+                className={`flex items-start gap-3 p-3 rounded-lg border ${
+                  need.priority === 'critical'
+                    ? 'bg-destructive/5 border-destructive/20'
+                    : 'bg-amber-500/5 border-amber-500/20'
+                }`}
+              >
+                <span className="text-lg">{need.emoji}</span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {i === 0 && (
+                      <Badge variant="default" className="text-xs gap-1">
+                        <Star className="h-3 w-3" />
+                        Prioridad #1
+                      </Badge>
+                    )}
+                    <span className="text-sm font-semibold">{need.label}</span>
+                    {need.count === 0 ? (
+                      <Badge variant="destructive" className="text-xs">Ninguno</Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">
+                        {need.count} de {need.total} ideales
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">{need.examples}</p>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">{need.examples}</p>
-            </div>
-          </div>
-        ))}
+            ))}
+          </>
+        )}
+        {needs.length === 0 && (
+          <p className="text-xs text-muted-foreground">
+            Tu Tribu tiene buena variedad. Sigue invitando para llegar a 50 y maximizar oportunidades.
+          </p>
+        )}
         <p className="text-xs text-muted-foreground italic pt-1">
-          💡 Piensa en tus contactos: ¿quién encaja en estos perfiles? Cada profesión nueva multiplica las oportunidades de negocio para toda la Tribu.
+          💡 Piensa en tus contactos: cada profesión nueva multiplica las oportunidades de negocio para toda la Tribu.
         </p>
         <Button 
+          variant={getInviteVariant()}
+          size={getInviteSize()}
           onClick={() => navigate('/referrals')} 
-          className="w-full mt-3 gap-2"
+          className="w-full gap-2"
         >
-          Invitar profesional
+          Invitar profesional ({total}/50)
           <ArrowRight className="h-4 w-4" />
         </Button>
       </CardContent>
