@@ -5,6 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { AlertTriangle, CheckCircle, Target } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Fallback examples per sphere when DB has insufficient data
+const SPHERE_EXAMPLES: Record<string, string[]> = {
+  "Esfera Inmobiliaria": ["Tasador", "Arquitecto", "Abogado hipotecario", "Home staging", "Reformista", "Notaría", "Administrador de fincas", "Interiorista"],
+  "Esfera Digital": ["Diseñador web", "SEO", "Community manager", "Desarrollo de apps", "Fotografía profesional", "Copywriter", "Publicidad online", "Analista de datos"],
+  "Esfera Salud y Bienestar": ["Fisioterapeuta", "Nutricionista", "Psicólogo", "Dentista", "Osteópata", "Entrenador personal", "Podólogo", "Farmacéutico"],
+  "Esfera Servicios Empresariales": ["Gestoría", "Abogado mercantil", "Consultor fiscal", "RRHH", "Seguros", "Auditoría", "Coach empresarial", "Traductor jurado"],
+  "Esfera Producción e Industria": ["Logística", "Control de calidad", "Mantenimiento industrial", "Automatización", "Ingeniería", "Prevención de riesgos", "Compras", "Embalaje"],
+  "Esfera Alimentación y Hostelería": ["Chef", "Sumiller", "Proveedor de producto", "Diseño de cartas", "Marketing gastronómico", "Gestión de sala", "Dietista", "Delivery"],
+  "Esfera Retail y Comercio": ["Visual merchandising", "E-commerce", "Escaparatismo", "Franquicias", "Logística retail", "Atención al cliente", "Trade marketing", "Gestión de stock"],
+  "Esfera Formación y Desarrollo": ["Coach ejecutivo", "Formador de ventas", "E-learning", "Oratoria", "Team building", "Mentoring", "PNL", "Gamificación"],
+};
+
 interface MissingSpec {
   id: number;
   name: string;
@@ -62,13 +74,27 @@ export const MissingSpecsCard = ({ professionalId }: MissingSpecsProps) => {
         .map((m: any) => m.specializations.name as string);
       setCovered([...new Set(coveredNames)]);
 
-      const missingSpecs = (sphereSpecs || [])
+      let missingSpecs = (sphereSpecs || [])
         .filter((ss: any) => !coveredIds.has(ss.specialization_id))
         .map((ss: any) => ({
           id: ss.specializations?.id,
           name: ss.specializations?.name,
         }))
         .filter((s: MissingSpec) => s.name);
+
+      // If DB doesn't have enough data, use fallback examples
+      const sName = prof.business_spheres?.name || "";
+      const fallbackExamples = SPHERE_EXAMPLES[sName] || [];
+      const coveredSet = new Set(coveredNames.map(n => n.toLowerCase()));
+      
+      if (missingSpecs.length < 5 && fallbackExamples.length > 0) {
+        const existingNames = new Set(missingSpecs.map(s => s.name.toLowerCase()));
+        const extraExamples = fallbackExamples
+          .filter(ex => !coveredSet.has(ex.toLowerCase()) && !existingNames.has(ex.toLowerCase()))
+          .slice(0, 5 - missingSpecs.length)
+          .map((name, i) => ({ id: -(i + 1), name }));
+        missingSpecs = [...missingSpecs, ...extraExamples];
+      }
 
       setMissing(missingSpecs);
     } catch (error) {
