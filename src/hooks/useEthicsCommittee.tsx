@@ -424,6 +424,7 @@ export function useEthicsCommittee() {
           existing_professional:professionals!specialization_conflict_requests_existing_professional_id_fkey(full_name, email),
           chapter:chapters!specialization_conflict_requests_chapter_id_fkey(name, city)
         `)
+        .in("status", ["pending", "escalated_to_admin"])
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data || [];

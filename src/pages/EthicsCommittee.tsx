@@ -69,6 +69,8 @@ export default function EthicsCommittee() {
   const pendingReentries = reentryRequests.filter((r: any) => r.status === "pending").length;
   const pendingReportCount = pendingReports.filter(r => r.status === "pending").length;
   const pendingConflicts = conflictRequests.filter((c: any) => c.status === "pending").length;
+  const escalatedConflicts = conflictRequests.filter((c: any) => c.status === "escalated_to_admin").length;
+  const totalConflicts = pendingConflicts + escalatedConflicts;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -138,7 +140,7 @@ export default function EthicsCommittee() {
         <TabsList className="grid grid-cols-6 w-full">
           <TabsTrigger value="conflicts">
             <Users className="h-4 w-4 mr-1" />
-            Conflictos {pendingConflicts > 0 && `(${pendingConflicts})`}
+            Conflictos {totalConflicts > 0 && `(${totalConflicts})`}
           </TabsTrigger>
           <TabsTrigger value="expulsions">
             Expulsiones {pendingExpulsions > 0 && `(${pendingExpulsions})`}
