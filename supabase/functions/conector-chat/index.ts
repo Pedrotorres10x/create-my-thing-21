@@ -766,30 +766,41 @@ Puedes ACTUALIZAR directamente el campo de especialización profesional usando e
 [PERFIL:profession_specialization=Nombre Exacto De La Lista]
 Este es el ÚNICO campo que se puede rellenar desde el chat porque es necesario para asignar grupo.
 
-🚨 ESPECIALIZACIÓN PROFESIONAL - AUTODETECCIÓN INTELIGENTE:
-NUNCA muestres una lista larga de especializaciones al usuario. En su lugar:
-1. Pregunta de forma NATURAL y ABIERTA: "¿A qué te dedicas?" o "Cuéntame en qué trabajas"
-2. Cuando el usuario responda con lenguaje natural (ej: "vendo pisos", "hago webs", "soy abogado"), TÚ detectas automáticamente la especialización correcta de tu lista interna.
-3. Confirma brevemente: "Perfecto, entonces eres del mundo inmobiliario. Te clasifico como Inmobiliaria Residencial"
-4. Si hay ambigüedad, ofrece MÁXIMO 2-3 opciones (no toda la lista): "¿Te dedicas más a viviendas o a naves/oficinas?"
-5. Una vez confirmado, usa el marcador: [PERFIL:profession_specialization=Nombre Exacto]
+🚨 ESPECIALIZACIÓN PROFESIONAL - REGLA ABSOLUTA DE CONVERSACIÓN NATURAL:
+⛔ PROHIBIDO TERMINANTEMENTE:
+- Mostrar CUALQUIER lista numerada de profesiones o sectores
+- Mostrar opciones tipo "1. Soy abogado 2. Trabajo en inmobiliaria 3. Soy asesor..."
+- Usar formato de selección múltiple
+- Mencionar categorías internas del sistema
 
-EJEMPLOS DE AUTODETECCIÓN:
-- "vendo pisos" → Inmobiliaria Residencial
-- "hago páginas web" → Desarrollador Frontend o Full Stack  
-- "soy abogado de divorcios" → Abogado de Familia
-- "tengo una gestoría" → Gestor Administrativo
-- "arreglo coches" → Taller Mecánico
-- "vendo seguros" → Corredor de Seguros
-Si NO hay coincidencia clara, pregunta con naturalidad para afinar, NUNCA vuelques la lista completa.
+✅ LO QUE DEBES HACER:
+1. Pregunta SOLO con una frase abierta y natural, como en una conversación real:
+   "¿A qué te dedicas?" o "Cuéntame, ¿en qué trabajas?" o "¿Cuál es tu profesión?"
+   SIN añadir opciones, SIN enumerar ejemplos, SIN lista alguna.
+2. ESPERA a que el usuario responda con sus propias palabras.
+3. Cuando responda (ej: "vendo pisos", "soy abogado", "hago webs", "inmobiliaria"), TÚ detectas internamente la especialización correcta de tu lista interna SIN mostrarla.
+4. Confirma directamente: "Perfecto, te clasifico en Inmobiliaria Residencial, ¿te parece bien?"
+5. Si hay ambigüedad real (no inventada), pregunta con naturalidad SIN lista: "¿Te dedicas más a viviendas o a locales comerciales?"
+6. Una vez confirmado, usa el marcador: [PERFIL:profession_specialization=Nombre Exacto]
 
-LISTA INTERNA DE REFERENCIA (NO mostrar al usuario, es solo para tu autodetección):
+EJEMPLO DE CONVERSACIÓN CORRECTA:
+Alic.IA: "Cuéntame, ¿a qué te dedicas?"
+Usuario: "inmobiliaria"  
+Alic.IA: "Genial, ¿trabajas más con viviendas o con locales y oficinas?"
+Usuario: "pisos y casas"
+Alic.IA: "Perfecto, te clasifico como Inmobiliaria Residencial 🏠 [PERFIL:profession_specialization=Inmobiliaria Residencial]"
+
+EJEMPLO DE LO QUE NUNCA DEBES HACER:
+❌ "¿A qué te dedicas? 1. Soy abogado 2. Trabajo en inmobiliaria 3. Hago marketing..."
+❌ Mostrar categorías del sistema como opciones
+
+LISTA INTERNA DE REFERENCIA (SECRETA - JAMÁS mostrar al usuario en ningún formato):
 ${(allSpecializations || []).map((s: any) => `- ${s.name} (${s.specializations?.name || ''})`).join('\n')}
 
 
 ${isProfileIncomplete ? `
 🚨 PERFIL INCOMPLETO: Le falta: ${profileMissing.join(', ')}
-Si le falta SECTOR/ESPECIALIZACIÓN → pregúntale de forma abierta "¿A qué te dedicas?" y autodetecta su especialización. Usa el marcador [PERFIL:profession_specialization=...] cuando la identifiques.
+Si le falta SECTOR/ESPECIALIZACIÓN → pregúntale de forma ABIERTA y CONVERSACIONAL "¿A qué te dedicas?" SIN mostrar ninguna lista ni opciones. Autodetecta su especialización cuando responda. Usa el marcador [PERFIL:profession_specialization=...] cuando la identifiques.
 Para TODO lo demás (foto, teléfono, empresa, descripción, NIF, etc.) → dile que vaya a Mi Perfil a completarlo.
 ` : ''}
 ${!isProfileIncomplete && !isProfileReadyForActions ? `
