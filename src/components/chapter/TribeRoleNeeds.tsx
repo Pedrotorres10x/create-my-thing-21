@@ -157,6 +157,21 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
             Referir un cliente
             <ArrowRight className="h-4 w-4" />
           </Button>
+          {total < 50 && (
+            <>
+              <p className="text-xs text-muted-foreground text-center">
+                Tu Tribu tiene {total} de 50 miembros — sigue creciendo para maximizar oportunidades.
+              </p>
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/referrals')} 
+                className="w-full gap-2"
+              >
+                Invitar profesional
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </CardContent>
       </Card>
     );
@@ -172,7 +187,7 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
             Tu Tribu está lista para generar negocio
           </CardTitle>
           <p className="text-xs text-muted-foreground mt-1">
-            Con {total} miembros, la prioridad es referir clientes entre compañeros. Cada contacto que pases vale dinero.
+            Con {total} de 50 miembros, la prioridad es referir clientes entre compañeros. Cada contacto que pases vale dinero.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
