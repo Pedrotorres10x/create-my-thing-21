@@ -4,6 +4,7 @@ import { ProfileProgress } from "@/components/ProfileProgress";
 import { LevelBenefitsCard } from "@/components/LevelBenefitsCard";
 import { UserPenaltiesAlert } from "@/components/UserPenaltiesAlert";
 import { AppealsList } from "@/components/appeals/AppealsList";
+import { CreateComplaintDialog } from "@/components/appeals/CreateComplaintDialog";
 import { BadgeGrid } from "@/components/gamification/BadgeGrid";
 import { ThanksReputationCard } from "@/components/profile/ThanksReputationCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -90,10 +91,17 @@ const Profile = () => {
         <TabsContent value="appeals">
           <Card>
             <CardHeader>
-              <CardTitle>Mis Apelaciones</CardTitle>
-              <CardDescription>
-                Revisa el estado de tus apelaciones de sanciones
-              </CardDescription>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle>Mis Apelaciones</CardTitle>
+                  <CardDescription>
+                    Revisa el estado de tus quejas y apelaciones
+                  </CardDescription>
+                </div>
+                {professional && (
+                  <CreateComplaintDialog professionalId={professional.id} />
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {professional ? (
