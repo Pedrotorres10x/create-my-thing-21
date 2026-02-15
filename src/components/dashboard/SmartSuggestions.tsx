@@ -117,45 +117,46 @@ export const SmartSuggestions = ({ goals }: SmartSuggestionsProps) => {
       return suggestions.slice(0, 2);
     }
 
-    // === ZONA ÁMBAR: 10-19 miembros — cuidado ===
+    // === ZONA ÁMBAR: 10-19 miembros — ya hay masa, prioridad = REFERIR ===
     if (isAmberZone) {
       const suggestions: Suggestion[] = [];
       const toGreen = 20 - memberCount;
 
+      // Prioridad 1: REFERIR (ya pasamos la barrera de crecimiento básico)
       suggestions.push({
-        id: 'amber-zone-growth',
-        type: 'growth',
+        id: 'amber-referral-main',
+        type: 'opportunity',
         priority: 1,
-        title: `🟡 ${memberCount} miembros: hay negocio, pero puede haber mucho más`,
-        description: `Con menos de 20 profesionales, muchos servicios quedan sin cubrir. Cada hueco es dinero que se escapa de la red. Faltan ${toGreen}.`,
-        action: 'Invitar más',
-        actionRoute: '/referrals',
-        icon: UserPlus,
+        title: `Ya sois ${memberCount}. Ahora toca mover negocio`,
+        description: `Tu Tribu ya tiene profesionales suficientes para generar clientes. El que refiere primero, recibe primero. ¿A quién puedes mandar un contacto hoy?`,
+        action: 'Referir contacto',
+        actionRoute: '/recomendacion',
+        icon: Handshake,
       });
 
-      if (goals.referrals_this_week === 0) {
-        suggestions.push({
-          id: 'amber-referral',
-          type: 'opportunity',
-          priority: 2,
-          title: 'Si no das, no recibes: refiere a alguien esta semana',
-          description: `¿Quieres que te manden clientes? Primero manda tú. Cuando das, los demás se sienten en deuda. Quedan ${goals.days_until_week_end} días.`,
-          action: 'Referir contacto',
-          actionRoute: '/referrals',
-          icon: Handshake,
-        });
-      }
-
-      if (goals.meetings_this_month === 0 && goals.days_until_month_end <= 10) {
+      if (goals.meetings_this_month === 0) {
         suggestions.push({
           id: 'amber-meeting',
           type: 'momentum',
-          priority: 3,
-          title: 'Invierte 30 min en un Cafelito',
-          description: 'Sin confianza no hay referencias. Y la confianza se gana cara a cara, no por pantalla.',
+          priority: 2,
+          title: 'Conoce mejor a tu Tribu para referir con confianza',
+          description: 'No puedes mandar clientes a alguien que no conoces bien. Un Cafelito de 30 min = confianza para mover negocio real.',
           action: 'Agendar reunión',
           actionRoute: '/meetings',
           icon: Calendar,
+        });
+      }
+
+      if (memberCount < 20) {
+        suggestions.push({
+          id: 'amber-zone-growth',
+          type: 'growth',
+          priority: 3,
+          title: `Faltan ${toGreen} para cubrir más profesiones`,
+          description: `Con más variedad de servicios, más clientes puedes derivar y más te derivan a ti. Cada hueco vacío es dinero que se escapa.`,
+          action: 'Invitar profesional',
+          actionRoute: '/referrals',
+          icon: UserPlus,
         });
       }
 
