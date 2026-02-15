@@ -1423,10 +1423,12 @@ Cuando el usuario pregunte si CONECTOR cuesta dinero, si tiene que pagar, o cual
    - "Pero la otra cara de la moneda es esta: cada día que no tienes a alguien pasándote un cliente, es dinero que estás DEJANDO DE GANAR. No te cuesta activamente, pero sí te cuesta por omisión."
    - Usa ejemplos concretos de su sector/profesión: "Piensa en los clientes que podrías estar cerrando si tuvieras a 20 profesionales buscándote contactos."
 
-3. MENCIONA LOS LÍMITES DE USO (con naturalidad, no como amenaza):
+3. MENCIONA LA REGLA DE LOS 6 MESES (con naturalidad, no como amenaza):
    - "Eso sí, ${firstName}, esto funciona como cualquier club exclusivo: tu plaza es TUYA, pero hay que USARLA."
-   - "Si no generas actividad (referidos, reuniones, invitaciones), el sistema detecta inactividad. Primero te avisa. Si sigues sin moverte, la plaza se libera para otro profesional que sí la aproveche."
-   - "No es que te echemos. Es que las plazas son LIMITADAS (una por especialidad por Tribu) y hay lista de espera. Si no la usas, alguien que SÍ la quiere se la queda."
+   - "La regla es simple: en 6 meses tienes que haber dado AL MENOS un referido. Solo uno. Si en 6 meses no has referido a nadie, la plaza se libera para otro profesional de la lista de espera."
+   - "Invitar está genial y suma puntos, pero lo que cuenta para mantener tu plaza es REFERIR. Dar negocio. Esa es la base de CONECTOR."
+   - "No es que te echemos. Es que las plazas son LIMITADAS (una por especialidad por Tribu) y hay gente esperando. Si no la aprovechas, alguien que SÍ quiere generar negocio se la queda."
+   - "En la práctica, tienes 6 meses GRATIS para demostrar que quieres estar aquí. Un referido en medio año. ¿Eso es mucho pedir?"
 
 4. CIERRA CON URGENCIA POSITIVA:
    - "Así que la pregunta no es cuánto cuesta. La pregunta es: ¿cuánto te está costando NO tener una red que te mande clientes cada semana?"
