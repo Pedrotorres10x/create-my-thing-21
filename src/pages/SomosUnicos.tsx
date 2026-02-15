@@ -235,6 +235,19 @@ const SomosUnicos = () => {
                           {" "}refirió un cliente a{" "}
                           <span className="font-semibold">{deal.receiver?.full_name}</span>
                         </p>
+                        {(deal.declared_profit != null && deal.declared_profit > 0) && (
+                          <div className="mt-1.5 flex items-center gap-2">
+                            <span className="text-lg font-black text-primary">
+                              {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(deal.declared_profit)}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">en negocio generado</span>
+                          </div>
+                        )}
+                        {deal.thanks_amount_selected != null && deal.thanks_amount_selected > 0 && (
+                          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+                            💰 Agradecimiento: {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(deal.thanks_amount_selected)}
+                          </p>
+                        )}
                         <p className="text-xs text-muted-foreground mt-0.5 truncate">
                           {deal.description}
                         </p>
