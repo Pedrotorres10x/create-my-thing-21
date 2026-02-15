@@ -4556,6 +4556,7 @@ export type Database = {
         | "approved"
         | "rejected"
         | "inactive"
+        | "expelled"
       referral_status: "pending" | "completed" | "approved"
     }
     CompositeTypes: {
@@ -4690,6 +4691,7 @@ export const Constants = {
         "approved",
         "rejected",
         "inactive",
+        "expelled",
       ],
       referral_status: ["pending", "completed", "approved"],
     },
