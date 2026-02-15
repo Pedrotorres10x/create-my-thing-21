@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { UserPlus, AlertTriangle, CheckCircle, Scale } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,21 +16,20 @@ interface TribeBalanceIndicatorProps {
   balance: RoleBalance;
 }
 
-type HealthStatus = 'balanced' | 'needs_referrers' | 'needs_receivers' | 'critical';
+type HealthStatus = 'balanced' | 'needs_proximity' | 'needs_services' | 'critical';
 
 function getHealthStatus(balance: RoleBalance): HealthStatus {
   const { referrers, receivers, hybrids, total } = balance;
   if (total < 3) return 'critical';
 
-  // Hybrids count as half for each side
   const effectiveReferrers = referrers + hybrids * 0.5;
   const effectiveReceivers = receivers + hybrids * 0.5;
   const ratio = effectiveReferrers / (effectiveReceivers || 1);
 
-  // Ideal ratio is ~0.4-0.6 referrers per receiver (fewer referrers needed)
-  if (ratio < 0.15) return 'needs_referrers';
-  if (ratio > 2.5) return 'needs_receivers';
-  if (ratio < 0.25 || ratio > 1.8) return ratio < 0.25 ? 'needs_referrers' : 'needs_receivers';
+  if (ratio < 0.15) return 'needs_proximity';
+  if (ratio > 2.5) return 'needs_services';
+  if (ratio < 0.25) return 'needs_proximity';
+  if (ratio > 1.8) return 'needs_services';
   return 'balanced';
 }
 
@@ -40,29 +38,29 @@ function getStatusConfig(status: HealthStatus) {
     case 'balanced':
       return {
         icon: CheckCircle,
-        label: 'Equilibrado',
+        label: 'Buena variedad',
         color: 'text-emerald-600',
         bg: 'bg-emerald-500/10',
         border: 'border-emerald-500/30',
-        message: '¡Tu Tribu tiene buen equilibrio! Hay quien genera leads y quien los cierra.',
+        message: '¡Tu Tribu tiene buena variedad de perfiles! Hay quien detecta oportunidades y quien las cierra.',
       };
-    case 'needs_referrers':
+    case 'needs_proximity':
       return {
         icon: AlertTriangle,
-        label: 'Faltan referidores',
+        label: 'Faltan negocios de proximidad',
         color: 'text-amber-600',
         bg: 'bg-amber-500/10',
         border: 'border-amber-500/30',
-        message: 'Necesitáis más negocios de proximidad (bares, tiendas, gimnasios…) que generen leads para los profesionales de servicios.',
+        message: 'Necesitáis más negocios con tráfico de clientes (bares, tiendas, gimnasios…) que detecten oportunidades para los profesionales de servicios.',
       };
-    case 'needs_receivers':
+    case 'needs_services':
       return {
         icon: AlertTriangle,
-        label: 'Faltan receptores',
+        label: 'Faltan profesionales de servicios',
         color: 'text-amber-600',
         bg: 'bg-amber-500/10',
         border: 'border-amber-500/30',
-        message: 'Necesitáis más profesionales de servicios (abogados, arquitectos, asesores…) que conviertan los leads en negocio.',
+        message: 'Necesitáis más profesionales especializados (abogados, arquitectos, asesores…) que conviertan las oportunidades en negocio.',
       };
     case 'critical':
       return {
@@ -83,16 +81,16 @@ export const TribeBalanceIndicator = ({ balance }: TribeBalanceIndicatorProps) =
   const StatusIcon = config.icon;
 
   const { referrers, receivers, hybrids, total } = balance;
-  const refPct = total > 0 ? Math.round((referrers / total) * 100) : 0;
-  const recPct = total > 0 ? Math.round((receivers / total) * 100) : 0;
-  const hybPct = total > 0 ? Math.round((hybrids / total) * 100) : 0;
+  const proxPct = total > 0 ? Math.round((referrers / total) * 100) : 0;
+  const svcPct = total > 0 ? Math.round((receivers / total) * 100) : 0;
+  const versPct = total > 0 ? Math.round((hybrids / total) * 100) : 0;
 
   return (
     <Card className={`${config.border} border`}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Scale className="h-5 w-5" />
-          Equilibrio de la Tribu
+          Variedad de la Tribu
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -109,25 +107,25 @@ export const TribeBalanceIndicator = ({ balance }: TribeBalanceIndicatorProps) =
 
         {/* Distribution bars */}
         <div className="space-y-3">
-          <RoleBar
-            label="Referidores"
-            description="Generan leads"
+          <ProfileBar
+            label="Negocios de proximidad"
+            description="Detectan oportunidades"
             count={referrers}
-            percentage={refPct}
+            percentage={proxPct}
             color="bg-blue-500"
           />
-          <RoleBar
-            label="Receptores"
-            description="Reciben y cierran"
+          <ProfileBar
+            label="Servicios profesionales"
+            description="Cierran negocio"
             count={receivers}
-            percentage={recPct}
+            percentage={svcPct}
             color="bg-primary"
           />
-          <RoleBar
-            label="Híbridos"
-            description="Generan y reciben"
+          <ProfileBar
+            label="Perfiles versátiles"
+            description="Conectan todo"
             count={hybrids}
-            percentage={hybPct}
+            percentage={versPct}
             color="bg-emerald-500"
           />
         </div>
@@ -141,9 +139,9 @@ export const TribeBalanceIndicator = ({ balance }: TribeBalanceIndicatorProps) =
             onClick={() => navigate('/referrals')}
           >
             <UserPlus className="h-4 w-4 mr-2" />
-            {status === 'needs_referrers'
+            {status === 'needs_proximity'
               ? 'Invitar negocios de proximidad'
-              : status === 'needs_receivers'
+              : status === 'needs_services'
               ? 'Invitar profesionales de servicios'
               : 'Invitar profesionales'}
           </Button>
@@ -153,7 +151,7 @@ export const TribeBalanceIndicator = ({ balance }: TribeBalanceIndicatorProps) =
   );
 };
 
-function RoleBar({
+function ProfileBar({
   label,
   description,
   count,
