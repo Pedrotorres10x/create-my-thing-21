@@ -129,9 +129,7 @@ export default function MyBusinessSphere() {
             <span className="text-2xl">🌐</span>
           </div>
           <div>
-            <h1 className="text-3xl font-bold">
-              Mi Tribu{chapterInfo?.apellido ? ` ${chapterInfo.apellido}` : ''}
-            </h1>
+            <h1 className="text-3xl font-bold">Mi Tribu</h1>
             <p className="text-muted-foreground">
               {sphereInfo.name}
               {chapterInfo && (
