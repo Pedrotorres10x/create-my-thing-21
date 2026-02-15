@@ -7,27 +7,27 @@
 @layer base {
   :root {
     /* CONECTOR — Mediterranean Professional */
-    --background: 30 15% 7%;
+    --background: 30 12% 15%;
     --foreground: 35 20% 92%;
-    --card: 30 12% 11%;
+    --card: 30 10% 19%;
     --card-foreground: 35 20% 92%;
-    --popover: 30 12% 11%;
+    --popover: 30 10% 19%;
     --popover-foreground: 35 20% 92%;
     --primary: 145 55% 38%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 30 10% 16%;
-    --secondary-foreground: 35 15% 65%;
-    --muted: 30 10% 16%;
-    --muted-foreground: 30 8% 50%;
-    --accent: 30 10% 18%;
+    --secondary: 30 8% 24%;
+    --secondary-foreground: 35 15% 70%;
+    --muted: 30 8% 24%;
+    --muted-foreground: 30 8% 55%;
+    --accent: 30 8% 26%;
     --accent-foreground: 35 15% 88%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 30 8% 18%;
-    --input: 30 8% 18%;
+    --border: 30 8% 26%;
+    --input: 30 8% 26%;
     --ring: 145 55% 38%;
     --radius: 0.5rem;
-    --shadow-card: 0 2px 8px hsl(30 20% 4% / 0.3), 0 0 0 1px hsl(30 8% 18%);
+    --shadow-card: 0 2px 8px hsl(30 20% 6% / 0.25), 0 0 0 1px hsl(30 8% 26%);
 
     /* Alicia AI — olive green */
     --alicia-primary: 145 55% 38%;
@@ -37,13 +37,13 @@
     --alicia-glow: 0 0 24px hsl(145 55% 38% / 0.12);
     --alicia-shadow: 0 4px 20px hsl(145 55% 38% / 0.08);
 
-    --sidebar-background: 30 15% 6%;
-    --sidebar-foreground: 35 12% 65%;
+    --sidebar-background: 30 12% 12%;
+    --sidebar-foreground: 35 12% 68%;
     --sidebar-primary: 145 55% 38%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 10% 12%;
+    --sidebar-accent: 30 10% 20%;
     --sidebar-accent-foreground: 35 15% 88%;
-    --sidebar-border: 30 8% 14%;
+    --sidebar-border: 30 8% 22%;
     --sidebar-ring: 145 55% 38%;
   }
 }
