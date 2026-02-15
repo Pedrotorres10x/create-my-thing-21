@@ -250,19 +250,6 @@ export const MissingSpecsCard = ({ professionalId }: MissingSpecsProps) => {
                 Y {missing.length - 5} profesiones más sin cubrir...
               </p>
             )}
-            {covered.length > 0 && (
-              <div className="mt-3">
-                <p className="text-xs font-medium text-muted-foreground mb-2">✅ Ya cubiertas en tu Tribu</p>
-                <div className="flex flex-wrap gap-2">
-                  {covered.map((name) => (
-                    <Badge key={name} variant="secondary">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      {name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </CardContent>
