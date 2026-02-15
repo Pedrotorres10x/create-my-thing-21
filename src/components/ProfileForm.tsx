@@ -305,7 +305,8 @@ export function ProfileForm() {
           description: "Alic.ia te guiará para completar tu perfil",
         });
 
-        navigate("/dashboard");
+        // Force full reload so Dashboard re-fetches professional and shows Alic.IA chat
+        window.location.href = '/dashboard';
       } else {
         // Full profile update for existing users
         const validated = profileSchema.parse({
