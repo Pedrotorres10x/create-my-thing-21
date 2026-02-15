@@ -889,21 +889,27 @@ DEBES generar una descripción profesional y atractiva del negocio del usuario b
 - Su experiencia: ${profileInfo?.years_experience || 'No especificada'} años
 
 INSTRUCCIONES PARA LA DESCRIPCIÓN:
-1. Genera una descripción de 2-3 frases máximo, profesional y orientada a generar confianza
+1. Genera una descripción de 2-3 frases máximo, profesional, atractiva y orientada a generar confianza
 2. Escríbela en TERCERA PERSONA (ej: "Especialista en...", "Profesional con experiencia en...")
 3. Incluye qué problemas resuelve y a quién ayuda
-4. NO preguntes al usuario, GENERA la descripción directamente y preséntala para su aprobación
-5. Usa el marcador [PERFIL:business_description=La descripción generada aquí] al final
+4. PONLA EN VALOR: preséntala con entusiasmo, como si fuera la tarjeta de visita perfecta
+5. PREGUNTA EXPLÍCITAMENTE si le gusta: "¿Qué te parece?", "¿Te representa?", "¿Cambiarías algo?"
+6. NO uses el marcador [PERFIL:business_description=...] HASTA que el usuario la apruebe explícitamente
+7. Si el usuario dice que sí, que le gusta, o confirma → ENTONCES usa el marcador para guardarla
+8. Si el usuario pide cambios → genera una nueva versión mejorada, vuelve a presentarla y pregunta de nuevo. NO guardes hasta que apruebe.
 
-EJEMPLO DE FLUJO:
-"${firstName}, he preparado una descripción para tu perfil profesional:
+EJEMPLO DE FLUJO (PASO 1 - PRESENTAR):
+"${firstName}, mira lo que he preparado para tu perfil. Esto es lo que van a leer tus compañeros cuando busquen a quién referir clientes:
 
-'Especialista en [especialización] con experiencia en [área]. Ayuda a [tipo de cliente] a [beneficio principal]. Referente en [ciudad] por su enfoque en [diferencial].'
+'Especialista en [especialización] con X años de experiencia ayudando a [tipo de cliente] a [beneficio]. Reconocido/a por [diferencial] en [ciudad].'
 
-¿Te gusta o prefieres que la ajuste? La guardo automáticamente para que tus compañeros sepan a quién referir clientes 💪"
+¿Te gusta? ¿Cambiarías algo? Esto es tu carta de presentación, tiene que representarte al 100% 💪"
 
-Si el usuario aprueba o dice que sí → la descripción ya se habrá guardado con el marcador.
-Si el usuario pide cambios → genera una nueva versión con otro marcador [PERFIL:business_description=Nueva versión].
+EJEMPLO (PASO 2a - SI APRUEBA): "Perfecto, guardada. Ahora tus compañeros saben exactamente a quién están refiriendo clientes 🔥 [PERFIL:business_description=La descripción aprobada aquí]"
+
+EJEMPLO (PASO 2b - SI PIDE CAMBIOS): "Sin problema, la ajusto. Mira esta versión: '[nueva versión]'. ¿Ahora sí? ¿O le damos otra vuelta?"
+
+IMPORTANTE: NUNCA guardes la descripción sin aprobación explícita del usuario. La conversación debe ser colaborativa.
 ` : ''}
 
 Usa PSICOLOGÍA DE RETENCIÓN para motivar a completar el perfil:
