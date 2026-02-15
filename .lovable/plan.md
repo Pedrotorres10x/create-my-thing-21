@@ -1,143 +1,75 @@
 
+# Clasificar profesiones: Referidores vs Receptores
 
-# Gamificacion con Badges + Sistema de Recomendacion por Ranking
+## El problema
 
-## Resumen
+En CONECTOR conviven dos tipos de profesionales con dinámicas opuestas:
 
-Dos sistemas complementarios que hacen que los puntos "se sientan como dinero":
+- **Referidores** (panadería, bar, administración de lotería): generan muchos leads pero rara vez reciben. Nadie paga comisión por recomendar "toma un café en el bar X".
+- **Receptores** (inmobiliaria, abogado, arquitecto): reciben clientes y pagan agradecimientos por los leads cerrados.
 
-1. **Badges visuales**: Insignias desbloqueables que se muestran en el perfil y en rankings, premiando logros concretos
-2. **Recomendacion por ranking**: Cuando alguien de fuera de la provincia necesita un profesional de cierta especialidad, el sistema propone automaticamente al de mayor puntuacion de cada capitulo/grupo
+Actualmente el sistema trata a todos por igual, lo cual no refleja la realidad del ecosistema.
 
----
+## La solución
 
-## Parte 1: Sistema de Badges
+Añadir un campo `referral_role` a la tabla `specializations` que clasifique cada sector profesional como:
 
-### Concepto
+- `referrer` -- Genera leads (negocios de proximidad/tráfico)
+- `receiver` -- Recibe leads (servicios de alto valor)
+- `hybrid` -- Ambos roles (puede generar y recibir, por ejemplo un consultor)
 
-Los badges son insignias permanentes que se desbloquean al cumplir hitos. Se muestran en el perfil del usuario y en la lista de rankings, creando un efecto de "coleccion" que motiva a seguir participando.
+## Cambios en base de datos
 
-### Badges propuestos (primera version)
+**1. Migración: añadir columna a `specializations`**
 
-| Badge | Condicion | Icono |
-|-------|-----------|-------|
-| **Primer Referido** | Completar 1 referido exitoso | Estrella |
-| **Networker** | 5 reuniones Cara a Cara completadas | Apretón de manos |
-| **Conector Nato** | 10 referidos completados | Red/enlaces |
-| **Cerrador** | Cerrar 5 deals | Candado |
-| **Veterano** | 6 meses activo sin interrupciones | Escudo |
-| **Top 10** | Estar en el Top 10 del ranking general | Medalla |
-| **El Consejo** | Ser miembro del Consejo de Sabios | Corona |
-| **Diamante** | Alcanzar nivel Diamante | Diamante |
-| **Mentor** | Invitar a 5 profesionales que se aprueben | Libro |
-| **Deal Maker** | Superar 10.000 EUR en deals cerrados | Moneda |
-
-### Base de datos
-
-**Nueva tabla: `badges`**
-- id, code (unique), name, description, icon, category ('networking', 'deals', 'engagement', 'prestige'), unlock_condition (jsonb), created_at
-
-**Nueva tabla: `professional_badges`**
-- id, professional_id (FK), badge_id (FK), unlocked_at
-- UNIQUE constraint en (professional_id, badge_id)
-
-### Logica de desbloqueo
-
-- Un trigger o edge function (`check-badges`) que se ejecuta cuando cambian los puntos, referidos, meetings o deals
-- Verifica las condiciones de cada badge no desbloqueado
-- Al desbloquear uno nuevo, inserta en `professional_badges` y muestra el modal de AchievementModal existente con confetti
-
-### UI
-
-- **Perfil**: Seccion "Mis Insignias" con grid de badges (desbloqueados en color, bloqueados en gris con tooltip de condicion)
-- **Rankings**: Mostrar los badges mas relevantes junto al nombre de cada profesional (maximo 3 iconos)
-- **Dashboard**: Notificacion cuando se desbloquea un nuevo badge
-
----
-
-## Parte 2: Sistema de Recomendacion por Ranking
-
-### Concepto
-
-Cuando un miembro necesita un profesional de una especialidad que no existe en su propio capitulo/provincia, el sistema busca en otros capitulos y **propone al profesional con mayor puntuacion** de esa especialidad. Esto convierte el ranking en acceso directo a oportunidades de negocio.
-
-### Flujo
-
-```text
-+-------------------------------+
-| Miembro busca "Arquitecto"    |
-| en su capitulo/provincia      |
-+-------------------------------+
-         |
-         v
-  +--------------------+
-  | Existe en su       |----SI----> Muestra los de su capitulo
-  | capitulo?          |            (ordenados por puntos)
-  +--------------------+
-         |
-         NO
-         v
-  +-----------------------------+
-  | Busca en TODOS los          |
-  | capitulos/provincias        |
-  | Filtra por especialidad     |
-  | Ordena por total_points     |
-  +-----------------------------+
-         |
-         v
-  +-----------------------------+
-  | Muestra "Recomendados"      |
-  | con badge especial:         |
-  | "Top de su zona"            |
-  | El #1 aparece destacado     |
-  +-----------------------------+
+```sql
+ALTER TABLE specializations
+ADD COLUMN referral_role text NOT NULL DEFAULT 'hybrid';
 ```
 
-### Base de datos
+**2. Poblar los datos iniciales**
 
-**Nueva tabla: `cross_chapter_requests`**
-- id, requester_id (FK professionals), requested_specialization_id, requested_sector_id, description, status ('open', 'matched', 'closed'), matched_professional_id, created_at
+Clasificación propuesta:
 
-**Nueva vista o funcion RPC: `find_top_professionals_by_specialization`**
-- Parametros: specialization_id (o profession_specialization_id), exclude_chapter_id
-- Retorna: profesionales ordenados por total_points, agrupados por capitulo (el top 1 de cada uno)
-- Filtra solo status = 'approved'
+| Sector | Rol |
+|--------|-----|
+| Restaurantes, Catering, Comercio Minorista, Actividad Física y Deporte, Nutrición | `referrer` |
+| Inmobiliaria, Servicios Legales, Consultoría Empresarial, Arquitectura, Construcción Residencial, Asesoría Financiera, Banca y Finanzas, Seguros, Ciberseguridad, Computación en la Nube, Desarrollo de Software, Automatización, Producción Industrial | `receiver` |
+| Marketing Digital, Diseño Gráfico, Redes Sociales, Coaching, Formación Corporativa, Formación Online, Comercio Electrónico, Contabilidad, Medicina General | `hybrid` |
 
-### UI
+```sql
+UPDATE specializations SET referral_role = 'referrer'
+WHERE name IN ('Restaurantes', 'Catering', 'Comercio Minorista', 'Actividad Física y Deporte', 'Nutrición');
 
-- **Busqueda en "Mi Terreno"**: Al buscar una especialidad sin resultados locales, aparece seccion "Profesionales recomendados de otras zonas" con el top de cada capitulo
-- **Nuevo componente `CrossChapterRecommendation`**: Card destacada con el badge "Top de [Ciudad]", foto, puntos, nivel, y boton para solicitar Cara a Cara
-- **Notificacion al recomendado**: Cuando alguien de otra zona lo solicita, recibe notificacion push + mensaje de Alic.ia: "Te han solicitado desde [Ciudad]. Tu ranking te posiciona como el mejor de tu zona."
+UPDATE specializations SET referral_role = 'receiver'
+WHERE name IN ('Inmobiliaria', 'Servicios Legales', 'Consultoría Empresarial', 'Arquitectura',
+  'Construcción Residencial', 'Asesoría Financiera', 'Banca y Finanzas', 'Seguros',
+  'Ciberseguridad', 'Computación en la Nube', 'Desarrollo de Software', 'Automatización', 'Producción Industrial');
 
-### Narrativa
+UPDATE specializations SET referral_role = 'hybrid'
+WHERE name IN ('Marketing Digital', 'Diseño Gráfico', 'Redes Sociales', 'Coaching',
+  'Formación Corporativa', 'Formación Online', 'Comercio Electrónico', 'Contabilidad', 'Medicina General');
+```
 
-El mensaje clave: **"Cada punto que sumas es una puerta que se abre. Cuando alguien de otra ciudad necesite lo que tu haces, tu nombre es el primero que aparece."**
+## Detalles tecnicos
 
----
+### Archivos a modificar
 
-## Archivos a crear/modificar
-
-| Archivo | Accion |
+| Archivo | Cambio |
 |---------|--------|
-| Migracion SQL | Crear tablas `badges`, `professional_badges`, `cross_chapter_requests`; crear RPC `find_top_professionals_by_specialization` |
-| `src/components/gamification/BadgeGrid.tsx` | **Nuevo** - Grid de badges del perfil (desbloqueados/bloqueados) |
-| `src/components/gamification/BadgeIcon.tsx` | **Nuevo** - Componente individual de badge con tooltip |
-| `src/components/sphere/CrossChapterRecommendation.tsx` | **Nuevo** - Card de recomendacion inter-capitulo |
-| `src/pages/Profile.tsx` | Agregar seccion de badges |
-| `src/pages/Rankings.tsx` | Mostrar badges junto a cada profesional |
-| `src/hooks/useAchievements.tsx` | Extender para verificar badges al detectar cambios |
-| `src/pages/MyBusinessSphere.tsx` | Integrar busqueda cross-chapter cuando no hay resultados locales |
+| Migración SQL | Añadir columna `referral_role` a `specializations` + UPDATE con datos |
+| Sin cambios de frontend en esta fase | La clasificación queda lista en BD para que las siguientes funcionalidades la usen |
 
----
+### Por que a nivel de `specializations` y no de `profession_specializations`
 
-## Secuencia de implementacion
+- La tabla `specializations` es el nivel "sector" (Inmobiliaria, Restaurantes, etc.)
+- La tabla `profession_specializations` es el detalle (Inmobiliaria Residencial, Inmobiliaria Comercial)
+- El rol referidor/receptor se determina por sector, no por sub-especialidad: todas las inmobiliarias son receptoras, todos los restaurantes son referidores
 
-1. Migracion: tablas de badges y datos iniciales (seed de los 10 badges)
-2. Componentes de badges (BadgeGrid, BadgeIcon)
-3. Logica de desbloqueo en useAchievements
-4. Integracion en Profile y Rankings
-5. RPC de busqueda cross-chapter
-6. Tabla y UI de cross_chapter_requests
-7. Componente CrossChapterRecommendation
-8. Notificaciones al profesional recomendado
+### Uso futuro de esta clasificación
 
+Una vez implementada, esta columna será la base para:
+- Adaptar la UX de recomendación (mostrar u ocultar flujos segun rol)
+- Ponderar los rankings de forma diferente
+- Personalizar los mensajes de Alic.IA
+- Mostrar metricas relevantes segun el tipo de profesional
