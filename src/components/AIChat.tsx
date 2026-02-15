@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, User, Sparkles, Bot, Lock, Camera, Loader2 } from "lucide-react";
+import { Send, User, Sparkles, Bot, Lock, Camera, Loader2, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import aliciaAvatar from "@/assets/alicia-avatar.png";
@@ -747,9 +747,22 @@ export function AIChat() {
                     .replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '')
                     .replace(/\[PEDIR_FOTO\]/g, '')
                     .replace(/\[PEDIR_LOGO\]/g, '')
+                    .replace(/\[IR_A_INVITADOS\]/g, '')
                     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*(.+?)\*/g, '<em>$1</em>')
                 }} />
+                {message.role === "assistant" && message.content.includes("[IR_A_INVITADOS]") && (
+                  <div className="mt-3">
+                    <Button
+                      onClick={() => navigate('/referrals')}
+                      className="alicia-gradient hover:opacity-90 text-white rounded-xl gap-2"
+                      size="sm"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      Ir a Mis Invitados
+                    </Button>
+                  </div>
+                )}
                 {message.role === "assistant" && message.content.includes("[PEDIR_FOTO]") && (
                   <div className="mt-3">
                     <input
