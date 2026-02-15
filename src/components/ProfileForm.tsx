@@ -38,8 +38,8 @@ const profileSchema = z.object({
   company_cif: z.string().optional(),
   company_address: z.string().optional(),
   business_description: z.string().max(1000, "Máximo 1000 caracteres").optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
+  address: z.string().min(5, "Dirección obligatoria — indica tu domicilio o lugar de trabajo").max(300, "Dirección muy larga"),
+  city: z.string().min(2, "Ciudad obligatoria").max(100, "Ciudad muy larga"),
   state: z.string().optional(),
   postal_code: z.string().optional(),
   country: z.string().optional(),
@@ -626,7 +626,7 @@ export function ProfileForm() {
               disabled={uploadingPhoto}
             />
             <p className="text-xs text-muted-foreground">
-              {photoUrl ? "Toca para cambiar tu foto" : "Sube tu foto de perfil"}
+              {photoUrl ? "Toca para cambiar tu foto" : "⭐ Sube tu foto — muy importante para generar confianza"}
             </p>
           </div>
 
@@ -703,7 +703,7 @@ export function ProfileForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bio">Sobre ti</Label>
+            <Label htmlFor="bio">Sobre ti <span className="text-muted-foreground font-normal">(opcional)</span></Label>
             <Textarea
               id="bio"
               value={formData.bio}
@@ -712,7 +712,7 @@ export function ProfileForm() {
               maxLength={500}
               rows={3}
             />
-            <p className="text-xs text-muted-foreground text-right">{formData.bio.length}/500</p>
+            <p className="text-xs text-muted-foreground">Alic.ia generará tu descripción profesional automáticamente a partir de toda tu información. {formData.bio.length}/500</p>
           </div>
 
           {/* === DATOS PROFESIONALES === */}
@@ -848,7 +848,7 @@ export function ProfileForm() {
             </div>
 
             <div className="space-y-2">
-              <Label>Logo de Empresa</Label>
+              <Label>Logo de Empresa <span className="text-muted-foreground font-normal">(opcional — ⭐ muy recomendado)</span></Label>
               <div className="flex items-center gap-3">
                 <div 
                   className="w-16 h-16 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden cursor-pointer hover:border-primary/50 transition-colors bg-muted/30"
@@ -902,7 +902,7 @@ export function ProfileForm() {
             </div>
 
             <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="business_description">Descripción del Negocio</Label>
+              <Label htmlFor="business_description">Descripción del Negocio <span className="text-muted-foreground font-normal">(opcional)</span></Label>
               <Textarea
                 id="business_description"
                 value={formData.business_description}
@@ -911,7 +911,7 @@ export function ProfileForm() {
                 maxLength={1000}
                 rows={3}
               />
-              <p className="text-xs text-muted-foreground text-right">{formData.business_description.length}/1000</p>
+              <p className="text-xs text-muted-foreground">Alic.ia puede generar esto por ti automáticamente. {formData.business_description.length}/1000</p>
             </div>
           </div>
 
@@ -926,18 +926,20 @@ export function ProfileForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="address">Dirección</Label>
+              <Label htmlFor="address">Dirección *</Label>
               <Input
                 id="address"
                 value={formData.address}
                 onChange={(e) => updateField("address", e.target.value)}
-                placeholder="Calle, número..."
+                placeholder="Calle, número, piso..."
+                required
                 maxLength={300}
               />
+              <p className="text-xs text-muted-foreground">Tu domicilio o lugar de trabajo. Obligatoria para darte de alta.</p>
             </div>
 
             <div className="space-y-2 relative">
-              <Label htmlFor="city">Ciudad</Label>
+              <Label htmlFor="city">Ciudad *</Label>
               <Input
                 id="city"
                 value={formData.city}
