@@ -176,7 +176,7 @@ const Auth = () => {
   return (
     <BackgroundImage 
       imageUrl={authBg}
-      alt="Professional networking background"
+      alt="Generación de negocio profesional"
       overlayOpacity={0.75}
       overlayColor="hsl(222 47% 11%)"
       className="min-h-screen"

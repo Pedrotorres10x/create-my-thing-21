@@ -144,7 +144,7 @@ async function moderateText(
   context: string | undefined, 
   apiKey: string
 ): Promise<ModerationResult> {
-  const systemPrompt = `Eres un moderador de contenido para CONECTOR, una plataforma profesional de networking.
+  const systemPrompt = `Eres un moderador de contenido para CONECTOR, una plataforma profesional de generación de negocio.
 
 TU TAREA: Analizar si el siguiente texto es apropiado para un entorno profesional.
 
@@ -161,7 +161,7 @@ DETECTAR Y RECHAZAR:
 CONTEXTO PROFESIONAL:
 - Esta es una red de profesionales serios (abogados, contadores, empresarios, etc.)
 - Los nombres deben ser reales y profesionales
-- Las descripciones deben ser apropiadas para networking de negocios
+- Las descripciones deben ser apropiadas para un entorno de generación de negocio
 - Rechaza cualquier intento de bromear o no tomarse en serio el registro
 
 Responde SOLO con un JSON válido:
@@ -212,7 +212,7 @@ async function moderateImage(
   context: string | undefined, 
   apiKey: string
 ): Promise<ModerationResult> {
-  const systemPrompt = `Eres un moderador de contenido visual para CONECTOR, una plataforma profesional de networking.
+  const systemPrompt = `Eres un moderador de contenido visual para CONECTOR, una plataforma profesional de generación de negocio.
 
 TU TAREA: Analizar si esta imagen es apropiada para un logo/foto de perfil profesional.
 

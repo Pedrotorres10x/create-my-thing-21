@@ -117,7 +117,7 @@ export function AppSidebar() {
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-extrabold tracking-tight text-foreground">CONECTOR</span>
-              <span className="text-[10px] text-muted-foreground/50 leading-none font-medium">Networking Pro</span>
+              <span className="text-[10px] text-muted-foreground/50 leading-none font-medium">Genera Clientes</span>
             </div>
           </div>
         ) : (

@@ -10,7 +10,7 @@ export function ProfessionalContactWarning() {
       </AlertTitle>
       <AlertDescription className="text-sm space-y-2">
         <p>
-          Esta plataforma es para networking profesional. Te recordamos:
+          Esta plataforma es para generar negocio entre profesionales. Te recordamos:
         </p>
         <ul className="list-disc list-inside space-y-1 text-muted-foreground">
           <li>Mantén un tono respetuoso y profesional en todo momento</li>
