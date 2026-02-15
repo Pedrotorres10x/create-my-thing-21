@@ -138,11 +138,18 @@ const Admin = () => {
       const { data, error } = await supabase.functions.invoke('list-auth-users');
       if (error) {
         console.error('Error loading auth users:', error);
+        setAuthUsers([]);
         return;
       }
-      setAuthUsers(data || []);
+      if (data?.error) {
+        console.error('Edge function error:', data.error);
+        setAuthUsers([]);
+        return;
+      }
+      setAuthUsers(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error loading auth users:', err);
+      setAuthUsers([]);
     } finally {
       setAuthUsersLoading(false);
     }
