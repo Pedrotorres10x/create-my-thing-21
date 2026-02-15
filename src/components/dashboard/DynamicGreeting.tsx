@@ -99,45 +99,29 @@ export const DynamicGreeting = ({
   }, [userName, chapterSize, referralsSent, meetingsCompleted, isProfileIncomplete]);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl gradient-primary p-6 sm:p-8 text-primary-foreground animate-in fade-in slide-in-from-top-4 duration-700">
-      {/* Animated background orbs */}
-      <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-white/10 blur-3xl animate-float" />
-      <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-white/5 blur-2xl animate-float" style={{ animationDelay: '1.5s' }} />
-      <div className="absolute top-1/2 right-1/4 w-32 h-32 rounded-full bg-white/5 blur-2xl animate-float" style={{ animationDelay: '3s' }} />
-      
-      <div className="relative z-10">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          {/* Left: greeting + insight */}
-          <div className="flex-1 space-y-3">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              {greeting}
-            </h1>
-            <p className="text-sm sm:text-base text-primary-foreground/80 flex items-start gap-2 max-w-xl leading-relaxed">
-              <Zap className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary-foreground/60" />
-              <span className="italic">{insight}</span>
-            </p>
-          </div>
+    <div className="flex items-center justify-between gap-4">
+      <div className="space-y-0.5">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          {greeting}
+        </h1>
+        <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+          <Zap className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>{insight}</span>
+        </p>
+      </div>
 
-          {/* Right: ranking badge */}
-          <div className="flex items-center gap-3 sm:flex-col sm:items-end">
-            <div className="flex items-center gap-2 backdrop-glass rounded-xl px-4 py-2.5">
-              <Crown className="h-5 w-5 text-primary-foreground/90" />
-              <div className="text-right">
-                <p className="text-2xl font-bold leading-none">#{ranking || '—'}</p>
-                <p className="text-xs text-primary-foreground/60 mt-0.5">La Liga</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 backdrop-glass rounded-xl px-4 py-2.5">
-              <div 
-                className="w-3 h-3 rounded-full ring-2 ring-primary-foreground/30"
-                style={{ backgroundColor: levelColor }}
-              />
-              <div className="text-right">
-                <p className="text-sm font-semibold leading-none">{levelName}</p>
-                <p className="text-xs text-primary-foreground/60 mt-0.5">{totalPoints} pts</p>
-              </div>
-            </div>
-          </div>
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 rounded-lg border border-border/50 px-3 py-1.5 bg-card/50">
+          <Crown className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-semibold">#{ranking || '—'}</span>
+        </div>
+        <div className="flex items-center gap-1.5 rounded-lg border border-border/50 px-3 py-1.5 bg-card/50">
+          <div 
+            className="w-2.5 h-2.5 rounded-full"
+            style={{ backgroundColor: levelColor }}
+          />
+          <span className="text-sm font-medium">{levelName}</span>
+          <span className="text-xs text-muted-foreground">{totalPoints}</span>
         </div>
       </div>
     </div>
