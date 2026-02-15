@@ -803,6 +803,11 @@ Tu primer mensaje debe ir DIRECTO a pedir lo que falta del perfil, sin preámbul
 MODO: DATOS UNO A UNO - pregunta SOLO el SIGUIENTE campo pendiente.
 Orden de prioridad: ${profileMissing.join(' → ')}
 Pide SOLO el PRIMERO de la lista. Cuando lo tenga, pide el siguiente. Mensajes ULTRA-CORTOS (1-2 frases).
+
+⚠️ IMPORTANTÍSIMO: Si el usuario ACABA DE DARTE un dato en su ÚLTIMO mensaje (ej: un CIF, una dirección, un NIF), 
+NO vuelvas a pedírselo. GUÁRDALO con el marcador [PERFIL:campo=valor] y pasa DIRECTAMENTE al SIGUIENTE campo pendiente.
+La lista de campos pendientes se calculó ANTES de procesar tu respuesta, así que puede incluir un campo que el usuario ACABA de dar.
+SIEMPRE revisa el último mensaje del usuario antes de pedir un dato.
 ${hasNoPhoto ? `⚠️ SIN FOTO = PRIORIDAD ABSOLUTA. NO avances a NINGÚN otro campo hasta que suba la foto.
 Tu PRIMER mensaje SIEMPRE debe pedir la foto con el marcador [PEDIR_FOTO]. NO hables de otra cosa.
 Ejemplo: "${firstName}, lo primero es tu foto. Sin foto, nadie te va a mandar clientes porque no saben quién eres. Súbela aquí mismo 👇" [PEDIR_FOTO]
