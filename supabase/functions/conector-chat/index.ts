@@ -1500,7 +1500,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
         const decoder = new TextDecoder();
         const encoder = new TextEncoder();
         let markerBuffer = '';
-        const KNOWN_MARKERS = ['[CREAR_CONFLICTO:', '[PERFIL:', '[PEDIR_FOTO]', '[PEDIR_LOGO]', '[ASIGNAR_TRIBU:', '[CREAR_TRIBU:'];
+        const KNOWN_MARKERS = ['[CREAR_CONFLICTO:', '[PERFIL:', '[PERFIL_PENDIENTE:', '[PEDIR_FOTO]', '[PEDIR_LOGO]', '[ASIGNAR_TRIBU:', '[CREAR_TRIBU:'];
         
         try {
           while (true) {
@@ -1511,6 +1511,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
                 const cleaned = markerBuffer
                   .replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '')
                   .replace(/\[PERFIL:[^\]]*\]/g, '')
+                  .replace(/\[PERFIL_PENDIENTE:[^\]]*\]/g, '')
                   .replace(/\[ASIGNAR_TRIBU:[^\]]*\]/g, '')
                   .replace(/\[CREAR_TRIBU:[^\]]*\]/g, '');
                 if (cleaned) {
@@ -1570,6 +1571,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
                       let cleaned = markerBuffer
                         .replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '')
                         .replace(/\[PERFIL:[^\]]*\]/g, '')
+                        .replace(/\[PERFIL_PENDIENTE:[^\]]*\]/g, '')
                         .replace(/\[ASIGNAR_TRIBU:[^\]]*\]/g, '')
                         .replace(/\[CREAR_TRIBU:[^\]]*\]/g, '');
                       
@@ -1618,7 +1620,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
             await supabaseBg.from('chat_messages').insert({
               conversation_id: activeConversationId,
               role: 'assistant',
-              content: aiResponseContent.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '').replace(/\[PEDIR_FOTO\]/g, '').replace(/\[PEDIR_LOGO\]/g, '').trim().substring(0, 5000),
+              content: aiResponseContent.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '').replace(/\[PERFIL_PENDIENTE:[^\]]*\]/g, '').replace(/\[PEDIR_FOTO\]/g, '').replace(/\[PEDIR_LOGO\]/g, '').replace(/\[ASIGNAR_TRIBU:[^\]]*\]/g, '').replace(/\[CREAR_TRIBU:[^\]]*\]/g, '').trim().substring(0, 5000),
             });
             
             // Process profile update markers
