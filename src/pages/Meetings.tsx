@@ -154,12 +154,12 @@ const Meetings = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
-          <h1 className="text-3xl font-bold">El Cafelito</h1>
-          <p className="text-muted-foreground">Reuniones individuales con miembros de tu tribu</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">El Cafelito</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Reuniones individuales con miembros de tu tribu</p>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
+        <Button onClick={() => setDialogOpen(true)} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Solicitar Reunión
         </Button>
@@ -169,14 +169,14 @@ const Meetings = () => {
 
 
       <Tabs defaultValue="upcoming" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="upcoming">
+        <TabsList className="w-full grid grid-cols-3">
+          <TabsTrigger value="upcoming" className="text-xs sm:text-sm">
             Próximas ({upcomingMeetings.length})
           </TabsTrigger>
-          <TabsTrigger value="pending">
+          <TabsTrigger value="pending" className="text-xs sm:text-sm">
             Pendientes ({pendingMeetings.length})
           </TabsTrigger>
-          <TabsTrigger value="history">
+          <TabsTrigger value="history" className="text-xs sm:text-sm">
             Historial ({pastMeetings.length})
           </TabsTrigger>
         </TabsList>
@@ -198,17 +198,17 @@ const Meetings = () => {
               return (
                 <Card key={meeting.id}>
                   <CardContent className="p-6">
-                    <div className="flex gap-4">
-                      <Avatar className="h-16 w-16">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <Avatar className="h-12 w-12 sm:h-16 sm:w-16 shrink-0">
                         <AvatarImage src={other.photo_url || undefined} />
                         <AvatarFallback>
                           {other.full_name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 space-y-3">
-                        <div className="flex justify-between items-start">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1">
                           <div>
-                            <h3 className="font-semibold text-lg">{other.full_name}</h3>
+                            <h3 className="font-semibold text-base sm:text-lg">{other.full_name}</h3>
                             {other.position && (
                               <p className="text-sm text-muted-foreground">{other.position}</p>
                             )}
@@ -252,18 +252,20 @@ const Meetings = () => {
                           )}
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <Button
                             size="sm"
                             onClick={() => updateMeetingStatus(meeting.id, 'completed')}
+                            className="w-full sm:w-auto"
                           >
                             <CheckCircle className="mr-2 h-4 w-4" />
-                            Marcar como Completada
+                            Completada
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => updateMeetingStatus(meeting.id, 'cancelled')}
+                            className="w-full sm:w-auto"
                           >
                             <XCircle className="mr-2 h-4 w-4" />
                             Cancelar

@@ -38,8 +38,8 @@ const Profile = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Mi Perfil</h1>
-        <p className="text-muted-foreground">Tu marca profesional en CONECTOR</p>
+        <h1 className="text-2xl sm:text-3xl font-bold">Mi Perfil</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Tu marca profesional en CONECTOR</p>
       </div>
 
       {professional && (
@@ -47,7 +47,7 @@ const Profile = () => {
       )}
 
       <Tabs defaultValue={defaultTab} className="space-y-6">
-        <TabsList>
+        <TabsList className="w-full grid grid-cols-3">
           <TabsTrigger value="profile">Perfil</TabsTrigger>
           <TabsTrigger value="plan">Mi Plan</TabsTrigger>
           <TabsTrigger value="appeals">Apelaciones</TabsTrigger>
