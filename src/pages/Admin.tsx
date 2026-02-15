@@ -164,6 +164,16 @@ const Admin = () => {
         body: { user_id: userId },
       });
       if (error) throw error;
+      if (data?.error) {
+        toast({
+          title: "No se puede eliminar",
+          description: data.error === "Cannot delete yourself" 
+            ? "No puedes eliminar tu propia cuenta de administrador" 
+            : data.error,
+          variant: "destructive",
+        });
+        return;
+      }
       toast({
         title: "Usuario eliminado",
         description: `${email} ha sido eliminado del sistema`,
