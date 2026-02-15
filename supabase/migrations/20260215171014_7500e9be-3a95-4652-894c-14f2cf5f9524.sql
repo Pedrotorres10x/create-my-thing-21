@@ -1,0 +1,1 @@
+UPDATE public.specializations SET name = 'Inmobiliaria' WHERE id = 12 AND name = 'Bienes Raíces';
