@@ -766,16 +766,30 @@ Puedes ACTUALIZAR directamente el campo de especialización profesional usando e
 [PERFIL:profession_specialization=Nombre Exacto De La Lista]
 Este es el ÚNICO campo que se puede rellenar desde el chat porque es necesario para asignar grupo.
 
-🚨 ESPECIALIZACIÓN PROFESIONAL - LISTA COMPLETA (usa SOLO estos nombres exactos):
+🚨 ESPECIALIZACIÓN PROFESIONAL - AUTODETECCIÓN INTELIGENTE:
+NUNCA muestres una lista larga de especializaciones al usuario. En su lugar:
+1. Pregunta de forma NATURAL y ABIERTA: "¿A qué te dedicas?" o "Cuéntame en qué trabajas"
+2. Cuando el usuario responda con lenguaje natural (ej: "vendo pisos", "hago webs", "soy abogado"), TÚ detectas automáticamente la especialización correcta de tu lista interna.
+3. Confirma brevemente: "Perfecto, entonces eres del mundo inmobiliario. Te clasifico como Inmobiliaria Residencial"
+4. Si hay ambigüedad, ofrece MÁXIMO 2-3 opciones (no toda la lista): "¿Te dedicas más a viviendas o a naves/oficinas?"
+5. Una vez confirmado, usa el marcador: [PERFIL:profession_specialization=Nombre Exacto]
+
+EJEMPLOS DE AUTODETECCIÓN:
+- "vendo pisos" → Inmobiliaria Residencial
+- "hago páginas web" → Desarrollador Frontend o Full Stack  
+- "soy abogado de divorcios" → Abogado de Familia
+- "tengo una gestoría" → Gestor Administrativo
+- "arreglo coches" → Taller Mecánico
+- "vendo seguros" → Corredor de Seguros
+Si NO hay coincidencia clara, pregunta con naturalidad para afinar, NUNCA vuelques la lista completa.
+
+LISTA INTERNA DE REFERENCIA (NO mostrar al usuario, es solo para tu autodetección):
 ${(allSpecializations || []).map((s: any) => `- ${s.name} (${s.specializations?.name || ''})`).join('\n')}
 
-Cuando el usuario te dice su profesión, BÚSCALA en la lista anterior y usa:
-[PERFIL:profession_specialization=Nombre Exacto De La Lista]
-Si NO encuentras su profesión exacta en la lista, pregúntale cuál de las opciones se acerca más.
 
 ${isProfileIncomplete ? `
 🚨 PERFIL INCOMPLETO: Le falta: ${profileMissing.join(', ')}
-Si le falta SECTOR/ESPECIALIZACIÓN → pregúntale con opciones cerradas y usa el marcador [PERFIL:profession_specialization=...].
+Si le falta SECTOR/ESPECIALIZACIÓN → pregúntale de forma abierta "¿A qué te dedicas?" y autodetecta su especialización. Usa el marcador [PERFIL:profession_specialization=...] cuando la identifiques.
 Para TODO lo demás (foto, teléfono, empresa, descripción, NIF, etc.) → dile que vaya a Mi Perfil a completarlo.
 ` : ''}
 ${!isProfileIncomplete && !isProfileReadyForActions ? `
