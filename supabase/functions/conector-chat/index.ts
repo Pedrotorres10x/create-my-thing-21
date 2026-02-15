@@ -271,6 +271,37 @@ serve(async (req) => {
         .neq('receiver_id', professionalId)
         .order('completed_at', { ascending: false })
         .limit(5);
+
+      // ===== FOMO: Stats agregados por grupo (tratos este mes) =====
+      const thisMonthStart = new Date();
+      thisMonthStart.setDate(1);
+      thisMonthStart.setHours(0, 0, 0, 0);
+      const { data: chapterDealStats } = await supabase
+        .from('deals')
+        .select(`
+          id, declared_profit, thanks_amount_selected,
+          referrer:professionals!deals_referrer_id_fkey (chapter_id, chapters(name, member_count))
+        `)
+        .eq('status', 'completed')
+        .not('completed_at', 'is', null)
+        .gte('completed_at', thisMonthStart.toISOString());
+
+      // Agregar por grupo
+      const chapterStatsMap: Record<string, { name: string, members: number, deals: number, volume: number, thanks: number }> = {};
+      if (chapterDealStats) {
+        for (const d of chapterDealStats as any[]) {
+          const ch = d.referrer?.chapters;
+          const chId = d.referrer?.chapter_id;
+          if (!ch || !chId) continue;
+          if (!chapterStatsMap[chId]) {
+            chapterStatsMap[chId] = { name: ch.name, members: ch.member_count || 0, deals: 0, volume: 0, thanks: 0 };
+          }
+          chapterStatsMap[chId].deals++;
+          chapterStatsMap[chId].volume += Number(d.declared_profit || 0);
+          chapterStatsMap[chId].thanks += Number(d.thanks_amount_selected || 0);
+        }
+      }
+      const chapterStatsArray = Object.values(chapterStatsMap).sort((a, b) => b.volume - a.volume).slice(0, 5);
       
       // Badges ganados
       const { data: badgesData } = await supabase
@@ -902,6 +933,17 @@ Cuando el usuario inicia sesión o parece inactivo, RESTRIÉGALE estos tratos ce
 - "[Nombre] cobró [cantidad]€ de agradecimiento AYER. Solo por pasar el contacto de alguien que conocía. ¿Tú a quién conoces?"
 - "Esta semana se han cerrado ${communityDeals.length} tratos. Otros están cobrando. ¿Cuándo empiezas tú?"
 - "Hay dinero moviéndose en tu comunidad AHORA MISMO. Cada día que no refieres es dinero que te dejas en la mesa"
+
+📊 STATS POR GRUPO ESTE MES (usa para comparar y crear envidia sana):
+${chapterStatsArray.length > 0 ? chapterStatsArray.map(cs => {
+  const fmt2 = (n: number) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+  return '- Grupo "' + cs.name + '" (' + cs.members + ' miembros): ' + cs.deals + ' tratos cerrados' + (cs.volume > 0 ? ' → ' + fmt2(cs.volume) + ' en negocio generado' : '') + (cs.thanks > 0 ? ' → ' + fmt2(cs.thanks) + ' en agradecimientos cobrados' : '');
+}).join('\n') : 'Sin datos de grupos aún este mes.'}
+
+Ejemplos FOMO con datos de grupo:
+- "El grupo [nombre] con solo [X] miembros ha movido [cantidad]€ este mes. ¿Qué está haciendo tu grupo?"
+- "En [nombre del grupo] se han cerrado [X] tratos este mes. Cada miembro está generando negocio. ¿Y tú?"
+- "Hay grupos que están facturando [cantidad]€ solo en agradecimientos. Literalmente cobran por presentar gente que ya conocen"
 
 NO seas cruel, sé PROVOCADOR con cariño. El tono es "mira lo que se están llevando otros, tú también puedes". 
 Usa datos REALES de arriba, NO te inventes cifras. Menciona nombres reales y cantidades reales.
