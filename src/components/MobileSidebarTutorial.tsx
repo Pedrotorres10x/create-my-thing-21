@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Menu, Home, UserCircle, Handshake, Send, Users, Calendar, MessageSquare, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -16,7 +15,7 @@ const steps: TutorialStep[] = [
   {
     icon: <Menu className="h-6 w-6" />,
     title: "Menú lateral",
-    description: "Toca las 3 líneas (☰) arriba a la izquierda para abrir y cerrar el menú en cualquier momento.",
+    description: "Haz clic en el icono ☰ arriba a la izquierda para abrir y cerrar el menú en cualquier momento.",
   },
   {
     icon: <Home className="h-6 w-6" />,
@@ -56,17 +55,16 @@ const steps: TutorialStep[] = [
 ];
 
 export function MobileSidebarTutorial() {
-  const isMobile = useIsMobile();
   const [show, setShow] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const { setOpen } = useSidebar();
 
   useEffect(() => {
-    if (isMobile && !localStorage.getItem(TUTORIAL_KEY)) {
+    if (!localStorage.getItem(TUTORIAL_KEY)) {
       const timer = setTimeout(() => setShow(true), 1200);
       return () => clearTimeout(timer);
     }
-  }, [isMobile]);
+  }, []);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
