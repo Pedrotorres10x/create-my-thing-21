@@ -5,12 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Share2, Mail, Gift, CheckCircle, Clock, Users, UserPlus, Handshake } from "lucide-react";
-import { DealsList } from "@/components/deals/DealsList";
+import { Copy, Share2, Mail, Gift, CheckCircle, Clock, Users, UserPlus } from "lucide-react";
 import { MissingSpecsCard } from "@/components/deals/MissingSpecsCard";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 interface Professional {
@@ -221,140 +219,103 @@ const Referrals = () => {
         </Card>
       </div>
 
-      {/* Two-tab layout: Invite vs Refer */}
-      <Tabs defaultValue="invite" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="invite" className="gap-2">
-            <UserPlus className="h-4 w-4" />
-            Invitar Profesional
-          </TabsTrigger>
-          <TabsTrigger value="refer" className="gap-2">
-            <Handshake className="h-4 w-4" />
-            Referir Cliente
-          </TabsTrigger>
-        </TabsList>
+      {professional && <MissingSpecsCard professionalId={professional.id} />}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserPlus className="h-5 w-5" />
+            Invita a un profesional a tu Tribu
+          </CardTitle>
+          <CardDescription>
+            Cuantas más profesiones cubra tu grupo, más clientes puedes referir y recibir. Cada hueco sin cubrir es dinero que se escapa.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Input
+              value={professional.referral_code}
+              readOnly
+              className="text-2xl font-bold text-center"
+            />
+            <Button onClick={copyReferralCode} size="icon">
+              <Copy className="w-4 h-4" />
+            </Button>
+          </div>
 
-        <TabsContent value="invite" className="space-y-4">
-          {professional && <MissingSpecsCard professionalId={professional.id} />}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserPlus className="h-5 w-5" />
-                Invita a un profesional a tu Tribu
-              </CardTitle>
-              <CardDescription>
-                Cuantas más profesiones cubra tu grupo, más clientes puedes referir y recibir. Cada hueco sin cubrir es dinero que se escapa.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Input
-                  value={professional.referral_code}
-                  readOnly
-                  className="text-2xl font-bold text-center"
-                />
-                <Button onClick={copyReferralCode} size="icon">
-                  <Copy className="w-4 h-4" />
-                </Button>
-              </div>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={copyReferralLink} className="flex-1">
+              <Share2 className="w-4 h-4 mr-2" />
+              Copiar Enlace
+            </Button>
+            <Button onClick={shareViaWhatsApp} variant="outline" className="flex-1">
+              <Share2 className="w-4 h-4 mr-2" />
+              WhatsApp
+            </Button>
+            <Button onClick={shareViaEmail} variant="outline" className="flex-1">
+              <Mail className="w-4 h-4 mr-2" />
+              Email
+            </Button>
+          </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={copyReferralLink} className="flex-1">
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Copiar Enlace
-                </Button>
-                <Button onClick={shareViaWhatsApp} variant="outline" className="flex-1">
-                  <Share2 className="w-4 h-4 mr-2" />
-                  WhatsApp
-                </Button>
-                <Button onClick={shareViaEmail} variant="outline" className="flex-1">
-                  <Mail className="w-4 h-4 mr-2" />
-                  Email
-                </Button>
-              </div>
+          <Separator />
 
-              <Separator />
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Enviar invitación directa</label>
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                placeholder="email@ejemplo.com"
+                value={referralEmail}
+                onChange={(e) => setReferralEmail(e.target.value)}
+              />
+              <Button onClick={sendReferralInvite} disabled={loading || !referralEmail}>
+                Enviar
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Enviar invitación directa</label>
-                <div className="flex gap-2">
-                  <Input
-                    type="email"
-                    placeholder="email@ejemplo.com"
-                    value={referralEmail}
-                    onChange={(e) => setReferralEmail(e.target.value)}
-                  />
-                  <Button onClick={sendReferralInvite} disabled={loading || !referralEmail}>
-                    Enviar
-                  </Button>
+      {/* Invitations list */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            Historial de Invitaciones
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {referrals.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              Aún no has invitado a ningún profesional. ¡Empieza a hacer crecer tu tribu!
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {referrals.map((referral) => (
+                <div
+                  key={referral.id}
+                  className="flex items-center justify-between p-4 border rounded-lg"
+                >
+                  <div className="space-y-1">
+                    <p className="font-medium">{referral.referred_email}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Invitado el {new Date(referral.created_at).toLocaleDateString('es-ES')}
+                    </p>
+                  </div>
+                  <div className="text-right space-y-2">
+                    {getStatusBadge(referral.status)}
+                    {referral.reward_points > 0 && (
+                      <p className="text-sm text-primary font-medium">
+                        +{referral.reward_points} puntos
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Invitations list */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Historial de Invitaciones
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {referrals.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  Aún no has invitado a ningún profesional. ¡Empieza a hacer crecer tu tribu!
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {referrals.map((referral) => (
-                    <div
-                      key={referral.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div className="space-y-1">
-                        <p className="font-medium">{referral.referred_email}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Invitado el {new Date(referral.created_at).toLocaleDateString('es-ES')}
-                        </p>
-                      </div>
-                      <div className="text-right space-y-2">
-                        {getStatusBadge(referral.status)}
-                        {referral.reward_points > 0 && (
-                          <p className="text-sm text-primary font-medium">
-                            +{referral.reward_points} puntos
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="refer" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Handshake className="h-5 w-5" />
-                Mis Tratos
-              </CardTitle>
-              <CardDescription>
-                Gestiona las referencias de clientes enviadas y recibidas. Cuando un trato se cierra, ambos ganáis.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {professional ? (
-                <DealsList professionalId={professional.id} />
-              ) : (
-                <p className="text-center text-muted-foreground py-8">Cargando...</p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
