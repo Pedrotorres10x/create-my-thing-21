@@ -97,6 +97,8 @@ serve(async (req) => {
     let chaptersInArea: any[] = [];
     let professionsInChapter: any[] = [];
     let chapterMemberCount = 0;
+    let communityDeals: any[] | null = null;
+    let chapterStatsArray: { name: string, members: number, deals: number, volume: number, thanks: number }[] = [];
     let completedMeetingsCount = 0;
     let chapterName = '';
     let chapterCity = '';
@@ -258,7 +260,7 @@ serve(async (req) => {
         .limit(10);
 
       // ===== FOMO: Tratos cerrados recientes de la COMUNIDAD (no del usuario) =====
-      const { data: communityDeals } = await supabase
+      const { data: communityDealsData } = await supabase
         .from('deals')
         .select(`
           id, description, declared_profit, thanks_amount_selected, completed_at,
@@ -271,6 +273,7 @@ serve(async (req) => {
         .neq('receiver_id', professionalId)
         .order('completed_at', { ascending: false })
         .limit(5);
+      communityDeals = communityDealsData;
 
       // ===== FOMO: Stats agregados por grupo (tratos este mes) =====
       const thisMonthStart = new Date();
@@ -301,7 +304,7 @@ serve(async (req) => {
           chapterStatsMap[chId].thanks += Number(d.thanks_amount_selected || 0);
         }
       }
-      const chapterStatsArray = Object.values(chapterStatsMap).sort((a, b) => b.volume - a.volume).slice(0, 5);
+      chapterStatsArray = Object.values(chapterStatsMap).sort((a, b) => b.volume - a.volume).slice(0, 5);
       
       // Badges ganados
       const { data: badgesData } = await supabase
