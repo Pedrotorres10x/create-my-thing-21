@@ -294,7 +294,7 @@ export function ProfileForm() {
 
         const { error } = await (supabase as any)
           .from("professionals")
-          .insert(profileData);
+          .upsert(profileData, { onConflict: "user_id" });
 
         if (error) throw error;
 
