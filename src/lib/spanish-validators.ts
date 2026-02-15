@@ -246,3 +246,194 @@ export function lookupPostalCode(cp: string): { city: string; province: string; 
 
   return { city, province: match.province, state: match.community };
 }
+
+// ===== City autocomplete =====
+
+export interface SpanishCity {
+  city: string;
+  province: string;
+  community: string;
+}
+
+const SPANISH_CITIES: SpanishCity[] = [
+  // Andalucía
+  { city: "Sevilla", province: "Sevilla", community: "Andalucía" },
+  { city: "Málaga", province: "Málaga", community: "Andalucía" },
+  { city: "Granada", province: "Granada", community: "Andalucía" },
+  { city: "Córdoba", province: "Córdoba", community: "Andalucía" },
+  { city: "Cádiz", province: "Cádiz", community: "Andalucía" },
+  { city: "Almería", province: "Almería", community: "Andalucía" },
+  { city: "Huelva", province: "Huelva", community: "Andalucía" },
+  { city: "Jaén", province: "Jaén", community: "Andalucía" },
+  { city: "Jerez de la Frontera", province: "Cádiz", community: "Andalucía" },
+  { city: "Marbella", province: "Málaga", community: "Andalucía" },
+  { city: "Dos Hermanas", province: "Sevilla", community: "Andalucía" },
+  { city: "Algeciras", province: "Cádiz", community: "Andalucía" },
+  { city: "Torremolinos", province: "Málaga", community: "Andalucía" },
+  { city: "Benalmádena", province: "Málaga", community: "Andalucía" },
+  { city: "Fuengirola", province: "Málaga", community: "Andalucía" },
+  { city: "Estepona", province: "Málaga", community: "Andalucía" },
+  { city: "Roquetas de Mar", province: "Almería", community: "Andalucía" },
+  { city: "Linares", province: "Jaén", community: "Andalucía" },
+  { city: "Motril", province: "Granada", community: "Andalucía" },
+  { city: "El Puerto de Santa María", province: "Cádiz", community: "Andalucía" },
+  { city: "San Fernando", province: "Cádiz", community: "Andalucía" },
+  { city: "Chiclana de la Frontera", province: "Cádiz", community: "Andalucía" },
+  { city: "Alcalá de Guadaíra", province: "Sevilla", community: "Andalucía" },
+  { city: "Utrera", province: "Sevilla", community: "Andalucía" },
+  { city: "Lucena", province: "Córdoba", community: "Andalucía" },
+  // Aragón
+  { city: "Zaragoza", province: "Zaragoza", community: "Aragón" },
+  { city: "Huesca", province: "Huesca", community: "Aragón" },
+  { city: "Teruel", province: "Teruel", community: "Aragón" },
+  { city: "Calatayud", province: "Zaragoza", community: "Aragón" },
+  // Asturias
+  { city: "Oviedo", province: "Asturias", community: "Principado de Asturias" },
+  { city: "Gijón", province: "Asturias", community: "Principado de Asturias" },
+  { city: "Avilés", province: "Asturias", community: "Principado de Asturias" },
+  // Baleares
+  { city: "Palma de Mallorca", province: "Baleares", community: "Islas Baleares" },
+  { city: "Ibiza", province: "Baleares", community: "Islas Baleares" },
+  { city: "Manacor", province: "Baleares", community: "Islas Baleares" },
+  { city: "Mahón", province: "Baleares", community: "Islas Baleares" },
+  // Canarias
+  { city: "Las Palmas de Gran Canaria", province: "Las Palmas", community: "Canarias" },
+  { city: "Santa Cruz de Tenerife", province: "Santa Cruz de Tenerife", community: "Canarias" },
+  { city: "San Cristóbal de La Laguna", province: "Santa Cruz de Tenerife", community: "Canarias" },
+  { city: "Arrecife", province: "Las Palmas", community: "Canarias" },
+  { city: "Puerto del Rosario", province: "Las Palmas", community: "Canarias" },
+  // Cantabria
+  { city: "Santander", province: "Cantabria", community: "Cantabria" },
+  { city: "Torrelavega", province: "Cantabria", community: "Cantabria" },
+  // Castilla-La Mancha
+  { city: "Albacete", province: "Albacete", community: "Castilla-La Mancha" },
+  { city: "Ciudad Real", province: "Ciudad Real", community: "Castilla-La Mancha" },
+  { city: "Toledo", province: "Toledo", community: "Castilla-La Mancha" },
+  { city: "Guadalajara", province: "Guadalajara", community: "Castilla-La Mancha" },
+  { city: "Cuenca", province: "Cuenca", community: "Castilla-La Mancha" },
+  { city: "Talavera de la Reina", province: "Toledo", community: "Castilla-La Mancha" },
+  { city: "Puertollano", province: "Ciudad Real", community: "Castilla-La Mancha" },
+  // Castilla y León
+  { city: "Valladolid", province: "Valladolid", community: "Castilla y León" },
+  { city: "Burgos", province: "Burgos", community: "Castilla y León" },
+  { city: "Salamanca", province: "Salamanca", community: "Castilla y León" },
+  { city: "León", province: "León", community: "Castilla y León" },
+  { city: "Palencia", province: "Palencia", community: "Castilla y León" },
+  { city: "Zamora", province: "Zamora", community: "Castilla y León" },
+  { city: "Ávila", province: "Ávila", community: "Castilla y León" },
+  { city: "Segovia", province: "Segovia", community: "Castilla y León" },
+  { city: "Soria", province: "Soria", community: "Castilla y León" },
+  { city: "Ponferrada", province: "León", community: "Castilla y León" },
+  // Cataluña
+  { city: "Barcelona", province: "Barcelona", community: "Cataluña" },
+  { city: "Hospitalet de Llobregat", province: "Barcelona", community: "Cataluña" },
+  { city: "Terrassa", province: "Barcelona", community: "Cataluña" },
+  { city: "Badalona", province: "Barcelona", community: "Cataluña" },
+  { city: "Sabadell", province: "Barcelona", community: "Cataluña" },
+  { city: "Tarragona", province: "Tarragona", community: "Cataluña" },
+  { city: "Lleida", province: "Lleida", community: "Cataluña" },
+  { city: "Girona", province: "Girona", community: "Cataluña" },
+  { city: "Mataró", province: "Barcelona", community: "Cataluña" },
+  { city: "Reus", province: "Tarragona", community: "Cataluña" },
+  { city: "Sant Cugat del Vallès", province: "Barcelona", community: "Cataluña" },
+  { city: "Granollers", province: "Barcelona", community: "Cataluña" },
+  { city: "Manresa", province: "Barcelona", community: "Cataluña" },
+  { city: "Vic", province: "Barcelona", community: "Cataluña" },
+  { city: "Rubí", province: "Barcelona", community: "Cataluña" },
+  { city: "Castelldefels", province: "Barcelona", community: "Cataluña" },
+  // Comunidad Valenciana
+  { city: "Valencia", province: "Valencia", community: "Comunidad Valenciana" },
+  { city: "Alicante", province: "Alicante", community: "Comunidad Valenciana" },
+  { city: "Elche", province: "Alicante", community: "Comunidad Valenciana" },
+  { city: "Castellón de la Plana", province: "Castellón", community: "Comunidad Valenciana" },
+  { city: "Torrevieja", province: "Alicante", community: "Comunidad Valenciana" },
+  { city: "Orihuela", province: "Alicante", community: "Comunidad Valenciana" },
+  { city: "Benidorm", province: "Alicante", community: "Comunidad Valenciana" },
+  { city: "Gandia", province: "Valencia", community: "Comunidad Valenciana" },
+  { city: "Torrent", province: "Valencia", community: "Comunidad Valenciana" },
+  { city: "Paterna", province: "Valencia", community: "Comunidad Valenciana" },
+  { city: "Sagunto", province: "Valencia", community: "Comunidad Valenciana" },
+  { city: "Alcoy", province: "Alicante", community: "Comunidad Valenciana" },
+  // Extremadura
+  { city: "Badajoz", province: "Badajoz", community: "Extremadura" },
+  { city: "Cáceres", province: "Cáceres", community: "Extremadura" },
+  { city: "Mérida", province: "Badajoz", community: "Extremadura" },
+  { city: "Plasencia", province: "Cáceres", community: "Extremadura" },
+  { city: "Don Benito", province: "Badajoz", community: "Extremadura" },
+  // Galicia
+  { city: "Vigo", province: "Pontevedra", community: "Galicia" },
+  { city: "A Coruña", province: "A Coruña", community: "Galicia" },
+  { city: "Ourense", province: "Ourense", community: "Galicia" },
+  { city: "Lugo", province: "Lugo", community: "Galicia" },
+  { city: "Santiago de Compostela", province: "A Coruña", community: "Galicia" },
+  { city: "Pontevedra", province: "Pontevedra", community: "Galicia" },
+  { city: "Ferrol", province: "A Coruña", community: "Galicia" },
+  // Comunidad de Madrid
+  { city: "Madrid", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Móstoles", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Alcalá de Henares", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Fuenlabrada", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Leganés", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Getafe", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Alcorcón", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Torrejón de Ardoz", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Parla", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Alcobendas", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Pozuelo de Alarcón", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Las Rozas", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "San Sebastián de los Reyes", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Coslada", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Rivas-Vaciamadrid", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Valdemoro", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Majadahonda", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Collado Villalba", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Tres Cantos", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Arganda del Rey", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Boadilla del Monte", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Aranjuez", province: "Madrid", community: "Comunidad de Madrid" },
+  { city: "Pinto", province: "Madrid", community: "Comunidad de Madrid" },
+  // Región de Murcia
+  { city: "Murcia", province: "Murcia", community: "Región de Murcia" },
+  { city: "Cartagena", province: "Murcia", community: "Región de Murcia" },
+  { city: "Lorca", province: "Murcia", community: "Región de Murcia" },
+  { city: "Molina de Segura", province: "Murcia", community: "Región de Murcia" },
+  // Navarra
+  { city: "Pamplona", province: "Navarra", community: "Comunidad Foral de Navarra" },
+  { city: "Tudela", province: "Navarra", community: "Comunidad Foral de Navarra" },
+  { city: "Barañáin", province: "Navarra", community: "Comunidad Foral de Navarra" },
+  // País Vasco
+  { city: "Bilbao", province: "Vizcaya", community: "País Vasco" },
+  { city: "Vitoria-Gasteiz", province: "Álava", community: "País Vasco" },
+  { city: "San Sebastián", province: "Guipúzcoa", community: "País Vasco" },
+  { city: "Barakaldo", province: "Vizcaya", community: "País Vasco" },
+  { city: "Getxo", province: "Vizcaya", community: "País Vasco" },
+  { city: "Irún", province: "Guipúzcoa", community: "País Vasco" },
+  // La Rioja
+  { city: "Logroño", province: "La Rioja", community: "La Rioja" },
+  { city: "Calahorra", province: "La Rioja", community: "La Rioja" },
+  // Ceuta y Melilla
+  { city: "Ceuta", province: "Ceuta", community: "Ceuta" },
+  { city: "Melilla", province: "Melilla", community: "Melilla" },
+];
+
+function normalizeForSearch(str: string): string {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+export function searchCities(query: string, limit = 8): SpanishCity[] {
+  const q = normalizeForSearch(query.trim());
+  if (q.length < 2) return [];
+  
+  return SPANISH_CITIES
+    .filter(c => normalizeForSearch(c.city).includes(q))
+    .sort((a, b) => {
+      const aN = normalizeForSearch(a.city);
+      const bN = normalizeForSearch(b.city);
+      // Prioritize starts-with matches
+      const aStarts = aN.startsWith(q) ? 0 : 1;
+      const bStarts = bN.startsWith(q) ? 0 : 1;
+      if (aStarts !== bStarts) return aStarts - bStarts;
+      return a.city.localeCompare(b.city);
+    })
+    .slice(0, limit);
+}

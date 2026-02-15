@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { ArrowRight, Loader2, Sparkles, Camera, User, Building2, MapPin, FileText, Rocket, Users, TrendingUp, Shield, CheckCircle2, XCircle } from "lucide-react";
-import { validateDNI, validateCIF, lookupPostalCode } from "@/lib/spanish-validators";
+import { validateDNI, validateCIF, lookupPostalCode, searchCities, type SpanishCity } from "@/lib/spanish-validators";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -75,6 +75,8 @@ export function ProfileForm() {
   const [selectedProfessionSpecId, setSelectedProfessionSpecId] = useState<number | null>(null);
   const [nifValidation, setNifValidation] = useState<{ valid: boolean; message: string }>({ valid: false, message: "" });
   const [cifValidation, setCifValidation] = useState<{ valid: boolean; message: string }>({ valid: false, message: "" });
+  const [citySuggestions, setCitySuggestions] = useState<SpanishCity[]>([]);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -860,15 +862,53 @@ export function ProfileForm() {
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <Label htmlFor="city">Ciudad</Label>
               <Input
                 id="city"
                 value={formData.city}
-                onChange={(e) => updateField("city", e.target.value)}
-                placeholder="Madrid"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  updateField("city", val);
+                  const results = searchCities(val);
+                  setCitySuggestions(results);
+                  setShowCitySuggestions(results.length > 0);
+                }}
+                onFocus={() => {
+                  if (citySuggestions.length > 0) setShowCitySuggestions(true);
+                }}
+                onBlur={() => {
+                  // Delay to allow click on suggestion
+                  setTimeout(() => setShowCitySuggestions(false), 200);
+                }}
+                placeholder="Escribe tu ciudad..."
                 maxLength={100}
+                autoComplete="off"
               />
+              {showCitySuggestions && citySuggestions.length > 0 && (
+                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {citySuggestions.map((c, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className="w-full text-left px-3 py-2 hover:bg-accent text-sm transition-colors"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setFormData(prev => ({
+                          ...prev,
+                          city: c.city,
+                          state: c.community,
+                        }));
+                        setCitySuggestions([]);
+                        setShowCitySuggestions(false);
+                      }}
+                    >
+                      <span className="font-medium">{c.city}</span>
+                      <span className="text-muted-foreground ml-2 text-xs">{c.province}, {c.community}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
