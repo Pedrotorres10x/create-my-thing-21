@@ -3,13 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Shield, Crown, Eye, Scale, History, Users } from "lucide-react";
+import { Shield, Crown, Eye, Scale, History, Users, MessageSquarePlus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExpulsionReviewsTab } from "@/components/council/ExpulsionReviewsTab";
 import { ReentryRequestsTab } from "@/components/council/ReentryRequestsTab";
 import { ReportsTab } from "@/components/council/ReportsTab";
 import { DecisionHistoryTab } from "@/components/council/DecisionHistoryTab";
 import { SpecializationConflictsTab } from "@/components/council/SpecializationConflictsTab";
+import { CreateComplaintDialog } from "@/components/appeals/CreateComplaintDialog";
 
 const COUNCIL_TITLES = [
   { title: "El Estratega", icon: Crown, description: "Líder del Consejo" },
@@ -75,16 +76,21 @@ export default function EthicsCommittee() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header with narrative */}
-      <div className="flex items-center gap-3">
-        <div className="p-3 bg-primary/10 rounded-xl">
-          <Crown className="h-8 w-8 text-primary" />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-primary/10 rounded-xl">
+            <Crown className="h-8 w-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">El Consejo</h1>
+            <p className="text-muted-foreground font-medium">
+              Los que deciden quién se queda y quién se va
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-bold">El Consejo</h1>
-          <p className="text-muted-foreground font-medium">
-            Los que deciden quién se queda y quién se va
-          </p>
-        </div>
+        {professionalId && (
+          <CreateComplaintDialog professionalId={professionalId} />
+        )}
       </div>
 
       {/* Council Members with titles */}
