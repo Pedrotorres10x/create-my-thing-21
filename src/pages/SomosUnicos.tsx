@@ -1,59 +1,26 @@
 import { useState, useEffect, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageCircle, Send, Filter, Flag, Trophy, Medal, TrendingUp, MapPin } from "lucide-react";
+import { Trophy, Medal, MapPin, Handshake, TrendingUp, ArrowRight } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ReportUserDialog } from "@/components/ReportUserDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
-import { BadgeIcon } from "@/components/gamification/BadgeIcon";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-const POST_CATEGORIES = [
-  { value: "all", label: "Todas" },
-  { value: "caso_exito", label: "🏆 Caso de Éxito" },
-  { value: "busco_cliente", label: "🔍 Busco Cliente" },
-  { value: "oportunidad", label: "💡 Oportunidad" },
-  { value: "consejo", label: "📌 Consejo" },
-  { value: "general", label: "💬 General" },
-];
-
-interface Post {
+interface ClosedDeal {
   id: string;
-  content: string;
-  image_url: string | null;
-  created_at: string;
-  professional_id: string;
-  professionals: {
-    full_name: string;
-    photo_url: string | null;
-    business_name: string | null;
-  };
-  post_likes: { id: string; professional_id: string }[];
-  post_comments: {
-    id: string;
-    content: string;
-    created_at: string;
-    professionals: {
-      full_name: string;
-      photo_url: string | null;
-    };
-  }[];
+  description: string;
+  completed_at: string;
+  declared_profit: number | null;
+  thanks_amount_selected: number | null;
+  referrer: { id: string; full_name: string; photo_url: string | null; company_name: string | null };
+  receiver: { id: string; full_name: string; photo_url: string | null; company_name: string | null };
 }
 
 interface RankedProfessional {
@@ -66,6 +33,7 @@ interface RankedProfessional {
   city: string | null;
   state: string | null;
   chapter_id: string | null;
+  deals_completed: number;
   profession_specializations: { name: string } | null;
   specializations: { name: string } | null;
   sector_catalog: { name: string } | null;
@@ -73,143 +41,53 @@ interface RankedProfessional {
 
 type RankingScope = "grupo" | "ciudad" | "provincia" | "nacional";
 
-interface BadgeData {
-  id: string;
-  icon: string;
-  name: string;
-  description: string;
-  category: string;
-}
-
 const SomosUnicos = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
-  // Feed state
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [newPostContent, setNewPostContent] = useState("");
-  const [newPostCategory, setNewPostCategory] = useState("general");
-  const [filterCategory, setFilterCategory] = useState("all");
-  const [commentContent, setCommentContent] = useState<{ [key: string]: string }>({});
-  const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
-  const [currentProfessional, setCurrentProfessional] = useState<any>(null);
-  const [loadingPost, setLoadingPost] = useState(false);
-  const [reportTarget, setReportTarget] = useState<{ id: string; name: string; postId?: string } | null>(null);
+  // Deals feed state
+  const [closedDeals, setClosedDeals] = useState<ClosedDeal[]>([]);
+  const [loadingDeals, setLoadingDeals] = useState(true);
 
   // Rankings state
   const [rankedProfessionals, setRankedProfessionals] = useState<RankedProfessional[]>([]);
   const [myProfessionalId, setMyProfessionalId] = useState<string | null>(null);
-  const [profBadges, setProfBadges] = useState<Record<string, BadgeData[]>>({});
   const [loadingRankings, setLoadingRankings] = useState(true);
   const [rankingScope, setRankingScope] = useState<RankingScope>("nacional");
   const [myGeoInfo, setMyGeoInfo] = useState<{ city: string | null; state: string | null; chapter_id: string | null }>({ city: null, state: null, chapter_id: null });
 
   useEffect(() => {
     if (user) {
-      fetchCurrentProfessional();
-      fetchPosts();
+      fetchClosedDeals();
       loadRankings();
     }
   }, [user]);
 
-  // ── Feed logic ──
-  const fetchCurrentProfessional = async () => {
-    const { data } = await supabase
-      .from("professionals")
-      .select("*")
-      .eq("user_id", user?.id)
-      .single();
-    setCurrentProfessional(data);
-  };
+  const fetchClosedDeals = async () => {
+    try {
+      const { data, error } = await (supabase as any)
+        .from("deals")
+        .select(`
+          id, description, completed_at, declared_profit, thanks_amount_selected,
+          referrer:professionals!deals_referrer_id_fkey (id, full_name, photo_url, company_name),
+          receiver:professionals!deals_receiver_id_fkey (id, full_name, photo_url, company_name)
+        `)
+        .eq("status", "completed")
+        .not("completed_at", "is", null)
+        .order("completed_at", { ascending: false })
+        .limit(50);
 
-  const fetchPosts = async () => {
-    const { data, error } = await supabase
-      .from("posts")
-      .select(`
-        *,
-        professionals (full_name, photo_url, business_name),
-        post_likes (id, professional_id),
-        post_comments (
-          id, content, created_at,
-          professionals (full_name, photo_url)
-        )
-      `)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast.error("Error al cargar publicaciones");
-      return;
-    }
-    setPosts(data || []);
-  };
-
-  const createPost = async () => {
-    if (!newPostContent.trim() || !currentProfessional) return;
-    setLoadingPost(true);
-    const { error } = await supabase.from("posts").insert({
-      content: `[${newPostCategory}] ${newPostContent}`,
-      professional_id: currentProfessional.id,
-    });
-    if (error) {
-      toast.error("Error al crear publicación");
-    } else {
-      toast.success("Publicación creada");
-      setNewPostContent("");
-      setNewPostCategory("general");
-      fetchPosts();
-    }
-    setLoadingPost(false);
-  };
-
-  const toggleLike = async (postId: string) => {
-    if (!currentProfessional) return;
-    const post = posts.find((p) => p.id === postId);
-    const hasLikedPost = post?.post_likes.some(
-      (like) => like.professional_id === currentProfessional.id
-    );
-    if (hasLikedPost) {
-      const like = post?.post_likes.find((l) => l.professional_id === currentProfessional.id);
-      await supabase.from("post_likes").delete().eq("id", like?.id);
-    } else {
-      await supabase.from("post_likes").insert({
-        post_id: postId,
-        professional_id: currentProfessional.id,
-      });
-    }
-    fetchPosts();
-  };
-
-  const addComment = async (postId: string) => {
-    if (!commentContent[postId]?.trim() || !currentProfessional) return;
-    const { error } = await supabase.from("post_comments").insert({
-      post_id: postId,
-      content: commentContent[postId],
-      professional_id: currentProfessional.id,
-    });
-    if (error) {
-      toast.error("Error al comentar");
-    } else {
-      setCommentContent({ ...commentContent, [postId]: "" });
-      fetchPosts();
+      if (error) {
+        console.error("Error fetching closed deals:", error);
+        return;
+      }
+      setClosedDeals(data || []);
+    } catch (err) {
+      console.error("Error:", err);
+    } finally {
+      setLoadingDeals(false);
     }
   };
-
-  const hasLiked = (post: Post) =>
-    post.post_likes.some((like) => like.professional_id === currentProfessional?.id);
-
-  const getCategoryFromContent = (content: string) => {
-    const match = content.match(/^\[(\w+)\]/);
-    return match ? match[1] : "general";
-  };
-  const getCleanContent = (content: string) => content.replace(/^\[\w+\]\s*/, "");
-  const getCategoryBadge = (category: string) => {
-    const cat = POST_CATEGORIES.find((c) => c.value === category);
-    return cat ? cat.label : "💬 General";
-  };
-
-  const filteredPosts =
-    filterCategory === "all"
-      ? posts
-      : posts.filter((p) => getCategoryFromContent(p.content) === filterCategory);
 
   // ── Rankings logic ──
   const loadRankings = async () => {
@@ -227,11 +105,11 @@ const SomosUnicos = () => {
         }
       }
 
-      // @ts-ignore - Complex nested select
+      // @ts-ignore
       const { data: profsData } = await supabase
         .from("professionals_public")
         .select(`
-          id, full_name, photo_url, position, company_name, total_points,
+          id, full_name, photo_url, position, company_name, total_points, deals_completed,
           city, state, chapter_id,
           profession_specializations (name),
           specializations (name),
@@ -241,19 +119,6 @@ const SomosUnicos = () => {
         .limit(100);
 
       if (profsData) setRankedProfessionals(profsData as any);
-
-      const { data: allProfBadges } = await supabase
-        .from("professional_badges")
-        .select("professional_id, badges(id, icon, name, description, category)");
-
-      if (allProfBadges) {
-        const grouped: Record<string, BadgeData[]> = {};
-        for (const pb of allProfBadges as any[]) {
-          if (!grouped[pb.professional_id]) grouped[pb.professional_id] = [];
-          if (pb.badges) grouped[pb.professional_id].push(pb.badges);
-        }
-        setProfBadges(grouped);
-      }
     } catch (error) {
       console.error("Error loading rankings:", error);
     } finally {
@@ -261,10 +126,8 @@ const SomosUnicos = () => {
     }
   };
 
-  // Filter rankings by geographic scope
   const filteredRankings = useMemo(() => {
     if (rankingScope === "nacional") return rankedProfessionals;
-    
     return rankedProfessionals.filter((prof) => {
       switch (rankingScope) {
         case "grupo":
@@ -290,192 +153,112 @@ const SomosUnicos = () => {
 
   const myRank = filteredRankings.findIndex((p) => p.id === myProfessionalId) + 1;
 
+  // Community stats
+  const totalDeals = rankedProfessionals.reduce((sum, p) => sum + (p.deals_completed || 0), 0);
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Somos Únicos</h1>
         <p className="text-muted-foreground">
-          Comparte, inspira y descubre quiénes destacan en la comunidad
+          Tratos cerrados y ranking de la comunidad. Aquí se celebran las victorias reales.
         </p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* ── Feed principal ── */}
+        {/* ── Deals Feed ── */}
         <div className="flex-1 space-y-4 min-w-0">
-          {/* Crear post */}
-          {currentProfessional?.status === "approved" && (
-            <Card>
-              <CardHeader>
-                <div className="flex items-start gap-4">
-                  <Avatar>
-                    <AvatarImage src={currentProfessional?.photo_url || ""} />
-                    <AvatarFallback>{currentProfessional?.full_name?.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 space-y-3">
-                    <Select value={newPostCategory} onValueChange={setNewPostCategory}>
-                      <SelectTrigger className="w-48">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {POST_CATEGORIES.filter((c) => c.value !== "all").map((cat) => (
-                          <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Textarea
-                      placeholder="¿Qué quieres compartir con la comunidad?"
-                      value={newPostContent}
-                      onChange={(e) => setNewPostContent(e.target.value)}
-                      rows={3}
-                    />
-                    <Button onClick={createPost} disabled={loadingPost || !newPostContent.trim()}>
-                      <Send className="h-4 w-4 mr-2" />
-                      Publicar
-                    </Button>
-                  </div>
+          {/* CTA to refer */}
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Handshake className="h-6 w-6 text-primary flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-sm">¿Tienes un cliente para alguien de tu tribu?</p>
+                  <p className="text-xs text-muted-foreground">Refiere y cobra tu comisión cuando cierre el trato</p>
                 </div>
-              </CardHeader>
+              </div>
+              <Button size="sm" onClick={() => navigate("/recomendacion")} className="flex-shrink-0">
+                Referir
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </CardContent>
+          </Card>
+
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Últimos tratos cerrados
+          </h2>
+
+          {loadingDeals ? (
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full" />
+              ))}
+            </div>
+          ) : closedDeals.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Handshake className="h-12 w-12 mx-auto mb-3 text-muted-foreground/40" />
+                <p className="text-muted-foreground font-medium">Aún no hay tratos cerrados</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Sé el primero en referir un cliente y cerrar un trato
+                </p>
+                <Button variant="outline" className="mt-4" onClick={() => navigate("/recomendacion")}>
+                  Referir un cliente
+                </Button>
+              </CardContent>
             </Card>
-          )}
-
-          {/* Filtro */}
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {POST_CATEGORIES.map((cat) => (
-                  <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Posts */}
-          <div className="space-y-4">
-            {filteredPosts.length === 0 ? (
-              <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">
-                  No hay publicaciones en esta categoría. ¡Sé el primero!
-                </CardContent>
-              </Card>
-            ) : (
-              filteredPosts.map((post) => (
-                <Card key={post.id}>
-                  <CardHeader>
+          ) : (
+            <div className="space-y-3">
+              {closedDeals.map((deal) => (
+                <Card key={deal.id}>
+                  <CardContent className="p-4">
                     <div className="flex items-start gap-4">
-                      <Avatar>
-                        <AvatarImage src={post.professionals.photo_url || ""} />
-                        <AvatarFallback>{post.professionals.full_name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold">{post.professionals.full_name}</span>
-                          <Badge variant="secondary" className="text-xs">
-                            {getCategoryBadge(getCategoryFromContent(post.content))}
+                      <div className="flex -space-x-3 flex-shrink-0">
+                        <Avatar className="h-10 w-10 border-2 border-background">
+                          <AvatarImage src={deal.referrer?.photo_url || undefined} />
+                          <AvatarFallback>
+                            {deal.referrer?.full_name?.split(" ").map(n => n[0]).join("") || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <Avatar className="h-10 w-10 border-2 border-background">
+                          <AvatarImage src={deal.receiver?.photo_url || undefined} />
+                          <AvatarFallback>
+                            {deal.receiver?.full_name?.split(" ").map(n => n[0]).join("") || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm">
+                          <span className="font-semibold">{deal.referrer?.full_name}</span>
+                          {" "}refirió un cliente a{" "}
+                          <span className="font-semibold">{deal.receiver?.full_name}</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          {deal.description}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge variant="default" className="text-[10px]">
+                            ✅ Trato cerrado
                           </Badge>
-                        </div>
-                        {post.professionals.business_name && (
-                          <div className="text-sm text-muted-foreground">{post.professionals.business_name}</div>
-                        )}
-                        <div className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: es })}
+                          {deal.completed_at && (
+                            <span className="text-[11px] text-muted-foreground">
+                              {formatDistanceToNow(new Date(deal.completed_at), { addSuffix: true, locale: es })}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="whitespace-pre-wrap">{getCleanContent(post.content)}</p>
-                    {post.image_url && (
-                      <img src={post.image_url} alt="Post image" className="rounded-lg w-full" />
-                    )}
-                    <div className="flex items-center gap-4 pt-2">
-                      <Button variant="ghost" size="sm" onClick={() => toggleLike(post.id)} className="gap-2">
-                        <Heart className={`h-4 w-4 ${hasLiked(post) ? "fill-red-500 text-red-500" : ""}`} />
-                        {post.post_likes.length}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowComments({ ...showComments, [post.id]: !showComments[post.id] })}
-                        className="gap-2"
-                      >
-                        <MessageCircle className="h-4 w-4" />
-                        {post.post_comments.length}
-                      </Button>
-                      {currentProfessional && post.professional_id !== currentProfessional.id && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="ml-auto text-muted-foreground"
-                          onClick={() =>
-                            setReportTarget({ id: post.professional_id, name: post.professionals.full_name, postId: post.id })
-                          }
-                        >
-                          <Flag className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-
-                    {showComments[post.id] && (
-                      <div className="space-y-4 pt-4 border-t">
-                        {post.post_comments.map((comment) => (
-                          <div key={comment.id} className="flex gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={comment.professionals.photo_url || ""} />
-                              <AvatarFallback>{comment.professionals.full_name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                              <div className="bg-muted rounded-lg p-3">
-                                <div className="font-semibold text-sm">{comment.professionals.full_name}</div>
-                                <p className="text-sm">{comment.content}</p>
-                              </div>
-                              <div className="text-xs text-muted-foreground mt-1 ml-3">
-                                {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: es })}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        {currentProfessional?.status === "approved" && (
-                          <div className="flex gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={currentProfessional?.photo_url || ""} />
-                              <AvatarFallback>{currentProfessional?.full_name?.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 flex gap-2">
-                              <Textarea
-                                placeholder="Escribe un comentario..."
-                                value={commentContent[post.id] || ""}
-                                onChange={(e) =>
-                                  setCommentContent({ ...commentContent, [post.id]: e.target.value })
-                                }
-                                rows={2}
-                                className="flex-1"
-                              />
-                              <Button
-                                size="sm"
-                                onClick={() => addComment(post.id)}
-                                disabled={!commentContent[post.id]?.trim()}
-                              >
-                                <Send className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ── Ranking lateral ── */}
         <div className="lg:w-80 xl:w-96 space-y-4 flex-shrink-0">
-          {/* Mi posición */}
           {myRank > 0 && (
             <Card className="border-primary">
               <CardContent className="p-4">
@@ -495,7 +278,6 @@ const SomosUnicos = () => {
             </Card>
           )}
 
-          {/* Top ranking */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -552,10 +334,7 @@ const SomosUnicos = () => {
                         <Avatar className="h-9 w-9">
                           <AvatarImage src={prof.photo_url || undefined} />
                           <AvatarFallback>
-                            {prof.full_name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                            {prof.full_name.split(" ").map((n) => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
@@ -584,38 +363,30 @@ const SomosUnicos = () => {
             </CardContent>
           </Card>
 
-          {/* Stats rápidas */}
+          {/* Stats */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">Comunidad</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-3">
+            <CardContent className="grid grid-cols-3 gap-3">
               <div>
                 <p className="text-2xl font-bold">{filteredRankings.length}</p>
                 <p className="text-xs text-muted-foreground">Miembros</p>
               </div>
               <div>
+                <p className="text-2xl font-bold">{totalDeals}</p>
+                <p className="text-xs text-muted-foreground">Tratos</p>
+              </div>
+              <div>
                 <p className="text-2xl font-bold">
                   {filteredRankings.reduce((sum, p) => sum + p.total_points, 0)}
                 </p>
-                <p className="text-xs text-muted-foreground">Puntos totales</p>
+                <p className="text-xs text-muted-foreground">Puntos</p>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
-
-      {currentProfessional && reportTarget && (
-        <ReportUserDialog
-          open={!!reportTarget}
-          onOpenChange={(open) => !open && setReportTarget(null)}
-          reportedId={reportTarget.id}
-          reportedName={reportTarget.name}
-          context="feed_post"
-          contextId={reportTarget.postId}
-          reporterId={currentProfessional.id}
-        />
-      )}
     </div>
   );
 };
