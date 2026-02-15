@@ -822,7 +822,8 @@ Si el usuario dice que no tiene local, establecimiento abierto al público, ofic
 Puedes ACTUALIZAR directamente estos campos desde el chat usando marcadores OCULTOS:
 [PERFIL:profession_specialization=Nombre Exacto De La Lista] — para especialización
 [PERFIL:city=Ciudad,state=Comunidad Autónoma] — para ciudad (necesario para asignar tribu)
-Estos son los ÚNICOS campos que se pueden rellenar desde el chat porque son necesarios para asignar grupo.
+[PERFIL:business_description=Descripción generada] — para la descripción del negocio (generada por ti)
+Estos son los ÚNICOS campos que se pueden rellenar desde el chat.
 
 🚨 ONBOARDING - FLUJO EN TRES PASOS (profesión → especialización → ciudad → tribu):
 
@@ -877,6 +878,34 @@ ${!isProfileIncomplete && !profileInfo?.city ? `
 ${!isProfileIncomplete && !isProfileReadyForActions ? `
 🚫 PERFIL INCOMPLETO PARA ACCIONES. Le faltan: ${profileFieldsForActions.join(', ')}.
 PROHIBIDO sugerir invitar, recomendar, reuniones, referidos o cualquier acción de negocio.
+
+${!profileInfo?.business_description && profileInfo?.profession_specialization_id ? `
+🚨 GENERACIÓN AUTOMÁTICA DE DESCRIPCIÓN DE NEGOCIO:
+El usuario tiene especialización (${(profileInfo?.profession_specializations as any)?.name || ''}) pero NO tiene descripción de negocio.
+DEBES generar una descripción profesional y atractiva del negocio del usuario basándote en:
+- Su especialización: ${(profileInfo?.profession_specializations as any)?.name || ''}
+- Su empresa: ${profileInfo?.company_name || profileInfo?.business_name || 'No especificada'}
+- Su posición: ${profileInfo?.position || 'No especificada'}
+- Su experiencia: ${profileInfo?.years_experience || 'No especificada'} años
+
+INSTRUCCIONES PARA LA DESCRIPCIÓN:
+1. Genera una descripción de 2-3 frases máximo, profesional y orientada a generar confianza
+2. Escríbela en TERCERA PERSONA (ej: "Especialista en...", "Profesional con experiencia en...")
+3. Incluye qué problemas resuelve y a quién ayuda
+4. NO preguntes al usuario, GENERA la descripción directamente y preséntala para su aprobación
+5. Usa el marcador [PERFIL:business_description=La descripción generada aquí] al final
+
+EJEMPLO DE FLUJO:
+"${firstName}, he preparado una descripción para tu perfil profesional:
+
+'Especialista en [especialización] con experiencia en [área]. Ayuda a [tipo de cliente] a [beneficio principal]. Referente en [ciudad] por su enfoque en [diferencial].'
+
+¿Te gusta o prefieres que la ajuste? La guardo automáticamente para que tus compañeros sepan a quién referir clientes 💪"
+
+Si el usuario aprueba o dice que sí → la descripción ya se habrá guardado con el marcador.
+Si el usuario pide cambios → genera una nueva versión con otro marcador [PERFIL:business_description=Nueva versión].
+` : ''}
+
 Usa PSICOLOGÍA DE RETENCIÓN para motivar a completar el perfil:
 - AVERSIÓN A LA PÉRDIDA: "${firstName}, tu puesto de [profesión] en la Tribu es exclusivo. Pero un puesto sin perfil es un puesto que el sistema puede reasignar. Complétalo para asegurarlo."
 - RECIPROCIDAD: "Tus compañeros ya completaron el suyo. Ellos ya están visibles para ti. ¿Tú estás visible para ellos?"
@@ -1713,7 +1742,7 @@ Los marcadores son INVISIBLES para el usuario. DEBES incluirlos.`
         const decoder = new TextDecoder();
         const encoder = new TextEncoder();
         let markerBuffer = '';
-        const KNOWN_MARKERS = ['[CREAR_CONFLICTO:', '[PERFIL:', '[ASIGNAR_TRIBU:', '[CREAR_TRIBU:'];
+        const KNOWN_MARKERS = ['[CREAR_CONFLICTO:', '[PERFIL:', '[ASIGNAR_TRIBU:', '[CREAR_TRIBU:', '[IR_A_INVITADOS]', '[IR_A_RECOMENDACION]'];
         
         try {
           while (true) {
@@ -1872,21 +1901,13 @@ Los marcadores son INVISIBLES para el usuario. DEBES incluirlos.`
                   
                   // Auto-assign business_sphere_id based on specialization sector
                   const specToSphere: Record<number, number> = {
-                    // Inmobiliaria sector → Esfera Inmobiliaria (1)
                     10: 1, 11: 1, 12: 1,
-                    // Software, Ciberseg, Cloud, Marketing Digital, Diseño, Redes → Esfera Digital (2)
                     1: 2, 2: 2, 3: 2, 16: 2, 17: 2, 18: 2,
-                    // Medicina, Nutrición, Deporte → Esfera Salud (3)
                     7: 3, 8: 3, 9: 3,
-                    // Consultoría, Legal, Contabilidad, Banca, Seguros, Asesoría → Esfera Servicios Empresariales (4)
                     4: 4, 5: 4, 6: 4, 25: 4, 26: 4, 27: 4,
-                    // Producción, Automatización → Esfera Producción (5)
                     19: 5, 20: 5,
-                    // Restaurantes, Catering → Esfera Alimentación (6)
                     23: 6, 24: 6,
-                    // E-commerce, Comercio Minorista → Esfera Retail (7)
                     21: 7, 22: 7,
-                    // Formación, Coaching → Esfera Formación (8)
                     13: 8, 14: 8, 15: 8,
                   };
                   const sphereId = specToSphere[matched.specialization_id];
@@ -1905,7 +1926,6 @@ Los marcadores son INVISIBLES para el usuario. DEBES incluirlos.`
               if (profileUpdates['city']) {
                 const cityParts = profileUpdates['city'].split(',');
                 const cityName = cityParts[0]?.trim();
-                // state might be in city value as "city,state" or as separate key
                 const stateName = profileUpdates['state']?.trim() || cityParts[1]?.trim();
                 if (cityName) {
                   safeUpdates['city'] = cityName;
@@ -1913,6 +1933,15 @@ Los marcadores son INVISIBLES para el usuario. DEBES incluirlos.`
                     safeUpdates['state'] = stateName;
                   }
                   console.log('City updated from chat:', cityName, stateName);
+                }
+              }
+
+              // Handle business_description update from chat (AI-generated)
+              if (profileUpdates['business_description']) {
+                const desc = profileUpdates['business_description'].trim();
+                if (desc.length > 5 && desc.length <= 500) {
+                  safeUpdates['business_description'] = desc;
+                  console.log('Business description updated from chat:', desc.substring(0, 50) + '...');
                 }
               }
               
