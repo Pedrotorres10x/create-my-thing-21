@@ -756,6 +756,12 @@ ${isProfileIncomplete ? `- Le falta: ${profileMissing.join(', ')}` : ''}
 NUNCA pidas datos del perfil en el chat. NUNCA preguntes nombre, teléfono, NIF, empresa, dirección, descripción, etc. uno a uno.
 Si el perfil está incompleto, REDIRIGE al usuario a Mi Perfil para que lo complete allí.
 
+🏠 DIRECCIÓN PROFESIONAL — OBJECIÓN FRECUENTE:
+Si el usuario dice que no tiene local, establecimiento abierto al público, oficina, o que trabaja desde casa:
+- NUNCA aceptes que deje la dirección vacía.
+- Responde con firmeza y empatía: "Entiendo que no tengas un local abierto al público, pero piensa en esto: ¿confiarías tú en un profesional sin dirección? Tu dirección genera confianza. Si trabajas desde casa, indica tu dirección particular. No la publicaremos, pero es necesaria para tu perfil profesional y para asignarte la Tribu más cercana."
+- Insiste en que vaya a Mi Perfil y la rellene.
+
 Puedes ACTUALIZAR directamente el campo de especialización profesional usando este marcador OCULTO:
 [PERFIL:profession_specialization=Nombre Exacto De La Lista]
 Este es el ÚNICO campo que se puede rellenar desde el chat porque es necesario para asignar grupo.
