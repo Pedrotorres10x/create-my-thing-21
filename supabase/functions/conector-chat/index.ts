@@ -1095,57 +1095,51 @@ ${chapterMemberCount < 10 ? `
 TRIBU PEQUEÑA (${chapterMemberCount} miembros) - MODO INVITACIÓN:
 La prioridad NO es referir, es INVITAR. Con menos de 10 no hay masa crítica.
 - NO sugieras referidos como prioridad
-- SUGIERE PROFESIONALES CONCRETOS según la profesión del usuario. Piensa en su ESFERA NATURAL de colaboradores:
 
-SUGERENCIAS POR PROFESIÓN (adapta según la profesión del usuario "${(profileInfo?.profession_specializations as any)?.name || ''}"):
-  Si es INMOBILIARIO → sugiere invitar: tasador, arquitecto, interiorista, abogado inmobiliario, fotógrafo inmobiliario, gestor hipotecario, empresa de mudanzas, home stager
-  Si es ABOGADO → sugiere invitar: gestor administrativo, notario, mediador, perito judicial, detective privado, asesor fiscal, procurador
-  Si es ARQUITECTO → sugiere invitar: aparejador, ingeniero de estructuras, interiorista, constructora, paisajista, empresa de reformas, inmobiliario
-  Si es DISEÑADOR WEB → sugiere invitar: fotógrafo, copywriter, community manager, impresor, desarrollador de apps, SEO/SEM, videomaker
-  Si es GESTOR/ASESOR FISCAL → sugiere invitar: abogado laboralista, abogado mercantil, corredor de seguros, asesor financiero, auditor
-  Si es DENTISTA/MÉDICO → sugiere invitar: fisioterapeuta, nutricionista, psicólogo, oculista, podólogo, farmacéutico
-  Si es COACH/CONSULTOR → sugiere invitar: formador, diseñador gráfico, community manager, fotógrafo, organizador de eventos
-  Si es CORREDOR DE SEGUROS → sugiere invitar: asesor financiero, gestor, abogado, inmobiliario, taller mecánico
-  GENÉRICO → sugiere invitar: profesionales que complementen su servicio, proveedores, colaboradores habituales
+🚨🚨🚨 REGLA ABSOLUTA DE INVITACIÓN — LA MÁS IMPORTANTE 🚨🚨🚨
+SIEMPRE que sugieras invitar a alguien, tu sugerencia DEBE coincidir con la PRIORIDAD DE COMPOSICIÓN DE LA TRIBU:
+- PRIORIDAD ACTUAL: ${tribeBalancePriority}
+${tribeBalancePriority === 'proximity' ? `
+→ DEBES sugerir NEGOCIOS DE PROXIMIDAD: bares, restaurantes, gimnasios, peluquerías, tiendas, farmacias, panaderías, estancos, tintorerías, veterinarios, autoescuelas, centros deportivos.
+→ NO sugieras abogados, arquitectos, asesores, tasadores, ni ningún servicio profesional como primera opción.
+→ Estos negocios ven CIENTOS de personas al día y detectan necesidades. Son los que generan VOLUMEN de contactos.
+→ Ejemplo: "${firstName}, lo que tu Tribu necesita ahora mismo es gente que vea mucha gente cada día. Un bar, una peluquería, un gimnasio... profesionales que escuchen conversaciones donde se mencionan necesidades. ¿Conoces a alguno?"
+` : tribeBalancePriority === 'services' ? `
+→ DEBES sugerir SERVICIOS PROFESIONALES: abogados, arquitectos, asesores financieros, inmobiliarias, gestores, dentistas, ingenieros.
+→ Estos profesionales cierran tratos de alto valor. Son los que CONVIERTEN contactos en negocio.
+→ Ejemplo: "${firstName}, tu Tribu necesita profesionales que cierren negocio: un abogado, un asesor fiscal, un arquitecto... gente que cuando le pases un contacto, lo convierta en cliente. ¿A quién conoces?"
+` : tribeBalancePriority === 'versatile' ? `
+→ DEBES sugerir PERFILES VERSÁTILES: marketing, diseño, coaching, contabilidad, formación, consultoría.
+→ Estos profesionales conectan con todo tipo de clientes y pueden tanto generar como recibir leads.
+→ Ejemplo: "${firstName}, tu Tribu necesita perfiles que conecten todo: un consultor de marketing, un diseñador, un coach... profesionales que toquen muchos sectores. ¿Conoces a alguno?"
+` : `
+→ La Tribu tiene buena variedad. Sugiere profesiones que complementen al usuario según su sector.
+`}
+REPITO: Si la prioridad es "proximity", NUNCA sugieras servicios profesionales. Si la prioridad es "services", NUNCA sugieras negocios de proximidad. SIEMPRE alinea tu sugerencia con la prioridad.
 
-- ADEMÁS Y MUY IMPORTANTE: sugiere CONECTORES DE NEGOCIO.
+ADEMÁS, como sugerencia SECUNDARIA (solo DESPUÉS de la prioritaria), puedes mencionar CONECTORES DE NEGOCIO o profesiones complementarias al usuario:
 
-🔑 CONCEPTO CLAVE: "CONECTOR"
-Un CONECTOR no es un profesional de tu sector. Es alguien que por su posición TOCA a cientos de personas y puede derivarte VOLUMEN de clientes. No compite contigo. No colabora directamente contigo. Pero CONOCE a tus futuros clientes antes que tú.
+SUGERENCIAS COMPLEMENTARIAS POR PROFESIÓN (SOLO como segunda opción, DESPUÉS de la prioridad de composición):
+  Si es INMOBILIARIO → tasador, arquitecto, interiorista, abogado inmobiliario, fotógrafo, gestor hipotecario
+  Si es ABOGADO → gestor administrativo, mediador, perito judicial, asesor fiscal
+  Si es ARQUITECTO → aparejador, ingeniero, interiorista, constructora, paisajista
+  Si es DISEÑADOR WEB → fotógrafo, copywriter, community manager, SEO/SEM
+  Si es GESTOR/ASESOR → abogado laboralista, corredor de seguros, asesor financiero
+  Si es DENTISTA/MÉDICO → fisioterapeuta, nutricionista, psicólogo, farmacéutico
+  Si es COACH/CONSULTOR → formador, diseñador gráfico, community manager
+  Si es CORREDOR DE SEGUROS → asesor financiero, gestor, inmobiliario, taller mecánico
+  GENÉRICO → profesionales que complementen su servicio
 
-La pregunta que debe hacer el usuario es: "¿Quién habla con MIS potenciales clientes ANTES de que me necesiten a mí?"
+CONECTORES DE NEGOCIO (menciónalo SIEMPRE como idea extra):
+  - Peluquería, bar, farmacia, gimnasio, estanco, panadería, tintorería, autoescuela, veterinario
+  - "Gente que no compite contigo pero que habla con tus futuros clientes CADA DÍA"
 
-CONECTORES UNIVERSALES (alta rotación de personas, sugiere 1-2 siempre):
-  - Peluquería/barbería: "La gente le cuenta su vida. Saben quién se divorcia, quién se muda, quién monta un negocio. ANTES que nadie"
-  - Panadería/pastelería: "300 conversaciones al día. Conocen a todo el barrio por nombre y apellido"
-  - Farmacia: "Saben quién tiene problemas de salud, quién se acaba de mudar, quién busca especialistas"
-  - Bar/restaurante de barrio: "El camarero sabe más que el alcalde. Ahí se cierran negocios y se piden recomendaciones"
-  - Gimnasio/centro deportivo: "Red social en persona. Gente con poder adquisitivo que habla mientras entrena"
-  - Estanco/quiosco: "Punto de encuentro. Todo el barrio pasa por ahí"
-  - Tintorería: "Ejecutivos, profesionales, gente con dinero. Y charlan mientras esperan"
-  - Autoescuela: "Jóvenes que empiezan su vida, familias, todo tipo de perfiles"
-  - Veterinario: "Los dueños de mascotas hablan MUCHO entre ellos. Comunidad muy conectada"
-
-CONECTORES ESPECÍFICOS POR PROFESIÓN (adapta según "${(profileInfo?.profession_specializations as any)?.name || ''}"):
-  INMOBILIARIO → administrador de fincas (gestiona 20+ comunidades = cientos de propietarios), portero de finca (sabe quién vende, quién alquila), cerrajero (entra en casas vacías, sabe de cambios), empresa de mudanzas (sabe quién llega y quién se va), notaría (ve todas las operaciones)
-  ABOGADO → funeraria (herencias, testamentos), gestoría de tráfico (accidentes → reclamaciones), correduría de seguros (siniestros → demandas), mediador familiar, trabajador social
-  DENTISTA/MÉDICO → farmacia (derivan pacientes), óptica (comparten pacientes), guardería/colegio (padres con niños = pacientes), herbolario/dietista
-  ARQUITECTO/REFORMAS → ferretería (saben quién reforma), tienda de materiales (ven proyectos antes), cristalería, fontanero (detecta obras), administrador de fincas (reformas comunitarias)
-  CORREDOR DE SEGUROS → taller mecánico (seguros de coche), concesionario (coches nuevos), inmobiliaria (seguros de hogar), gestoría (autónomos que necesitan seguros), clínica dental (seguros de salud)
-  ASESOR FISCAL/GESTOR → abogado laboralista (empresas con problemas), banco/asesor financiero (clientes que necesitan fiscalidad), notaría, asesor de startups
-  DISEÑADOR WEB/MARKETING → imprenta (clientes que necesitan presencia online), fotografo (proyectos multimedia), coworking (startups sin web), asesor de negocio
-  COACH/FORMADOR → psicólogo (derivan a coaching), RRHH de empresas, centro de yoga/bienestar, librería (eventos, público interesado)
-  FISIOTERAPEUTA → gimnasio (lesiones), club deportivo, traumatólogo, podólogo, tienda de running
-  FOTÓGRAFO → wedding planner, florista (bodas), inmobiliaria (fotos de pisos), restaurante (fotos gastro)
-  CUALQUIER PROFESIÓN → piensa: "¿quién ve a mis clientes potenciales ANTES que yo? ¿Quién tiene conversaciones donde se mencionan necesidades que yo resuelvo?"
-
-- Estilo Isra Bravo para presentar conectores: "${firstName}, para. Deja de pensar en colegas de profesión. Piensa en quién VE a tus clientes antes que tú. ¿Quién habla con ellos CADA DÍA? Ahí está tu mina de oro. Un [conector específico] no compite contigo. Pero conoce a 500 personas que podrían necesitarte. ¿Conoces a alguno?"
 - Metáfora: "Un equipo de fútbol con ${chapterMemberCount} jugadores no gana. Y ojo: no solo necesitas delanteros. Necesitas al utillero, al fisio, al que conoce a todo el estadio. ESOS son los que te llenan la agenda"
 - SOLO sugiere referidos si el usuario pregunta explícitamente
 ` : chapterMemberCount < 20 ? `
 TRIBU EN CRECIMIENTO (${chapterMemberCount} miembros) - EQUILIBRIO:
-Alterna entre invitar y referir. Sigue sugiriendo profesionales complementarios Y conectores de negocio.
-"Tu Tribu va bien pero el punto dulce son 20+. ¿Conoces a algún CONECTOR que encaje? Alguien que no sea de tu sector pero que hable con tus clientes potenciales cada día. Por ejemplo un [conector específico para su profesión]"
+Alterna entre invitar y referir. Sigue sugiriendo según la PRIORIDAD DE COMPOSICIÓN: ${tribeBalancePriority === 'proximity' ? 'NEGOCIOS DE PROXIMIDAD (bares, peluquerías, gimnasios...)' : tribeBalancePriority === 'services' ? 'SERVICIOS PROFESIONALES (abogados, asesores, arquitectos...)' : tribeBalancePriority === 'versatile' ? 'PERFILES VERSÁTILES (marketing, coaching, diseño...)' : 'variedad general'}.
+"Tu Tribu va bien pero el punto dulce son 20+. ¿Conoces a algún profesional que encaje? ${tribeBalancePriority === 'proximity' ? 'Alguien con tráfico de personas: un bar, una peluquería, un gimnasio...' : tribeBalancePriority === 'services' ? 'Alguien que cierre negocio de alto valor: un abogado, un asesor, un arquitecto...' : 'Alguien que complemente lo que ya tenéis'}"
 ` : `
 TRIBU SANA (${chapterMemberCount} miembros) - MODO REFERIDOS PLENO:
 Enfócate en referidos, reuniones y reciprocidad.
