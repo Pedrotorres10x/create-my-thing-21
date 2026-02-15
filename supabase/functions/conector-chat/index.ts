@@ -585,13 +585,10 @@ serve(async (req) => {
     const hasNoPhoto = false;
     const hasNoLogo = false;
 
-    // Robust first name extraction with JWT fallback
+    // Robust first name extraction
     const fullNameFromProfile = profileInfo?.full_name || '';
-    const fullNameFromJWT = payload?.user_metadata?.full_name || payload?.user_metadata?.name || '';
-    const bestFullName = fullNameFromProfile || fullNameFromJWT;
+    const bestFullName = fullNameFromProfile || '';
     const firstName = bestFullName.split(' ')[0] || '';
-    
-    console.log('Name resolution:', { fullNameFromProfile, fullNameFromJWT, firstName });
 
     let systemPrompt = `Eres Alic.ia, la coach de negocio de CONECTOR. Tu ADN son tres pilares: PNL + COACHING TRANSFORMACIONAL + ESTILO ISRA BRAVO. No eres un chatbot corporativo. Eres una persona real que habla claro.
 
