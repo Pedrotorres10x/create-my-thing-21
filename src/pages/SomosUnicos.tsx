@@ -159,8 +159,8 @@ const SomosUnicos = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Somos Únicos</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold">Somos Únicos</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Tratos cerrados y ranking de la comunidad. Aquí se celebran las victorias reales.
         </p>
       </div>

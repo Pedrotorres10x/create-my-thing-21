@@ -168,7 +168,7 @@ const Referrals = () => {
 
   if (!professional) {
     return (
-      <div className="p-8">
+      <div>
         <Card>
           <CardHeader>
             <CardTitle>Completa tu perfil</CardTitle>
@@ -182,10 +182,10 @@ const Referrals = () => {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6">
       <div>
-         <h1 className="text-3xl font-bold mb-2">Mis Invitados</h1>
-         <p className="text-muted-foreground">Invita profesionales a tu tribu e intercambia clientes</p>
+         <h1 className="text-2xl sm:text-3xl font-bold mb-2">Mis Invitados</h1>
+         <p className="text-sm sm:text-base text-muted-foreground">Invita profesionales a tu tribu e intercambia clientes</p>
       </div>
 
       {/* Stats Cards */}
@@ -292,10 +292,10 @@ const Referrals = () => {
           ) : (
             <div className="space-y-4">
               {referrals.map((referral) => (
-                <div
-                  key={referral.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
+                 <div
+                   key={referral.id}
+                   className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-2"
+                 >
                   <div className="space-y-1">
                     <p className="font-medium">{referral.referred_email}</p>
                     <p className="text-sm text-muted-foreground">

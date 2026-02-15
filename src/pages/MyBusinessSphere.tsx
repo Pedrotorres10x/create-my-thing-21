@@ -185,7 +185,7 @@ export default function MyBusinessSphere() {
             <span className="text-2xl">🌐</span>
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Mi Tribu</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Mi Tribu</h1>
             <p className="text-muted-foreground">
               {sphereInfo.name}
               {chapterInfo && (
@@ -197,7 +197,7 @@ export default function MyBusinessSphere() {
             </p>
           </div>
         </div>
-        <Button onClick={() => navigate("/referrals")} size="lg" className="shadow-md">
+        <Button onClick={() => navigate("/referrals")} size="lg" className="shadow-md w-full md:w-auto">
           <UserPlus className="h-5 w-5 mr-2" />
           Invitar Profesional
         </Button>

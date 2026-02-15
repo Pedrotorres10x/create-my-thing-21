@@ -111,7 +111,7 @@ export function Layout({ children }: LayoutProps) {
               </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 p-6 overflow-auto relative z-10">
+          <main className="flex-1 p-3 sm:p-6 overflow-auto relative z-10">
             {children}
           </main>
         </div>
