@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { ArrowRight, Loader2, Sparkles, Camera, User, Building2, MapPin, FileText } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles, Camera, User, Building2, MapPin, FileText, Rocket, Users, TrendingUp, Shield } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -379,89 +379,129 @@ export function ProfileForm() {
   // MINI FORM: New users — name, phone, referral
   // ==========================================
   if (!hasProfile) {
+    const benefits = [
+      { icon: Users, text: "Tu Tribu de profesionales que te refieren clientes" },
+      { icon: TrendingUp, text: "Genera negocio desde el primer día" },
+      { icon: Shield, text: "Red exclusiva y verificada" },
+    ];
+
     return (
-      <Card className="w-full max-w-md mx-auto border-primary/20 shadow-xl">
-        <CardHeader className="text-center space-y-3">
-          <div className="mx-auto w-14 h-14 rounded-full alicia-gradient flex items-center justify-center">
-            <Sparkles className="h-7 w-7 text-white" />
+      <div className="w-full max-w-lg mx-auto space-y-6 animate-fade-in">
+        {/* Hero headline */}
+        <div className="text-center space-y-3 px-4">
+          <div className="mx-auto w-16 h-16 rounded-2xl alicia-gradient flex items-center justify-center shadow-lg animate-float alicia-glow">
+            <Rocket className="h-8 w-8 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl">Únete a CONECTOR</CardTitle>
-          <CardDescription className="text-base">
-            Solo necesitamos tu nombre y teléfono.<br />
-            <span className="text-primary font-medium">Alic.ia se encargará del resto 😉</span>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="full_name">Nombre Completo *</Label>
-              <Input
-                id="full_name"
-                value={formData.full_name}
-                onChange={(e) => updateField("full_name", e.target.value)}
-                placeholder="Tu nombre y apellidos"
-                required
-                maxLength={100}
-              />
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+            Tu próximo cliente<br />
+            <span className="bg-gradient-to-r from-primary to-ocean bg-clip-text text-transparent">
+              ya está aquí
+            </span>
+          </h1>
+          <p className="text-muted-foreground text-base max-w-sm mx-auto">
+            Entra en la red de generación de negocio más potente. Solo necesitas 30 segundos.
+          </p>
+        </div>
+
+        {/* Social proof pills */}
+        <div className="flex flex-wrap justify-center gap-2 px-4">
+          {benefits.map((b, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-2 rounded-full bg-card border border-border px-4 py-2 text-sm shadow-card animate-slide-up"
+              style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'backwards' }}
+            >
+              <b.icon className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-foreground/80">{b.text}</span>
             </div>
+          ))}
+        </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={user?.email || ""}
-                disabled
-                className="bg-muted"
-              />
-            </div>
+        {/* Form card */}
+        <Card className="border-primary/20 shadow-2xl backdrop-glass overflow-hidden">
+          {/* Decorative top bar */}
+          <div className="h-1.5 w-full alicia-gradient" />
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">Teléfono *</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => updateField("phone", e.target.value)}
-                placeholder="+34 600 000 000"
-                required
-                maxLength={20}
-              />
-            </div>
+          <CardContent className="pt-6 pb-6 px-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="full_name" className="text-sm font-medium">Tu nombre *</Label>
+                <Input
+                  id="full_name"
+                  value={formData.full_name}
+                  onChange={(e) => updateField("full_name", e.target.value)}
+                  placeholder="Nombre y apellidos"
+                  required
+                  maxLength={100}
+                  className="h-12 text-base"
+                  autoFocus
+                />
+              </div>
 
-            {/* Referral code - subtle */}
-            <div className="space-y-2">
-              <Label htmlFor="referred_by_code" className="text-muted-foreground text-xs">¿Te invitó alguien? (Opcional)</Label>
-              <Input
-                id="referred_by_code"
-                type="text"
-                placeholder="Código de quien te invitó"
-                value={formData.referred_by_code}
-                onChange={(e) => updateField("referred_by_code", e.target.value.toUpperCase())}
-                maxLength={8}
-                className="h-9"
-              />
-            </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={user?.email || ""}
+                  disabled
+                  className="h-12 text-base bg-muted/50"
+                />
+              </div>
 
-            <Button type="submit" disabled={loading} className="w-full text-base py-5 gap-2">
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Creando tu cuenta...
-                </>
-              ) : (
-                <>
-                  Empezar con Alic.ia
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </Button>
+              <div className="space-y-1.5">
+                <Label htmlFor="phone" className="text-sm font-medium">Teléfono *</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => updateField("phone", e.target.value)}
+                  placeholder="+34 600 000 000"
+                  required
+                  maxLength={20}
+                  className="h-12 text-base"
+                />
+              </div>
 
-            <p className="text-xs text-center text-muted-foreground">
-              En 30 segundos estarás dentro. Alic.ia te guiará paso a paso para elegir tu profesión, tu Tribu y completar tu perfil.
-            </p>
-          </form>
-        </CardContent>
-      </Card>
+              {/* Referral code — collapsed, subtle */}
+              <div className="space-y-1.5">
+                <Label htmlFor="referred_by_code" className="text-xs text-muted-foreground">¿Te invitó alguien? (Opcional)</Label>
+                <Input
+                  id="referred_by_code"
+                  type="text"
+                  placeholder="Código de invitación"
+                  value={formData.referred_by_code}
+                  onChange={(e) => updateField("referred_by_code", e.target.value.toUpperCase())}
+                  maxLength={8}
+                  className="h-10"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-14 text-lg font-semibold gap-3 mt-2 alicia-gradient hover:opacity-90 transition-opacity shadow-lg"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Preparando todo...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-5 w-5" />
+                    Empezar a generar negocio
+                    <ArrowRight className="h-5 w-5" />
+                  </>
+                )}
+              </Button>
+
+              <p className="text-xs text-center text-muted-foreground pt-1">
+                🔒 Entra gratis · Alic.IA te guiará paso a paso
+              </p>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
