@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Shield, Activity, Heart, AlertTriangle as AlertTriangleIcon, UserCheck, UserX } from "lucide-react";
+import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Shield, Activity, Heart, AlertTriangle as AlertTriangleIcon, UserCheck, UserX, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
@@ -145,6 +145,29 @@ const Admin = () => {
       console.error('Error loading auth users:', err);
     } finally {
       setAuthUsersLoading(false);
+    }
+  };
+
+  const deleteAuthUser = async (userId: string, email: string) => {
+    if (!confirm(`¿Estás seguro de que quieres eliminar al usuario ${email}? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-auth-user', {
+        body: { user_id: userId },
+      });
+      if (error) throw error;
+      toast({
+        title: "Usuario eliminado",
+        description: `${email} ha sido eliminado del sistema`,
+      });
+      loadAuthUsers();
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "No se pudo eliminar el usuario",
+        variant: "destructive",
+      });
     }
   };
 
@@ -947,6 +970,7 @@ const Admin = () => {
                       <TableHead>Email confirmado</TableHead>
                       <TableHead>Perfil profesional</TableHead>
                       <TableHead>Estado</TableHead>
+                      <TableHead>Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -981,6 +1005,16 @@ const Admin = () => {
                           ) : (
                             <Badge variant="secondary">Solo registro</Badge>
                           )}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => deleteAuthUser(u.auth_id, u.email)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
