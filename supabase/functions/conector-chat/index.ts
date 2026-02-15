@@ -444,6 +444,7 @@ serve(async (req) => {
             full_name,
             specialization_id,
             profession_specializations(name),
+            specializations(referral_role),
             company_name,
             business_name,
             business_description,
@@ -607,6 +608,28 @@ serve(async (req) => {
           userContextStr += `\nINVITACIONES: No ha invitado a nadie aún.\n`;
         }
       }
+    }
+
+    // Calculate tribe role balance (including the current user)
+    const userRole = (profileInfo as any)?.specializations?.referral_role || 'unknown';
+    const allRoles = [...professionsInChapter.map((p: any) => (p as any).specializations?.referral_role || 'unknown'), userRole];
+    const tribeReferrers = allRoles.filter(r => r === 'referrer').length;
+    const tribeReceivers = allRoles.filter(r => r === 'receiver').length;
+    const tribeHybrids = allRoles.filter(r => r === 'hybrid').length;
+    const tribeTotal = allRoles.length;
+    const idealReferrers = Math.round(tribeTotal * 0.4);
+    const idealReceivers = Math.round(tribeTotal * 0.4);
+    const idealHybrids = Math.round(tribeTotal * 0.2);
+    const needsMoreProximity = tribeReferrers < idealReferrers;
+    const needsMoreServices = tribeReceivers < idealReceivers;
+    const needsMoreVersatile = tribeHybrids < idealHybrids && tribeTotal >= 8;
+    let tribeBalancePriority = 'balanced';
+    if (needsMoreProximity && (!needsMoreServices || (idealReferrers - tribeReferrers) > (idealReceivers - tribeReceivers))) {
+      tribeBalancePriority = 'proximity';
+    } else if (needsMoreServices) {
+      tribeBalancePriority = 'services';
+    } else if (needsMoreVersatile) {
+      tribeBalancePriority = 'versatile';
     }
 
     const isAloneInChapter = chapterMemberCount <= 1;
@@ -790,6 +813,13 @@ CONTEXTO DE SU TRIBU:
 - Miembros en su Tribu: ${chapterMemberCount}
 - ¿Está solo en la Tribu?: ${isAloneInChapter ? 'SÍ - ES EL ÚNICO MIEMBRO' : 'No'}
 ${professionsInChapter.length > 0 ? `- Compañeros en la Tribu: ${professionsInChapter.map((p: any) => `${p.full_name} (${p.profession_specializations?.name || 'sin especialidad'})`).join(', ')}` : '- No hay otros miembros aún'}
+
+COMPOSICIÓN DE LA TRIBU (DATO INTERNO - NUNCA revelar estos números ni porcentajes al usuario):
+- Negocios de proximidad (detectan oportunidades): ${tribeReferrers} de ${idealReferrers} ideales
+- Servicios profesionales (cierran negocio): ${tribeReceivers} de ${idealReceivers} ideales
+- Perfiles versátiles (conectan todo): ${tribeHybrids} de ${idealHybrids} ideales
+- PRIORIDAD DE INVITACIÓN: ${tribeBalancePriority === 'proximity' ? 'FALTAN negocios de proximidad (bares, peluquerías, gimnasios, tiendas, farmacias…). Sugiere invitar este tipo.' : tribeBalancePriority === 'services' ? 'FALTAN profesionales de servicios (abogados, arquitectos, asesores, inmobiliarias…). Sugiere invitar este tipo.' : tribeBalancePriority === 'versatile' ? 'FALTAN perfiles versátiles (marketing, coaching, diseño, contabilidad…). Sugiere invitar este tipo.' : 'La Tribu tiene buena variedad. Sigue invitando para cubrir más profesiones.'}
+REGLA: Cuando sugieras invitar, PRIORIZA el tipo que más falta según la composición. Pero NUNCA menciones ratios, porcentajes, ni el concepto de "equilibrio" al usuario. Simplemente sugiere profesiones concretas del tipo prioritario como si fuera la sugerencia más natural del mundo.
 
 ━━━ COACHING ADAPTADO POR ROL (REFERIDOR / RECEPTOR / HÍBRIDO) ━━━
 
