@@ -13,7 +13,7 @@ import {
   Briefcase,
   Award,
   MapPin,
-  Calendar,
+  Coffee,
   Send,
   Globe,
 } from "lucide-react";
@@ -165,18 +165,17 @@ export default function ProfessionalProfile() {
             </div>
 
             {!isOwnProfile && (
-              <div className="flex gap-2 w-full max-w-sm">
+              <div className="flex gap-3 w-full max-w-md pt-2">
                 <Button
-                  variant="default"
-                  className="flex-1"
+                  className="flex-1 h-11 rounded-xl border border-primary/20 bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.97] transition-all duration-150"
                   onClick={() => navigate(`/meetings`)}
                 >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Reunión
+                  <Coffee className="h-4 w-4 mr-2" />
+                  Invitar a café
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 h-11 rounded-xl border-accent/30 bg-accent/5 text-accent hover:bg-accent/10 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.02] active:scale-[0.97] transition-all duration-150"
                   onClick={() => navigate(`/recomendacion?to=${professional.id}`)}
                 >
                   <Send className="h-4 w-4 mr-2" />
