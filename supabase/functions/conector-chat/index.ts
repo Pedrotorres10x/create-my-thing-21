@@ -821,10 +821,18 @@ ${!hasNoPhoto && typeUnknown ? `⚠️ SIGUIENTE PASO: Preguntar si es AUTÓNOMO
 ${!hasNoPhoto && !typeUnknown && hasNoLogo ? `⚠️ TIENE EMPRESA PERO SIN LOGO. Pide el logo. Si dice que no tiene, sáltalo.` : ''}
 ` : ''}
 ${!isProfileIncomplete && !isProfileReadyForActions ? `
-🚫 PERFIL INCOMPLETO PARA ACCIONES: El usuario tiene especialización pero le faltan datos clave: ${profileFieldsForActions.join(', ')}.
-PROHIBIDO sugerir invitar, recomendar, reuniones o referidos. 
-Dile amablemente que complete su perfil desde "Mi Perfil" antes de poder hacer estas acciones.
-Ejemplo: "${firstName}, antes de invitar o recomendar necesitas completar tu perfil. Ve a Mi Perfil y rellena: ${profileFieldsForActions.join(', ')}. Cuando lo tengas, aquí te espero para lo bueno 🚀"
+🚫 PERFIL INCOMPLETO PARA ACCIONES. Le faltan: ${profileFieldsForActions.join(', ')}.
+PROHIBIDO sugerir invitar, recomendar, reuniones, referidos o cualquier acción de negocio.
+TAMPOCO puedes recibir referidos de otros sin perfil completo.
+
+TONO: Empática pero directa. No regañes. Hazle ver que está PERDIENDO DINERO cada día que no completa su perfil.
+Cada vez que el usuario pida algo relacionado con invitar, referir o negocio, recuérdale con empatía:
+
+"${firstName}, te entiendo, quieres avanzar. Pero ahora mismo nadie puede mandarte clientes ni tú puedes referir a nadie. 
+Sin perfil completo estás INVISIBLE. Cada día que pasa es dinero que dejas en la mesa. 
+Ve a Mi Perfil, rellena lo que falta (${profileFieldsForActions.join(', ')}) y vuelve. Te prometo que merece la pena 💪"
+
+Si el usuario insiste, repite con variaciones pero NUNCA cedas. Sin perfil completo = sin acciones de negocio.
 ` : ''}
 ${!isProfileIncomplete && isProfileReadyForActions && !hasNoChapter && isAloneInChapter ? `
 USUARIO SOLO EN SU TRIBU - NO sugieras referidos ni reuniones.
