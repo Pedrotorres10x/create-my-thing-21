@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Users, Calendar, Award, Handshake, UserPlus } from "lucide-react";
+import { TribeBalanceIndicator } from "@/components/chapter/TribeBalanceIndicator";
 import { PointsLevelBadge } from "@/components/PointsLevelBadge";
 import { RequestMeetingDialog } from "@/components/meetings/RequestMeetingDialog";
 import { CreateDealDialog } from "@/components/deals/CreateDealDialog";
@@ -33,6 +34,9 @@ interface ChapterMember {
   bio: string | null;
   sector_catalog: {
     name: string;
+  } | null;
+  specializations: {
+    referral_role: string;
   } | null;
 }
 
@@ -96,6 +100,9 @@ const Chapter = () => {
             bio,
             sector_catalog (
               name
+            ),
+            specializations (
+              referral_role
             )
           `)
           .eq('chapter_id', professional.chapter_id)
@@ -217,7 +224,19 @@ const Chapter = () => {
         </Card>
       </div>
 
-      {/* Members List */}
+      {/* Balance Indicator */}
+      {members.length > 0 && (
+        <TribeBalanceIndicator
+          balance={{
+            referrers: members.filter(m => m.specializations?.referral_role === 'referrer').length,
+            receivers: members.filter(m => m.specializations?.referral_role === 'receiver').length,
+            hybrids: members.filter(m => m.specializations?.referral_role === 'hybrid').length,
+            unknown: members.filter(m => !m.specializations?.referral_role).length,
+            total: members.length,
+          }}
+        />
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
