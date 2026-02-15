@@ -415,7 +415,7 @@ serve(async (req) => {
 
       // ===== CONVERSATION PERSISTENCE =====
       // Find or create conversation for this user
-      let activeConversationId = conversationId;
+      activeConversationId = conversationId || null;
       
       if (!activeConversationId) {
         // Find most recent conversation
