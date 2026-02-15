@@ -17,8 +17,8 @@ export const DealsList = ({ professionalId }: DealsListProps) => {
   const fetchDeals = async () => {
     setLoading(true);
     try {
-      const selectFields = "*, receiver:professionals!deals_receiver_id_fkey(full_name), thanks_category_bands(display_label, min_thanks_amount, recommended_thanks_amount, max_thanks_amount), thanks_sectors(name)";
-      const selectFieldsReceived = "*, referrer:professionals!deals_referrer_id_fkey(full_name), thanks_category_bands(display_label, min_thanks_amount, recommended_thanks_amount, max_thanks_amount), thanks_sectors(name)";
+      const selectFields = "*, close_initiated_by, receiver:professionals!deals_receiver_id_fkey(full_name), thanks_category_bands(display_label, min_thanks_amount, recommended_thanks_amount, max_thanks_amount), thanks_sectors(name)";
+      const selectFieldsReceived = "*, close_initiated_by, referrer:professionals!deals_referrer_id_fkey(full_name), thanks_category_bands(display_label, min_thanks_amount, recommended_thanks_amount, max_thanks_amount), thanks_sectors(name)";
 
       const { data: sent } = await (supabase as any)
         .from("deals")

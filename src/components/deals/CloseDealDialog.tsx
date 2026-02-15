@@ -54,22 +54,30 @@ export const CloseDealDialog = ({ open, onOpenChange, dealId, onSuccess }: Close
     if (!band) return;
     setLoading(true);
     try {
+      // Get current user's professional id
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      const { data: myProf } = await (supabase as any)
+        .from("professionals")
+        .select("id")
+        .eq("user_id", currentUser?.id)
+        .single();
+
       const { error } = await (supabase as any)
         .from("deals")
         .update({
-          status: "completed",
-          completed_at: new Date().toISOString(),
+          status: "pending_close",
           thanks_amount_selected: selectedAmount,
           thanks_amount_status: "proposed",
           thanks_proposed_at: new Date().toISOString(),
+          close_initiated_by: myProf?.id,
         })
         .eq("id", dealId);
 
       if (error) throw error;
 
       toast({
-        title: "¡Trato cerrado!",
-        description: `Has propuesto un agradecimiento de ${selectedAmount}€. El recomendador deberá aceptarlo.`,
+        title: "Cierre propuesto",
+        description: `Has propuesto cerrar con ${selectedAmount}€ de agradecimiento. La otra parte debe confirmar.`,
       });
       onOpenChange(false);
       onSuccess?.();

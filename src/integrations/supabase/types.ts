@@ -703,6 +703,7 @@ export type Database = {
       }
       deals: {
         Row: {
+          close_initiated_by: string | null
           commission_amount: number | null
           commission_due_date: string | null
           commission_paid_at: string | null
@@ -730,6 +731,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          close_initiated_by?: string | null
           commission_amount?: number | null
           commission_due_date?: string | null
           commission_paid_at?: string | null
@@ -757,6 +759,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          close_initiated_by?: string | null
           commission_amount?: number | null
           commission_due_date?: string | null
           commission_paid_at?: string | null
@@ -784,6 +787,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "deals_close_initiated_by_fkey"
+            columns: ["close_initiated_by"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_close_initiated_by_fkey"
+            columns: ["close_initiated_by"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "deals_receiver_id_fkey"
             columns: ["receiver_id"]
