@@ -745,8 +745,8 @@ export function AIChat() {
                 <p className="text-sm leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(
                     message.content
-                      .replace(/\[PERFIL:[^\]]*\]/g, '')
-                      .replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '')
+                      .replace(/\[?PERFIL[:\{][^\]\}]*[\]\}]/g, '')
+                      .replace(/\[?CREAR_CONFLICTO[:\{][^\]\}]*[\]\}]/g, '')
                       .replace(/\[PEDIR_FOTO\]/g, '')
                       .replace(/\[PEDIR_LOGO\]/g, '')
                       .replace(/\[IR_A_INVITADOS\]/g, '')
