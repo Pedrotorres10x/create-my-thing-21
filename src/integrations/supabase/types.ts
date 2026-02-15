@@ -332,6 +332,7 @@ export type Database = {
       }
       chapters: {
         Row: {
+          apellido: string | null
           city: string
           country: string
           created_at: string | null
@@ -346,6 +347,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          apellido?: string | null
           city: string
           country?: string
           created_at?: string | null
@@ -360,6 +362,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          apellido?: string | null
           city?: string
           country?: string
           created_at?: string | null

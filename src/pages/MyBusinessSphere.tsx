@@ -24,6 +24,7 @@ interface SphereInfo {
 interface ChapterInfo {
   id: string;
   name: string;
+  apellido: string | null;
   city: string;
   state: string;
   member_count: number;
@@ -75,7 +76,7 @@ export default function MyBusinessSphere() {
         if (professional.chapter_id) {
           const { data: chapter } = await supabase
             .from("chapters")
-            .select("id, name, city, state, member_count, meeting_schedule, location_details")
+            .select("id, name, apellido, city, state, member_count, meeting_schedule, location_details")
             .eq("id", professional.chapter_id)
             .single();
           if (chapter) setChapterInfo(chapter);
@@ -128,7 +129,9 @@ export default function MyBusinessSphere() {
             <span className="text-2xl">🌐</span>
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Mi Tribu</h1>
+            <h1 className="text-3xl font-bold">
+              Mi Tribu{chapterInfo?.apellido ? ` ${chapterInfo.apellido}` : ''}
+            </h1>
             <p className="text-muted-foreground">
               {sphereInfo.name}
               {chapterInfo && (
@@ -157,7 +160,7 @@ export default function MyBusinessSphere() {
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold">{chapterInfo.name}</p>
+              <p className="text-2xl font-bold">{chapterInfo.name}{chapterInfo.apellido ? ` ${chapterInfo.apellido}` : ''}</p>
               <p className="text-xs text-muted-foreground">Tribu</p>
             </CardContent>
           </Card>
