@@ -95,7 +95,7 @@ export function AppSidebar() {
               <NavLink
                 to={item.url}
                 end
-                className={`${linkBase} ${isHighlighted ? "relative z-[95] ring-2 ring-primary ring-offset-2 ring-offset-background animate-pulse shadow-[0_0_20px_hsl(24_90%_52%/0.4)]" : ""}`}
+                className={`${linkBase} ${isHighlighted ? "relative z-[95] ring-2 ring-primary ring-offset-2 ring-offset-background shadow-[0_0_20px_hsl(24_90%_52%/0.3)]" : ""}`}
                 activeClassName={linkActive}
                 onClick={(e) => {
                   if (isHighlighted) {
