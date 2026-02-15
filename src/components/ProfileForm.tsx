@@ -45,6 +45,12 @@ interface Specialization {
   name: string;
 }
 
+interface ProfessionSpecialization {
+  id: number;
+  name: string;
+  specialization_id: number;
+}
+
 export function ProfileForm() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -58,7 +64,9 @@ export function ProfileForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [specializations, setSpecializations] = useState<Specialization[]>([]);
+  const [professionSpecializations, setProfessionSpecializations] = useState<ProfessionSpecialization[]>([]);
   const [selectedSpecializationId, setSelectedSpecializationId] = useState<number | null>(null);
+  const [selectedProfessionSpecId, setSelectedProfessionSpecId] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -89,7 +97,15 @@ export function ProfileForm() {
         .order("name");
       if (data) setSpecializations(data);
     };
+    const loadProfessionSpecializations = async () => {
+      const { data } = await supabase
+        .from("profession_specializations")
+        .select("id, name, specialization_id")
+        .order("name");
+      if (data) setProfessionSpecializations(data);
+    };
     loadSpecializations();
+    loadProfessionSpecializations();
   }, []);
 
   useEffect(() => {
@@ -104,7 +120,7 @@ export function ProfileForm() {
     const checkProfile = async () => {
       const { data } = await (supabase as any)
         .from("professionals")
-        .select("id, full_name, phone, referred_by_code, photo_url, logo_url, position, bio, nif_cif, company_name, company_cif, company_address, business_description, address, city, state, postal_code, country, website, linkedin_url, years_experience, specialization_id")
+        .select("id, full_name, phone, referred_by_code, photo_url, logo_url, position, bio, nif_cif, company_name, company_cif, company_address, business_description, address, city, state, postal_code, country, website, linkedin_url, years_experience, specialization_id, profession_specialization_id")
         .eq("user_id", user.id)
         .maybeSingle();
       
@@ -133,6 +149,7 @@ export function ProfileForm() {
         if (data.photo_url) setPhotoUrl(data.photo_url);
         if (data.logo_url) setLogoUrl(data.logo_url);
         if (data.specialization_id) setSelectedSpecializationId(data.specialization_id);
+        if (data.profession_specialization_id) setSelectedProfessionSpecId(data.profession_specialization_id);
       }
     };
     checkProfile();
@@ -267,6 +284,7 @@ export function ProfileForm() {
         linkedin_url: validated.linkedin_url || null,
         years_experience: validated.years_experience || null,
         specialization_id: selectedSpecializationId,
+        profession_specialization_id: selectedProfessionSpecId,
       };
 
       if (photoUrl) {
@@ -452,18 +470,54 @@ export function ProfileForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="specialization">Profesión / Sector</Label>
+              <Label htmlFor="specialization">Sector</Label>
               <Select
                 value={selectedSpecializationId?.toString() || ""}
-                onValueChange={(val) => setSelectedSpecializationId(val ? parseInt(val) : null)}
+                onValueChange={(val) => {
+                  const newId = val ? parseInt(val) : null;
+                  setSelectedSpecializationId(newId);
+                  setSelectedProfessionSpecId(null); // Reset profession when sector changes
+                }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecciona tu profesión" />
+                  <SelectValue placeholder="Selecciona tu sector" />
                 </SelectTrigger>
                 <SelectContent>
                   {specializations.map((s) => (
                     <SelectItem key={s.id} value={s.id.toString()}>
                       {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="professionSpec">Especialización</Label>
+              <Select
+                value={selectedProfessionSpecId?.toString() || ""}
+                onValueChange={(val) => {
+                  const profSpecId = val ? parseInt(val) : null;
+                  setSelectedProfessionSpecId(profSpecId);
+                  // Auto-set sector from the profession specialization
+                  if (profSpecId) {
+                    const match = professionSpecializations.find(ps => ps.id === profSpecId);
+                    if (match && match.specialization_id !== selectedSpecializationId) {
+                      setSelectedSpecializationId(match.specialization_id);
+                    }
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona tu especialización" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(selectedSpecializationId 
+                    ? professionSpecializations.filter(ps => ps.specialization_id === selectedSpecializationId)
+                    : professionSpecializations
+                  ).map((ps) => (
+                    <SelectItem key={ps.id} value={ps.id.toString()}>
+                      {ps.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
