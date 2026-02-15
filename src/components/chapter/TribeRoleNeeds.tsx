@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle, Target, Star } from 'lucide-react';
+import { CheckCircle, Target, Star, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface SpecNeed {
   type: 'proximity' | 'services' | 'versatile';
@@ -22,6 +24,7 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
   const [needs, setNeeds] = useState<SpecNeed[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!chapterId) {
@@ -196,6 +199,13 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
         <p className="text-xs text-muted-foreground italic pt-1">
           💡 Piensa en tus contactos: ¿quién encaja en estos perfiles? Cada profesión nueva multiplica las oportunidades de negocio para toda la Tribu.
         </p>
+        <Button 
+          onClick={() => navigate('/referrals')} 
+          className="w-full mt-3 gap-2"
+        >
+          Invitar profesional
+          <ArrowRight className="h-4 w-4" />
+        </Button>
       </CardContent>
     </Card>
   );
