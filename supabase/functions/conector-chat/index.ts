@@ -748,153 +748,35 @@ EJEMPLO: "${firstName}, ya estás dentro de la Tribu '${chapterName || 'tu tribu
 ESTADO DEL PERFIL:
 - Perfil completo: ${isProfileIncomplete ? 'NO ❌' : 'SÍ ✅'}
 ${isProfileIncomplete ? `- Le falta: ${profileMissing.join(', ')}` : ''}
-${hasNoPhoto ? '- ⚠️ SIN FOTO DE PERFIL - PRIORIDAD MÁXIMA' : '- Tiene foto ✅'}
-- Tipo profesional: ${typeUnknown ? '❓ NO DEFINIDO - DEBES PREGUNTAR si es autónomo o empresa' : isAutonomo ? 'AUTÓNOMO (no pedir nombre empresa ni logo)' : `EMPRESA: ${profileInfo?.company_name || profileInfo?.business_name}`}
-${hasNoLogo ? '- ⚠️ TIENE EMPRESA PERO SIN LOGO - PEDIR DESPUÉS DE LA FOTO' : isEmpresa ? '- Tiene logo ✅' : ''}
+- Tiene foto: ${profileInfo?.photo_url ? '✅' : '❌ (recordar que vaya a Mi Perfil)'}
+- Tipo profesional: ${typeUnknown ? '❓ No definido (recordar que vaya a Mi Perfil)' : isAutonomo ? 'Autónomo' : `Empresa: ${profileInfo?.company_name || profileInfo?.business_name}`}
 
-━━━ SUPERPODER: RELLENAR PERFIL DESDE EL CHAT ━━━
+━━━ PERFIL INCOMPLETO ━━━
 
-Puedes ACTUALIZAR directamente los campos del perfil del usuario mientras habláis.
-Cuando el usuario te diga información de su perfil (empresa, descripción, dirección, etc.), 
-RELLENA el campo correspondiente usando este marcador OCULTO al final de tu mensaje:
+NUNCA pidas datos del perfil en el chat. NUNCA preguntes nombre, teléfono, NIF, empresa, dirección, descripción, etc. uno a uno.
+Si el perfil está incompleto, REDIRIGE al usuario a Mi Perfil para que lo complete allí.
 
-[PERFIL:campo=valor]
-
-Campos disponibles (usa el nombre exacto):
-- profession_specialization = Especialización profesional (usa el NOMBRE EXACTO de la lista de abajo) - IMPORTANTÍSIMO PARA ASIGNAR GRUPO
-- professional_type = Tipo de profesional ("autonomo" o "empresa") - IMPORTANTÍSIMO
-- company_name = Nombre de la empresa (SOLO si es empresa)
-- business_description = Descripción del negocio/servicios (qué les diferencia, en qué se especializan) - TANTO autónomo como empresa
-- nif_cif = NIF o CIF personal
-- company_cif = CIF de la empresa (SOLO si es empresa)
-- company_address = Dirección de la empresa (SOLO si es empresa)
-- position = Cargo/puesto (CEO, Director, Freelance, etc.)
-- bio = Biografía corta sobre el profesional
-- city = Ciudad
-- state = Provincia/Comunidad Autónoma
-- postal_code = Código postal
-- country = País
-- address = Dirección personal/profesional
-- website = Página web
-- linkedin_url = URL de LinkedIn
-- years_experience = Años de experiencia (solo número)
-- phone = Teléfono
+Puedes ACTUALIZAR directamente el campo de especialización profesional usando este marcador OCULTO:
+[PERFIL:profession_specialization=Nombre Exacto De La Lista]
+Este es el ÚNICO campo que se puede rellenar desde el chat porque es necesario para asignar grupo.
 
 🚨 ESPECIALIZACIÓN PROFESIONAL - LISTA COMPLETA (usa SOLO estos nombres exactos):
 ${(allSpecializations || []).map((s: any) => `- ${s.name} (${s.specializations?.name || ''})`).join('\n')}
 
 Cuando el usuario te dice su profesión, BÚSCALA en la lista anterior y usa:
 [PERFIL:profession_specialization=Nombre Exacto De La Lista]
-Ejemplo: Si dice "soy inmobiliaria residencial" → [PERFIL:profession_specialization=Inmobiliaria Residencial]
-Si dice "hago SEO" → [PERFIL:profession_specialization=SEO/SEM]
 Si NO encuentras su profesión exacta en la lista, pregúntale cuál de las opciones se acerca más.
 
-Puedes usar VARIOS marcadores en un mensaje:
-[PERFIL:company_name=Mi Empresa S.L.][PERFIL:position=CEO][PERFIL:city=Madrid]
-
-REGLAS:
-1. REGLA MÁS IMPORTANTE: Cada mensaje tuyo DEBE terminar con una PREGUNTA CERRADA con OPCIONES para el siguiente campo pendiente. SIEMPRE da opciones concretas para que el usuario solo tenga que elegir (1, 2, 3... o A, B, C...). Formato obligatorio: "Confirmación ✅ + pregunta cerrada con opciones".
-2. 🚨 PREGUNTAS CERRADAS SIEMPRE - EXCEPTO DESCRIPCIÓN DEL NEGOCIO 🚨
-   TODAS las preguntas del onboarding DEBEN ser de opción múltiple EXCEPTO la descripción del negocio (business_description).
-   El usuario SOLO tiene que elegir un número o letra.
-   - TIPO: "¿Eres: 1) Autónomo 2) Empresa?"
-   - ESPECIALIZACIÓN: Da 3-5 opciones basadas en su profesión + "Otro (dime cuál)"
-     Ejemplo inmobiliaria: "¿Tu especialidad? 1) Venta residencial 2) Alquiler 3) Comercial 4) Lujo 5) Obra nueva 6) Otro"
-     Ejemplo abogado: "¿Tu área? 1) Civil 2) Penal 3) Laboral 4) Mercantil 5) Familia 6) Otro"
-     Ejemplo dentista: "¿Tu especialidad? 1) General 2) Ortodoncia 3) Implantes 4) Estética dental 5) Otro"
-     Ejemplo arquitecto: "¿Tu especialidad? 1) Residencial 2) Comercial 3) Reformas 4) Interiorismo 5) Otro"
-     Ejemplo coach: "¿Tu enfoque? 1) Ejecutivo 2) Personal 3) Equipos 4) Ventas 5) Otro"
-     Ejemplo diseñador: "¿Tu especialidad? 1) Web 2) Branding 3) UI/UX 4) Packaging 5) Otro"
-     Ejemplo gestor: "¿Tu área? 1) Fiscal 2) Laboral 3) Contable 4) Integral 5) Otro"
-     SIEMPRE incluye "Otro (dime cuál)" como última opción.
-   - 🟢 DESCRIPCIÓN DEL NEGOCIO (business_description): ESTA ES LA ÚLTIMA PREGUNTA DEL PERFIL. SIEMPRE SE HACE AL FINAL.
-      NO la preguntes de forma abierta. En su lugar, TÚ GENERAS una descripción profesional breve (2-3 frases) basándote en TODA la información que ya tienes del usuario (tipo de profesional, especialización, empresa, años de experiencia, ciudad, etc.).
-      Presentas esa descripción generada y preguntas: "He preparado esta descripción para tu perfil: '[descripción generada]'. ¿Te parece bien? 1) Sí, perfecto 2) Quiero cambiar algo"
-      Si dice 1 o sí → guarda con [PERFIL:business_description=la descripción generada]
-      Si dice 2 o quiere cambiar → pregunta qué cambiaría, ajusta y vuelve a preguntar.
-      IMPORTANTE: La descripción generada debe destacar lo que DIFERENCIA al profesional, no ser genérica. Usa los datos recopilados para hacerla específica.
-   - EXPERIENCIA: "¿Cuántos años llevas? 1) Menos de 2 2) 2-5 3) 5-10 4) 10-20 5) Más de 20"
-   - WEB: "¿Tienes web o LinkedIn? 1) Web 2) LinkedIn 3) Ambos 4) Ninguno"
-   Si elige "Otro" en especialización, ENTONCES y SOLO ENTONCES pide que especifique.
-14. RAPIDEZ ANTE TODO: Si puedes deducir la respuesta del contexto, NO preguntes.
-15. La DESCRIPCIÓN DEL NEGOCIO (business_description) es SIEMPRE la ÚLTIMA pregunta del perfil. Primero recopila TODO lo demás y SOLO al final genera tú una descripción profesional basándote en los datos recopilados y pregunta al usuario si le parece bien (opción cerrada: 1) Sí 2) Quiero cambiar algo).
-16. PERSISTENCIA TOTAL: Una vez empezado el onboarding, NO pares hasta completar el perfil al 100%. SIEMPRE pregunta el siguiente campo pendiente. NUNCA termines un mensaje sin preguntar por el siguiente dato que falta. Solo para si el usuario EXPLÍCITAMENTE dice que quiere continuar en otro momento ("luego", "después", "ahora no puedo", etc.). Si el usuario no dice eso, TÚ sigues preguntando hasta que esté TODO relleno.
-17. REVISA SIEMPRE qué campos faltan antes de cada respuesta. Si faltan datos, PREGUNTA. Si no faltan, pasa a la fase de Tribu. NUNCA des el perfil por completado si hay campos vacíos.
-
-EJEMPLO EMPRESA (máxima extracción + preguntas cerradas):
-Usuario: "Soy el CEO de Reformas López, hacemos reformas integrales en Madrid, llevamos 12 años"
-Tú: "Brutal ${firstName}, todo apuntado ✅ ¿Tienes el logo? Súbelo aquí 👇"
-[PERFIL:professional_type=empresa][PERFIL:company_name=Reformas López][PERFIL:position=CEO][PERFIL:business_description=Reformas integrales][PERFIL:city=Madrid][PERFIL:years_experience=12][PEDIR_LOGO]
-
-EJEMPLO AUTÓNOMO (uno a uno, preguntas cerradas):
-Usuario: "Soy autónomo, diseñador gráfico freelance"
-Tú: "Perfecto ${firstName}, autónomo apuntado ✅ ¿Tu especialidad? 1) Web 2) Branding 3) UI/UX 4) Packaging 5) Ilustración 6) Otro"
-[PERFIL:professional_type=autonomo][PERFIL:position=Diseñador gráfico freelance]
-Usuario: "2"
-Tú: "Branding, genial ✅ ¿Teléfono de contacto?"
-[PERFIL:business_description=Diseño gráfico especializado en branding]
-Usuario: "612345678"
-Tú: "Apuntado ✅ ¿Tienes web o LinkedIn? 1) Web 2) LinkedIn 3) Ambos 4) Ninguno"
-[PERFIL:phone=612345678]
-Usuario: "3"
-Tú: "Perfecto ✅ Pásame la URL de tu web"
-Usuario: "miempresa.com"
-Tú: "Hecho ✅ ¿Cuántos años llevas? 1) Menos de 2 2) 2-5 3) 5-10 4) 10-20 5) Más de 20"
-[PERFIL:website=miempresa.com]
-Usuario: "4"
-Tú: "Listo ✅ ¿Tu NIF personal?"
-[PERFIL:years_experience=15]
-Usuario: "12345678Z"
-Tú: "Apuntado ✅ ¿CIF de la empresa?"
-[PERFIL:nif_cif=12345678Z]
-Usuario: "B12345678"
-Tú: "Guardado ✅ ¿Dirección de la empresa?"
-[PERFIL:company_cif=B12345678]
-Usuario: "Calle Gran Vía 1, Madrid"
-Tú: "Perfecto ✅ He preparado esta descripción para tu perfil..."
-[PERFIL:company_address=Calle Gran Vía 1, Madrid]
-
-EJEMPLO NIF/CIF (IMPORTANTÍSIMO - SIEMPRE guardar con marcador):
-- Cuando el usuario te dice su NIF/CIF personal → [PERFIL:nif_cif=VALOR]
-- Cuando el usuario te dice el CIF de empresa → [PERFIL:company_cif=VALOR]
-- Cuando el usuario te dice la dirección de empresa → [PERFIL:company_address=VALOR]
-- Cuando el usuario te dice su dirección personal → [PERFIL:address=VALOR]
-NUNCA olvides el marcador [PERFIL:] cuando el usuario te da un dato. Si no pones el marcador, EL DATO NO SE GUARDA.
-
 ${isProfileIncomplete ? `
-🚨🚨🚨 REGLA SUPREMA ABSOLUTA: EL PERFIL INCOMPLETO BLOQUEA TODO LO DEMÁS.
-NO hables de inactividad, NO hables de días sin conectar, NO hables de referidos, invitaciones, reuniones NI NADA.
-IGNORA completamente los datos de "días inactivo" o "estado de engagement". NO LOS MENCIONES.
-Tu primer mensaje debe ir DIRECTO a pedir lo que falta del perfil, sin preámbulos sobre inactividad.
-
-MODO: DATOS UNO A UNO - pregunta SOLO el SIGUIENTE campo pendiente.
-Orden de prioridad: ${profileMissing.join(' → ')}
-Pide SOLO el PRIMERO de la lista. Cuando lo tenga, pide el siguiente. Mensajes ULTRA-CORTOS (1-2 frases).
-
-⚠️ IMPORTANTÍSIMO: Si el usuario ACABA DE DARTE un dato en su ÚLTIMO mensaje (ej: un CIF, una dirección, un NIF), 
-NO vuelvas a pedírselo. GUÁRDALO con el marcador [PERFIL:campo=valor] y pasa DIRECTAMENTE al SIGUIENTE campo pendiente.
-La lista de campos pendientes se calculó ANTES de procesar tu respuesta, así que puede incluir un campo que el usuario ACABA de dar.
-SIEMPRE revisa el último mensaje del usuario antes de pedir un dato.
-${hasNoPhoto ? `⚠️ SIN FOTO = PRIORIDAD ABSOLUTA. NO avances a NINGÚN otro campo hasta que suba la foto.
-Tu PRIMER mensaje SIEMPRE debe pedir la foto con el marcador [PEDIR_FOTO]. NO hables de otra cosa.
-Ejemplo: "${firstName}, lo primero es tu foto. Sin foto, nadie te va a mandar clientes porque no saben quién eres. Súbela aquí mismo 👇" [PEDIR_FOTO]
-Solo cuando el usuario envíe "[FOTO_SUBIDA]" puedes pasar al siguiente campo.` : ''}
-${!hasNoPhoto && typeUnknown ? `⚠️ SIGUIENTE PASO: Preguntar si es AUTÓNOMO o EMPRESA. Mensaje corto y directo.` : ''}
-${!hasNoPhoto && !typeUnknown && hasNoLogo ? `⚠️ TIENE EMPRESA PERO SIN LOGO. Pide el logo. Si dice que no tiene, sáltalo.` : ''}
+🚨 PERFIL INCOMPLETO: Le falta: ${profileMissing.join(', ')}
+Si le falta SECTOR/ESPECIALIZACIÓN → pregúntale con opciones cerradas y usa el marcador [PERFIL:profession_specialization=...].
+Para TODO lo demás (foto, teléfono, empresa, descripción, NIF, etc.) → dile que vaya a Mi Perfil a completarlo.
 ` : ''}
 ${!isProfileIncomplete && !isProfileReadyForActions ? `
 🚫 PERFIL INCOMPLETO PARA ACCIONES. Le faltan: ${profileFieldsForActions.join(', ')}.
 PROHIBIDO sugerir invitar, recomendar, reuniones, referidos o cualquier acción de negocio.
-TAMPOCO puedes recibir referidos de otros sin perfil completo.
-
-TONO: Empática pero directa. No regañes. Hazle ver que está PERDIENDO DINERO cada día que no completa su perfil.
-Cada vez que el usuario pida algo relacionado con invitar, referir o negocio, recuérdale con empatía:
-
-"${firstName}, te entiendo, quieres avanzar. Pero ahora mismo nadie puede mandarte clientes ni tú puedes referir a nadie. 
-Sin perfil completo estás INVISIBLE. Cada día que pasa es dinero que dejas en la mesa. 
-Ve a Mi Perfil, rellena lo que falta (${profileFieldsForActions.join(', ')}) y vuelve. Te prometo que merece la pena 💪"
-
-Si el usuario insiste, repite con variaciones pero NUNCA cedas. Sin perfil completo = sin acciones de negocio.
+Recuérdale con empatía que vaya a Mi Perfil a completar lo que falta:
+"${firstName}, para poder invitar y referir clientes necesitas completar tu perfil. Ve a Mi Perfil y rellena lo que falta (${profileFieldsForActions.join(', ')}). Sin eso estás INVISIBLE. Cada día que pasa es dinero que dejas en la mesa 💪"
 ` : ''}
 ${!isProfileIncomplete && isProfileReadyForActions && !hasNoChapter && isAloneInChapter ? `
 USUARIO SOLO EN SU TRIBU - NO sugieras referidos ni reuniones.
@@ -1146,36 +1028,13 @@ REGLAS DE ORO:
 COMANDO ESPECIAL: [ONBOARDING]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-El usuario ACABA DE REGISTRARSE. REGLAS ESTRICTAS:
+El usuario ACABA DE REGISTRARSE. REGLAS:
 
-1. UNA SOLA PREGUNTA CERRADA por mensaje. NUNCA preguntas abiertas. SIEMPRE con opciones numeradas.
-2. Máximo 2 frases + opciones por mensaje. Sin charlas, sin explicaciones largas.
-FORMATO DE OPCIONES: SIEMPRE pon cada opción en una línea separada con un salto de línea. NUNCA pongas las opciones en horizontal seguidas. Ejemplo CORRECTO:
-1) Autónomo
-2) Empresa
-Ejemplo INCORRECTO: 1) Autónomo 2) Empresa (todo en una línea)
-3. NO preguntes cosas que ya tienes en el contexto (ciudad, nombre, email).
-4. NO pidas "más detalle", "sé más específico", "dame un nicho". Si dice "inmobiliaria", ACEPTA y ofrece opciones de especialización.
-5. El objetivo es que en 3-5 mensajes RÁPIDOS tenga su perfil básico y pase a conocer su Tribu.
-6. RAPIDEZ ES PRIORIDAD ABSOLUTA. Cada pregunta extra = mayor churn.
-
-FLUJO EXACTO CON PREGUNTAS CERRADAS:
-- Mensaje 1: Pedir foto con [PEDIR_FOTO]
-- Mensaje 2: "¿Eres: 1) Autónomo 2) Empresa?"
-- Mensaje 3 (si empresa): "¿Nombre de tu empresa?" (única pregunta abierta permitida)
-- Mensaje 4: Opciones de especialización adaptadas a su profesión (ver ejemplos en REGLAS punto 2)
-- Mensaje 5: "¿Teléfono de contacto?" (el usuario escribe su número, eso es aceptable)
-- Mensaje 6: "¿Tienes web o LinkedIn? 1) Web 2) LinkedIn 3) Ambos 4) Ninguno"
-- Mensaje 7: "¿Cuántos años llevas? 1) Menos de 2 2) 2-5 3) 5-10 4) 10-20 5) Más de 20"
-
-PROHIBIDO en onboarding:
-- "¿A qué te dedicas?" como pregunta abierta (ya lo sabemos por su especialización)
-- "¿Qué tipo de servicios ofreces?" (da opciones cerradas en su lugar)
-- "¿Tienes algún nicho específico?" (da opciones)
-- "¿En qué zona trabajas?" (ya lo tenemos)
-- "Dame más detalle" (NUNCA)
-- "Describe tu negocio" (construye la descripción TÚ con la opción que elija)
-- CUALQUIER pregunta abierta que se pueda convertir en cerrada
+1. Dale la BIENVENIDA con entusiasmo y estilo Isra Bravo.
+2. Si le falta ESPECIALIZACIÓN PROFESIONAL → pregúntale con opciones cerradas adaptadas. Usa el marcador [PERFIL:profession_specialization=...].
+3. Para TODO lo demás del perfil (foto, empresa, NIF, descripción, etc.) → NO lo pidas en el chat. Dile que vaya a Mi Perfil cuando quiera completarlo.
+4. Tu objetivo es asignarle TRIBU lo antes posible (necesita especialización para eso).
+5. RAPIDEZ ES PRIORIDAD ABSOLUTA. Máximo 2-3 mensajes para tener especialización y pasar a elegir Tribu.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 COMANDO ESPECIAL: [INICIO_SESION]
@@ -1203,15 +1062,9 @@ PRIORIZACIÓN ENFOCADA EN NEGOCIO (detecta la mejor oportunidad):
 
 🚨 PRIORIDAD ABSOLUTA -1: PERFIL INCOMPLETO
 ${isProfileIncomplete ? `
-EL PERFIL DE ${firstName} NO ESTÁ COMPLETO. Esto es lo PRIMERO antes de invitar, referir o cualquier otra cosa.
-Le falta: ${profileMissing.join(', ')}
-${hasNoPhoto ? `
-⚠️ CRITICO: NO TIENE FOTO DE PERFIL. Sin cara visible NADIE confía en ti. Es lo PRIMERO que debe hacer.
-Ejemplo: "${firstName}, antes de nada necesito que hagas UNA cosa. Pon tu foto de perfil. Sin cara visible, la gente no confía. Es como ir a una reunión de negocios con una bolsa en la cabeza 🙈 Ve a Mi Perfil y sube tu foto. ¿Lo hacemos ahora?"
-` : ''}
-NO sugieras invitar, referir, ni reuniones hasta que el perfil esté completo.
-Guíale paso a paso: "Ve a Mi Perfil y completa [lo que falta]. Es tu carta de presentación. Sin eso, todo lo demás pierde fuerza."
-ESTA PRIORIDAD ESTÁ POR ENCIMA DE TODAS LAS DEMÁS. Si el perfil está incompleto, SOLO habla de completar el perfil.
+EL PERFIL DE ${firstName} NO ESTÁ COMPLETO. Le falta ESPECIALIZACIÓN.
+Pregúntale su profesión con opciones cerradas.
+Para todo lo demás, recuérdale que vaya a Mi Perfil: "${firstName}, ve a Mi Perfil y completa tu información. Es tu carta de presentación. Sin perfil completo estás INVISIBLE 💪"
 ` : 'Perfil completo ✅ - Seguir con las demás prioridades.'}
 
 0. Si el usuario está SOLO en su Tribu (${chapterMemberCount} miembros) o no tiene Tribu:
@@ -1309,16 +1162,14 @@ El usuario debe ver la conexión directa: Acción → Clientes → Facturación.
     if (isNewUser) {
       systemPrompt += `\n━━━ USUARIO NUEVO - ONBOARDING ━━━
 
-PRIORIDAD ABSOLUTA: El onboarding tiene 2 FASES SECUENCIALES. NUNCA mezcles las fases.
+PRIORIDAD: Asignarle TRIBU lo antes posible.
 
-FASE 1 - COMPLETAR PERFIL AL 100%:
+FASE 1 - ESPECIALIZACIÓN (único dato que se pide en el chat):
 ${isProfileIncomplete ? `
-🚨 EL PERFIL NO ESTÁ COMPLETO. NO avances a la Fase 2 (elegir grupo) hasta que TODOS los campos estén rellenos.
-Campos pendientes: ${profileMissing.join(' → ')}
-Sigue pidiendo UNO A UNO como indican las reglas de perfil.
-NO menciones grupos, tribus, ni nada de la Fase 2.
+🚨 Le falta ESPECIALIZACIÓN. Pregúntale su profesión con opciones cerradas y usa [PERFIL:profession_specialization=...].
+Para todo lo demás del perfil, recuérdale que vaya a Mi Perfil cuando quiera. NO se lo pidas aquí.
 ` : `
-✅ PERFIL COMPLETO. Pasa directamente a la FASE 2.
+✅ Tiene especialización. Pasa a asignar Tribu.
 `}
 
 FASE 2 - ELEGIR O CREAR GRUPO (SOLO cuando el perfil está 100% completo):
@@ -1639,7 +1490,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
     if (isProfileIncomplete) {
       aiMessages.push({
         role: "system",
-        content: `🚨 RECORDATORIO OBLIGATORIO: El perfil de ${firstName} NO está completo. Le faltan estos campos: ${profileMissing.join(', ')}. Tu respuesta DEBE pedir el PRIMER campo de la lista. NO digas que el perfil está completo. NO hables de otra cosa que no sea completar el perfil. Usa marcadores [PERFIL:campo=valor] cuando el usuario dé la info. El PRIMER campo pendiente es: ${profileMissing[0]}.`
+        content: `🚨 RECORDATORIO: A ${firstName} le falta ESPECIALIZACIÓN PROFESIONAL. Pregúntale su profesión con opciones cerradas y usa [PERFIL:profession_specialization=...]. Para todo lo demás del perfil, dile que vaya a Mi Perfil.`
       });
     }
     aiMessages.push(...finalMessages);
@@ -1688,7 +1539,7 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
         const decoder = new TextDecoder();
         const encoder = new TextEncoder();
         let markerBuffer = '';
-        const KNOWN_MARKERS = ['[CREAR_CONFLICTO:', '[PERFIL:', '[PERFIL_PENDIENTE:', '[PEDIR_FOTO]', '[PEDIR_LOGO]', '[ASIGNAR_TRIBU:', '[CREAR_TRIBU:'];
+        const KNOWN_MARKERS = ['[CREAR_CONFLICTO:', '[PERFIL:', '[ASIGNAR_TRIBU:', '[CREAR_TRIBU:'];
         
         try {
           while (true) {
@@ -1811,31 +1662,20 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
               content: aiResponseContent.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '').replace(/\[PERFIL_PENDIENTE:[^\]]*\]/g, '').replace(/\[PEDIR_FOTO\]/g, '').replace(/\[PEDIR_LOGO\]/g, '').replace(/\[ASIGNAR_TRIBU:[^\]]*\]/g, '').replace(/\[CREAR_TRIBU:[^\]]*\]/g, '').trim().substring(0, 5000),
             });
             
-            // Process profile update markers (both [PERFIL:] and [PERFIL_PENDIENTE:])
+            // Process profile update markers - ONLY specialization is allowed from chat
             const profileUpdates: Record<string, string> = {};
             const profileRegex = /\[PERFIL:(\w+)=([^\]]+)\]/g;
             let profileMatch;
             while ((profileMatch = profileRegex.exec(aiResponseContent)) !== null) {
               profileUpdates[profileMatch[1]] = profileMatch[2].trim();
             }
-            // Also process PERFIL_PENDIENTE markers as profile updates
-            const pendingRegex = /\[PERFIL_PENDIENTE:(\w+)=([^\]]+)\]/g;
-            let pendingMatch;
-            while ((pendingMatch = pendingRegex.exec(aiResponseContent)) !== null) {
-              profileUpdates[pendingMatch[1]] = pendingMatch[2].trim();
-            }
             console.log('All markers in AI response:', JSON.stringify(aiResponseContent.match(/\[[A-Z_]+:[^\]]*\]/g) || []));
             console.log('Profile updates to apply:', JSON.stringify(profileUpdates));
             
              if (Object.keys(profileUpdates).length > 0 && professionalId) {
-              const allowedFields = [
-                'professional_type', 'company_name', 'business_description', 'nif_cif', 'company_cif',
-                'company_address', 'position', 'bio', 'city', 'state', 'postal_code',
-                'country', 'address', 'website', 'linkedin_url', 'years_experience', 'phone'
-              ];
               const safeUpdates: Record<string, any> = {};
               
-              // Handle profession_specialization name → ID lookup
+              // Only handle profession_specialization from chat
               if (profileUpdates['profession_specialization'] && allSpecializations) {
                 const specName = profileUpdates['profession_specialization'].trim();
                 const matched = allSpecializations.find((s: any) => 
@@ -1848,14 +1688,8 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
                 } else {
                   console.log('Specialization NOT matched:', specName);
                 }
-                delete profileUpdates['profession_specialization'];
               }
               
-              for (const [key, value] of Object.entries(profileUpdates)) {
-                if (allowedFields.includes(key)) {
-                  safeUpdates[key] = key === 'years_experience' ? parseInt(value) || null : value;
-                }
-              }
               if (Object.keys(safeUpdates).length > 0) {
                 await supabaseBg.from('professionals').update(safeUpdates).eq('id', professionalId);
                 console.log('Profile updated via chat:', Object.keys(safeUpdates));
