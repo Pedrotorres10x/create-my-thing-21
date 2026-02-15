@@ -19,6 +19,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SphereNotifications } from "./sphere/SphereNotifications";
 import { PushNotificationToggle } from "./PushNotificationToggle";
+import { MobileSidebarTutorial } from "./MobileSidebarTutorial";
 
 interface LayoutProps {
   children: ReactNode;
@@ -48,6 +49,7 @@ export function Layout({ children }: LayoutProps) {
     <SidebarProvider defaultOpen>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
+        <MobileSidebarTutorial />
         <div className="flex-1 flex flex-col min-w-0 relative">
           {/* Mediterranean coast background */}
           <div 
