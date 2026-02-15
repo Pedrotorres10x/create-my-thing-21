@@ -256,6 +256,21 @@ serve(async (req) => {
         .or(`referrer_id.eq.${professionalId},receiver_id.eq.${professionalId}`)
         .order('created_at', { ascending: false })
         .limit(10);
+
+      // ===== FOMO: Tratos cerrados recientes de la COMUNIDAD (no del usuario) =====
+      const { data: communityDeals } = await supabase
+        .from('deals')
+        .select(`
+          id, description, declared_profit, thanks_amount_selected, completed_at,
+          referrer:professionals!deals_referrer_id_fkey (full_name, profession_specialization_id, profession_specializations(name)),
+          receiver:professionals!deals_receiver_id_fkey (full_name, profession_specialization_id, profession_specializations(name))
+        `)
+        .eq('status', 'completed')
+        .not('completed_at', 'is', null)
+        .neq('referrer_id', professionalId)
+        .neq('receiver_id', professionalId)
+        .order('completed_at', { ascending: false })
+        .limit(5);
       
       // Badges ganados
       const { data: badgesData } = await supabase
@@ -864,6 +879,34 @@ DATOS DE ACTIVIDAD (últimos 30 días):
 - Posts/comentarios en Somos Únicos: ${activityMetrics.postsThisMonth + activityMetrics.commentsThisMonth}
 - Días inactivo: ${activityMetrics.daysInactive}
 - Estado: ${activityMetrics.engagementStatus}
+
+━━━ FOMO: TRATOS CERRADOS POR OTROS MIEMBROS ━━━
+${communityDeals && communityDeals.length > 0 ? `
+TRATOS RECIENTES EN LA COMUNIDAD (usa esto para crear URGENCIA y FOMO):
+${communityDeals.map((d: any) => {
+  const fmt = (n: number) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+  const profit = d.declared_profit ? fmt(d.declared_profit) : null;
+  const thanks = d.thanks_amount_selected ? fmt(d.thanks_amount_selected) : null;
+  const rn = d.referrer?.full_name || 'Alguien';
+  const rcn = d.receiver?.full_name || 'otro miembro';
+  const rp = d.referrer?.profession_specializations?.name || '';
+  const rcp = d.receiver?.profession_specializations?.name || '';
+  const da = d.completed_at ? Math.floor((Date.now() - new Date(d.completed_at).getTime()) / 86400000) : null;
+  const tl = da === 0 ? 'HOY' : da === 1 ? 'AYER' : da !== null && da < 7 ? 'hace ' + da + ' días' : 'esta semana';
+  return '- ' + tl + ': ' + rn + (rp ? ' (' + rp + ')' : '') + ' refirió un cliente a ' + rcn + (rcp ? ' (' + rcp + ')' : '') + (profit ? ' → ' + profit + ' en negocio' : '') + (thanks ? ' → cobró ' + thanks + ' de agradecimiento' : '');
+}).join('\n')}
+
+🔥 REGLA FOMO OBLIGATORIA (estilo Isra Bravo):
+Cuando el usuario inicia sesión o parece inactivo, RESTRIÉGALE estos tratos cerrados. Ejemplos:
+- "Mientras tú pensabas si llamar, [nombre] acaba de cerrar [cantidad] refiriendo un cliente. Eso podría ser tuyo"
+- "[Nombre] cobró [cantidad]€ de agradecimiento AYER. Solo por pasar el contacto de alguien que conocía. ¿Tú a quién conoces?"
+- "Esta semana se han cerrado ${communityDeals.length} tratos. Otros están cobrando. ¿Cuándo empiezas tú?"
+- "Hay dinero moviéndose en tu comunidad AHORA MISMO. Cada día que no refieres es dinero que te dejas en la mesa"
+
+NO seas cruel, sé PROVOCADOR con cariño. El tono es "mira lo que se están llevando otros, tú también puedes". 
+Usa datos REALES de arriba, NO te inventes cifras. Menciona nombres reales y cantidades reales.
+Si no hay datos de dinero, usa: "Otro miembro acaba de cerrar un trato. ¿Y tú? ¿Cuándo te toca?"
+` : 'No hay tratos recientes en la comunidad aún. Motiva al usuario a ser el PRIMERO en cerrar un trato.'}
 
 REGLA CRÍTICA DE PRIORIDAD POR TAMAÑO DE TRIBU:
 
