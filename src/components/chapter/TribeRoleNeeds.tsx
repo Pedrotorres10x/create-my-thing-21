@@ -143,13 +143,12 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
     return `${total}/50 miembros — tu Tribu empieza. Refiere lo que puedas e invita para hacerla crecer rápido.`;
   };
   
-  // Invite visual weight: critical <10, important 10-19, secondary 20-34, minimal 35-49, hidden 50+
-  const getInviteVariant = (): "default" | "outline" | "ghost" => {
+  // Invite visual weight: critical <10, secondary 10+, hidden at 50
+  const getInviteVariant = (): "default" | "outline" | "secondary" => {
     if (total < 10) return 'default';
-    if (total < 20) return 'outline';
-    return 'ghost';
+    return 'outline';
   };
-  const getInviteSize = (): "default" | "sm" => total >= 20 ? 'sm' : 'default';
+  const getInviteSize = (): "default" | "sm" => total >= 35 ? 'sm' : 'default';
 
   if (loading || !chapterId || total === 0) return null;
 
