@@ -208,7 +208,9 @@ serve(async (req) => {
           full_name,
           email,
           status,
-          moderation_blocked
+          moderation_blocked,
+          chapter_id,
+          chapters (member_count)
         )
       `)
       .in('reengagement_stage', ['at_risk', 'inactive', 'dormant'])
@@ -272,7 +274,44 @@ serve(async (req) => {
 
         console.log(`Email sent to ${professional.email}:`, emailResponse);
 
-        // Actualizar última notificación
+        // Contextual push notification: invite if tribe < 10, refer if >= 10
+        const chapterData = Array.isArray(professional.chapters) ? professional.chapters[0] : professional.chapters;
+        const memberCount = chapterData?.member_count || 0;
+        const hasChapter = !!professional.chapter_id;
+        const shouldPrioritizeReferral = hasChapter && memberCount >= 10;
+
+        const pushTitle = shouldPrioritizeReferral
+          ? "💰 Tienes clientes que referir"
+          : hasChapter
+            ? "👥 Tu tribu tiene huecos por cubrir"
+            : "🚀 Únete a una tribu";
+        const pushBody = shouldPrioritizeReferral
+          ? "Refiere un cliente a tu tribu. Cuando cierre el trato, cobras comisión."
+          : hasChapter
+            ? "Invita a un profesional para cubrir los huecos de tu tribu. Más especialidades = más negocio."
+            : "Completa tu perfil y únete a una tribu para empezar a generar negocio.";
+        const pushUrl = shouldPrioritizeReferral ? "/recomendacion" : hasChapter ? "/referrals" : "/dashboard";
+
+        try {
+          await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${supabaseKey}`,
+            },
+            body: JSON.stringify({
+              professional_id: user.professional_id,
+              title: pushTitle,
+              body: pushBody,
+              url: pushUrl,
+              notification_type: shouldPrioritizeReferral ? "reengagement_refer" : "reengagement_invite",
+            }),
+          });
+        } catch {
+          // Push is best-effort
+        }
+
+        // Update last notification
         await supabase
           .from('user_activity_tracking')
           .update({

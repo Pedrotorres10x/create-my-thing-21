@@ -173,7 +173,7 @@ Deno.serve(async (req) => {
               trigger_state: "council_review",
             });
 
-            // Push notification
+            // Push notification to council members
             try {
               await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
                 method: "POST",
@@ -182,10 +182,11 @@ Deno.serve(async (req) => {
                   Authorization: `Bearer ${supabaseServiceKey}`,
                 },
                 body: JSON.stringify({
-                  professionalId: member.id,
+                  professional_id: member.id,
                   title: "⚖️ El Consejo te necesita",
                   body: `Caso de expulsión pendiente: ${prof.full_name}. Tu voto es necesario.`,
                   url: "/ethics-committee",
+                  notification_type: "council_vote",
                 }),
               });
             } catch {
@@ -221,7 +222,7 @@ Deno.serve(async (req) => {
         trigger_state: "inactivity",
       });
 
-      // Push notification
+      // Push notification — contextual: link to /recomendacion since inactivity = no referrals
       try {
         await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
           method: "POST",
@@ -230,14 +231,15 @@ Deno.serve(async (req) => {
             Authorization: `Bearer ${supabaseServiceKey}`,
           },
           body: JSON.stringify({
-            professionalId: prof.id,
+            professional_id: prof.id,
             title: applicableStage.level === 4
               ? "⚖️ Caso elevado a El Consejo"
-              : `⚠️ Aviso de inactividad`,
+              : `⚠️ Llevas ${monthsInactive} meses sin referir`,
             body: applicableStage.level === 4
               ? "Tu caso de inactividad será revisado por El Consejo."
-              : `Llevas ${monthsInactive} meses sin dar referidos. ${6 - monthsInactive} meses para revisión por El Consejo.`,
-            url: "/dashboard",
+              : `Refiere un cliente a alguien de tu tribu y reactívate. Es tu negocio.`,
+            url: "/recomendacion",
+            notification_type: "inactivity_referral",
           }),
         });
       } catch {
