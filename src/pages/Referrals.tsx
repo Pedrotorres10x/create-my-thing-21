@@ -223,6 +223,23 @@ const Referrals = () => {
 
       {professional && <MissingSpecsCard professionalId={professional.id} />}
       {professional && <TribeRoleNeeds chapterId={professional.chapter_id} />}
+      {/* Argumento del efecto multiplicador */}
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+        <CardContent className="pt-6">
+          <div className="flex gap-4 items-start">
+            <div className="bg-primary/10 rounded-full p-3 shrink-0">
+              <Users className="h-6 w-6 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-base">"Ya me recomienda clientes sin la app, ¿para qué invitarle?"</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Tu amigo te pasa clientes, sí. Pero tu amigo tiene <span className="font-semibold text-foreground">otros amigos que tú no conoces</span>. Y esos amigos tienen otros amigos. Cuando tu contacto está en CONECTOR, no solo él te refiere: toda su red se convierte en tu red. Es la diferencia entre recibir clientes de UNA persona o de decenas. <span className="font-semibold text-foreground">Multiplica, no sumes.</span>
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
