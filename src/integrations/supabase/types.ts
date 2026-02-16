@@ -2197,6 +2197,7 @@ export type Database = {
           id: string
           is_chapter_founder: boolean | null
           last_expulsion_at: string | null
+          last_profile_audited_at: string | null
           linkedin: string | null
           linkedin_url: string | null
           logo_url: string | null
@@ -2210,6 +2211,7 @@ export type Database = {
           postal_code: string | null
           profession_specialization_id: number | null
           professional_type: string | null
+          profile_updated_at: string | null
           referral_code: string | null
           referred_by_code: string | null
           registration_type: string | null
@@ -2261,6 +2263,7 @@ export type Database = {
           id?: string
           is_chapter_founder?: boolean | null
           last_expulsion_at?: string | null
+          last_profile_audited_at?: string | null
           linkedin?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
@@ -2274,6 +2277,7 @@ export type Database = {
           postal_code?: string | null
           profession_specialization_id?: number | null
           professional_type?: string | null
+          profile_updated_at?: string | null
           referral_code?: string | null
           referred_by_code?: string | null
           registration_type?: string | null
@@ -2325,6 +2329,7 @@ export type Database = {
           id?: string
           is_chapter_founder?: boolean | null
           last_expulsion_at?: string | null
+          last_profile_audited_at?: string | null
           linkedin?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
@@ -2338,6 +2343,7 @@ export type Database = {
           postal_code?: string | null
           profession_specialization_id?: number | null
           professional_type?: string | null
+          profile_updated_at?: string | null
           referral_code?: string | null
           referred_by_code?: string | null
           registration_type?: string | null
@@ -2400,6 +2406,77 @@ export type Database = {
             columns: ["subscription_plan_id"]
             isOneToOne: false
             referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_audit_logs: {
+        Row: {
+          audit_type: string
+          created_at: string
+          field_name: string | null
+          flagged_content: string | null
+          id: string
+          is_resolved: boolean
+          professional_id: string
+          reason: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+        }
+        Insert: {
+          audit_type: string
+          created_at?: string
+          field_name?: string | null
+          flagged_content?: string | null
+          id?: string
+          is_resolved?: boolean
+          professional_id: string
+          reason?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+        }
+        Update: {
+          audit_type?: string
+          created_at?: string
+          field_name?: string | null
+          flagged_content?: string | null
+          id?: string
+          is_resolved?: boolean
+          professional_id?: string
+          reason?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_audit_logs_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_audit_logs_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_audit_logs_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_audit_logs_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
             referencedColumns: ["id"]
           },
         ]
