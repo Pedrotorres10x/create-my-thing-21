@@ -2497,6 +2497,45 @@ export type Database = {
           },
         ]
       }
+      rate_limit_actions: {
+        Row: {
+          action_type: string
+          content_hash: string | null
+          created_at: string
+          id: string
+          professional_id: string
+        }
+        Insert: {
+          action_type: string
+          content_hash?: string | null
+          created_at?: string
+          id?: string
+          professional_id: string
+        }
+        Update: {
+          action_type?: string
+          content_hash?: string | null
+          created_at?: string
+          id?: string
+          professional_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rate_limit_actions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rate_limit_actions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       red_flag_alerts: {
         Row: {
           admin_notes: string | null
@@ -4462,6 +4501,16 @@ export type Database = {
         Returns: Json
       }
       check_overdue_commissions: { Args: never; Returns: undefined }
+      check_rate_limit: {
+        Args: {
+          _action_type: string
+          _content_hash?: string
+          _max_actions: number
+          _professional_id: string
+          _window_minutes: number
+        }
+        Returns: Json
+      }
       check_reentry_eligibility: {
         Args: { _professional_id: string }
         Returns: Json

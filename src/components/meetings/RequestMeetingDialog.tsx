@@ -26,6 +26,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRateLimiter } from "@/hooks/useRateLimiter";
 
 interface Professional {
   id: string;
@@ -46,6 +47,7 @@ export const RequestMeetingDialog = ({ open, onOpenChange, onSuccess }: RequestM
   const [loading, setLoading] = useState(false);
   const [myProfessionalId, setMyProfessionalId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { checkRateLimit } = useRateLimiter();
 
   const [formData, setFormData] = useState({
     recipient_id: "",
@@ -111,6 +113,16 @@ export const RequestMeetingDialog = ({ open, onOpenChange, onSuccess }: RequestM
     setLoading(true);
 
     try {
+      // Rate limit check
+      if (myProfessionalId) {
+        const allowed = await checkRateLimit(myProfessionalId, 'meeting_request');
+        if (!allowed) {
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Combine date and time
       // Combine date and time
       const meetingDateTime = new Date(formData.meeting_date);
       if (formData.meeting_time) {
