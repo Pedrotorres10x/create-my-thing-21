@@ -254,11 +254,19 @@ export function AIChat() {
       return;
     }
 
-    // Check daily AI message limit
+    // Check daily AI message limit — Alicia responds with humor
     if (!canSendAIMessage) {
-      toast.error("Límite diario alcanzado", {
-        description: "Has usado todos tus mensajes de IA por hoy. Vuelve mañana o mejora tu plan.",
-      });
+      const limitMessages = [
+        "¡Ey! Que yo también necesito descansar 😴 Tengo una cola de profesionales esperándome. ¡Mañana seguimos con todo! 💪",
+        "Me encanta charlar contigo, pero mis neuronas artificiales necesitan recargar 🔋 ¡Nos vemos mañana con energías renovadas!",
+        "¡Para el carro! 😄 Que tengo más CONECTORes que atender. Mañana te dedico toda mi atención, ¿trato hecho? 🤝",
+        "Oye, que me vas a gastar 😂 Descansa tú también, que mañana hay negocio que mover. ¡Hasta mañana! 🌙",
+      ];
+      const randomMsg = limitMessages[Math.floor(Math.random() * limitMessages.length)];
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: randomMsg },
+      ]);
       return;
     }
 
