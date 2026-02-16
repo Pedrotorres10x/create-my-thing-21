@@ -188,7 +188,12 @@ export function TribeRoleNeeds({ chapterId, hideReferAction = false }: TribeRole
           <Button 
             variant={getInviteVariant()}
             size={getInviteSize()}
-            onClick={() => navigate('/referrals')} 
+            onClick={() => {
+              navigate('/referrals#invite-section');
+              setTimeout(() => {
+                document.getElementById('invite-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 100);
+            }} 
             className="w-full gap-2"
           >
             Invitar profesional ({total} miembros)
@@ -251,7 +256,12 @@ export function TribeRoleNeeds({ chapterId, hideReferAction = false }: TribeRole
           <Button 
             variant={getInviteVariant()}
             size={getInviteSize()}
-            onClick={() => navigate('/referrals')} 
+            onClick={() => {
+              navigate('/referrals#invite-section');
+              setTimeout(() => {
+                document.getElementById('invite-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 100);
+            }} 
             className="w-full gap-2"
           >
             Invitar profesional ({total} miembros)
@@ -335,7 +345,12 @@ export function TribeRoleNeeds({ chapterId, hideReferAction = false }: TribeRole
         <Button 
           variant={getInviteVariant()}
           size={getInviteSize()}
-          onClick={() => navigate('/referrals')} 
+          onClick={() => {
+            navigate('/referrals#invite-section');
+            setTimeout(() => {
+              document.getElementById('invite-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+          }} 
           className="w-full gap-2"
         >
           Invitar profesional ({total} miembros)
