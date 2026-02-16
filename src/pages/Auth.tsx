@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { Loader2, Info } from "lucide-react";
+import { Loader2, Info, MailCheck } from "lucide-react";
 import { BackgroundImage } from "@/components/ui/background-image";
 import authBg from "@/assets/auth-background.jpg";
 import { lovable } from "@/integrations/lovable/index";
@@ -20,12 +20,19 @@ const authSchema = z.object({
   fullName: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(100, "Nombre demasiado largo").optional(),
 });
 
+// Rate limiting: max 3 signup attempts per 60 seconds
+const RATE_LIMIT_MAX = 3;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
+  const [honeypot, setHoneypot] = useState(""); // Invisible field for bots
+  const signupAttemptsRef = useRef<number[]>([]); // Timestamps of recent attempts
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -66,13 +73,40 @@ const Auth = () => {
     }
   };
 
+  const isRateLimited = (): boolean => {
+    const now = Date.now();
+    // Remove old attempts outside the window
+    signupAttemptsRef.current = signupAttemptsRef.current.filter(
+      (t) => now - t < RATE_LIMIT_WINDOW_MS
+    );
+    return signupAttemptsRef.current.length >= RATE_LIMIT_MAX;
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Honeypot check — if filled, it's a bot
+    if (honeypot) {
+      // Silently pretend success to confuse the bot
+      setShowEmailConfirmation(true);
+      return;
+    }
+
+    // Rate limiting check
+    if (isRateLimited()) {
+      toast({
+        title: "Demasiados intentos",
+        description: "Por favor, espera un momento antes de intentarlo de nuevo.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     if (!validateForm({ email, password, fullName })) {
       return;
     }
 
+    signupAttemptsRef.current.push(Date.now());
     setLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
@@ -86,21 +120,8 @@ const Auth = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "✅ ¡Registro exitoso!",
-        description: "Iniciando sesión automáticamente...",
-      });
-
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError) throw signInError;
-
-      const refCode = localStorage.getItem('referral_code');
-      navigate(refCode ? `/dashboard?ref=${refCode}` : "/dashboard");
-      if (refCode) localStorage.removeItem('referral_code');
+      // Show email confirmation screen
+      setShowEmailConfirmation(true);
     } catch (error: any) {
       toast({
         title: "❌ Error al registrarse",
@@ -129,6 +150,9 @@ const Auth = () => {
       if (error) {
         if (error.message.includes("Invalid login credentials")) {
           throw new Error("Email o contraseña incorrectos");
+        }
+        if (error.message.includes("Email not confirmed")) {
+          throw new Error("Debes confirmar tu email antes de iniciar sesión. Revisa tu bandeja de entrada.");
         }
         throw error;
       }
@@ -159,7 +183,6 @@ const Auth = () => {
 
       if (result?.error) throw result.error;
       
-      // If not redirected, navigate to dashboard
       if (!result?.redirected) {
         navigate("/dashboard");
       }
@@ -172,6 +195,50 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  // Email confirmation screen
+  if (showEmailConfirmation) {
+    return (
+      <BackgroundImage 
+        imageUrl={authBg}
+        alt="Generación de negocio profesional"
+        overlayOpacity={0.75}
+        overlayColor="hsl(222 47% 11%)"
+        className="min-h-screen"
+      >
+        <div className="flex min-h-screen items-center justify-center p-4">
+          <Card className="w-full max-w-md shadow-2xl backdrop-glass border-primary/20">
+            <CardContent className="pt-8 pb-6 text-center space-y-5">
+              <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                <MailCheck className="h-8 w-8 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold">¡Revisa tu email!</h2>
+                <p className="text-muted-foreground">
+                  Hemos enviado un enlace de confirmación a <strong>{email}</strong>
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Haz clic en el enlace del email para activar tu cuenta y empezar a generar negocio.
+                </p>
+              </div>
+              <div className="pt-2 space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  ¿No lo encuentras? Revisa la carpeta de spam.
+                </p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowEmailConfirmation(false)}
+                  className="w-full"
+                >
+                  Volver al inicio de sesión
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </BackgroundImage>
+    );
+  }
 
   return (
     <BackgroundImage 
@@ -306,6 +373,19 @@ const Auth = () => {
                   <p className="text-xs text-muted-foreground">
                     Mínimo 6 caracteres
                   </p>
+                </div>
+                {/* Honeypot field — invisible to humans, bots fill it */}
+                <div className="absolute -left-[9999px] opacity-0 h-0 overflow-hidden" aria-hidden="true">
+                  <label htmlFor="website">Website</label>
+                  <input
+                    id="website"
+                    name="website"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                  />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (
