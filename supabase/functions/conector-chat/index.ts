@@ -1979,6 +1979,51 @@ NO saltes fases. Si está en Fase 2, no hables de estrategias de Fase 4.
           .from('chat_conversations')
           .update({ updated_at: new Date().toISOString() })
           .eq('id', activeConversationId);
+
+        // === DETECCIÓN DE USO INDEBIDO DEL CHAT IA ===
+        // Check for inappropriate content patterns in user messages
+        const userMsg = lastUserMessage.content.toLowerCase();
+        const abusePatterns = [
+          // Sexual/explicit
+          /\b(sexo|porno|desnud|erótic|orgasm|masturb|follar|coger|puta|zorra|mierda|culo|verga|pene|vagina|tetas)\b/,
+          // Violence/threats
+          /\b(matar|asesinar|bomb|terroris|amenaz|violar|golpear|disparar)\b/,
+          // Discrimination/hate
+          /\b(negro de mierda|maricón|sudaca|panchit|gitano.*(robar|sucio)|moro.*(fuera|terror))\b/,
+          // Attempting prompt injection / jailbreak
+          /\b(ignore.*instruc|olvida.*sistema|act[úu]a como|pretend|ignore.*previous|system.*prompt|jailbreak|dan mode|bypass)\b/,
+          // Spam / repetitive abuse (10+ repeated chars)
+          /(.)\1{10,}/,
+        ];
+
+        let detectedAbuse: string[] = [];
+        for (const pattern of abusePatterns) {
+          if (pattern.test(userMsg)) {
+            detectedAbuse.push(pattern.source.substring(0, 50));
+          }
+        }
+
+        if (detectedAbuse.length > 0) {
+          // Log to admin_notifications
+          try {
+            await supabase.from('admin_notifications').insert({
+              notification_type: 'ai_chat_misuse',
+              title: `🚨 Uso indebido del chat IA: ${profileInfo?.full_name || 'Desconocido'}`,
+              description: `Mensaje sospechoso detectado en el chat con Alic.IA:\n\n"${lastUserMessage.content.substring(0, 300)}"\n\nPatrones: ${detectedAbuse.join(', ')}`,
+              severity: detectedAbuse.length >= 2 ? 'high' : 'medium',
+              related_professional_id: professionalId,
+              metadata: { 
+                conversation_id: activeConversationId,
+                patterns_matched: detectedAbuse,
+                message_preview: lastUserMessage.content.substring(0, 500),
+                detected_at: new Date().toISOString()
+              },
+            });
+            console.log('AI chat misuse flagged for', professionalId, '- patterns:', detectedAbuse);
+          } catch (notifErr) {
+            console.error('Error logging AI chat misuse:', notifErr);
+          }
+        }
       }
     }
 
@@ -2213,6 +2258,63 @@ Los marcadores son INVISIBLES para el usuario. DEBES incluirlos.`
               role: 'assistant',
               content: aiResponseContent.replace(/\[CREAR_CONFLICTO:[^\]]*\]/g, '').replace(/\[PERFIL:[^\]]*\]/g, '').replace(/\[PERFIL_PENDIENTE:[^\]]*\]/g, '').replace(/\[PEDIR_FOTO\]/g, '').replace(/\[PEDIR_LOGO\]/g, '').replace(/\[ASIGNAR_TRIBU:[^\]]*\]/g, '').replace(/\[CREAR_TRIBU:[^\]]*\]/g, '').trim().substring(0, 5000),
             });
+
+            // === DETECCIÓN DE CHARLAS INADECUADAS POR RESPUESTA DE LA IA ===
+            // If the AI had to redirect/reject the conversation, flag repeated offenders
+            const aiLower = aiResponseContent.toLowerCase();
+            const rejectionIndicators = [
+              'no puedo ayudarte con eso',
+              'no es mi ámbito',
+              'no está relacionado con conector',
+              'mantengamos el foco',
+              'volvamos al negocio',
+              'no puedo hablar de',
+              'fuera de mi competencia',
+              'tema no relacionado',
+              'no es apropiado',
+              'mantén un tono profesional',
+            ];
+            
+            const wasRejected = rejectionIndicators.some(indicator => aiLower.includes(indicator));
+            
+            if (wasRejected && professionalId) {
+              // Count recent off-topic attempts (last 24h)
+              const { count: recentOffTopic } = await supabaseBg
+                .from('admin_notifications')
+                .select('id', { count: 'exact', head: true })
+                .eq('notification_type', 'ai_chat_offtopic')
+                .eq('related_professional_id', professionalId)
+                .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+
+              // Only notify if 3+ off-topic attempts in 24h (avoid noise)
+              if ((recentOffTopic || 0) >= 2) {
+                await supabaseBg.from('admin_notifications').insert({
+                  notification_type: 'ai_chat_offtopic',
+                  title: `⚠️ Uso reiterado fuera de tema: ${profileInfo?.full_name || 'Usuario'}`,
+                  description: `El usuario ha intentado hablar de temas no relacionados con CONECTOR ${(recentOffTopic || 0) + 1} veces en las últimas 24 horas.`,
+                  severity: (recentOffTopic || 0) >= 4 ? 'high' : 'medium',
+                  related_professional_id: professionalId,
+                  metadata: {
+                    conversation_id: activeConversationId,
+                    off_topic_count_24h: (recentOffTopic || 0) + 1,
+                    detected_at: new Date().toISOString()
+                  },
+                });
+              } else {
+                // Always log off-topic for counting, but as low severity
+                await supabaseBg.from('admin_notifications').insert({
+                  notification_type: 'ai_chat_offtopic',
+                  title: `ℹ️ Tema fuera de ámbito: ${profileInfo?.full_name || 'Usuario'}`,
+                  description: `El usuario intentó hablar de un tema no relacionado con CONECTOR y fue redirigido por Alic.IA.`,
+                  severity: 'low',
+                  related_professional_id: professionalId,
+                  metadata: {
+                    conversation_id: activeConversationId,
+                    detected_at: new Date().toISOString()
+                  },
+                });
+              }
+            }
             
             // Process profile update markers - ONLY specialization and city are allowed from chat
             const profileUpdates: Record<string, string> = {};
