@@ -125,8 +125,7 @@ serve(async (req) => {
         console.log(`Rewarded ${professional.email} with ${bonusPoints} points`);
         results.rewarded++;
 
-        // Optional: Send notification email
-        // This would require Resend integration similar to send-reengagement-notifications
+        // Reward processed successfully
 
       } catch (error) {
         console.error(`Error processing user ${user.professional_id}:`, error);

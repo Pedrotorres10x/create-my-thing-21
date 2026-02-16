@@ -13,13 +13,22 @@ verify_jwt = true
 [functions.send-referral-notification]
 verify_jwt = true
 
-[functions.detect-payment-evasion]
-verify_jwt = true
-
 [functions.analyze-behavior]
 verify_jwt = true
 
 [functions.analyze-user-activity]
+verify_jwt = true
+
+[functions.generate-smart-suggestions]
+verify_jwt = true
+
+[functions.send-push-notification]
+verify_jwt = true
+
+[functions.delete-auth-user]
+verify_jwt = true
+
+[functions.list-auth-users]
 verify_jwt = true
 
 # Cron job functions use secret validation instead of JWT
@@ -32,17 +41,11 @@ verify_jwt = false
 [functions.track-slot-expiration]
 verify_jwt = false
 
-[functions.generate-smart-suggestions]
-verify_jwt = true
-
 [functions.lovable-algorithm]
 verify_jwt = false
 
 [functions.get-vapid-key]
 verify_jwt = false
-
-[functions.send-push-notification]
-verify_jwt = true
 
 [functions.analyze-red-flags]
 verify_jwt = false
@@ -51,4 +54,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.process-expulsion-votes]
+verify_jwt = false
+
+[functions.rotate-committee]
 verify_jwt = false
