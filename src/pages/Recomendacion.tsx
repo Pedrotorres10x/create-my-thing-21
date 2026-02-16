@@ -66,7 +66,7 @@ export default function Recomendacion() {
           Recomendación
         </h1>
         <p className="text-muted-foreground">
-          Envía un cliente a un miembro de tu tribu. Cuando cierre el trato, cobras tu comisión.
+          Envía un cliente a un miembro de tu tribu. Cuando cierre el trato, recibirás un Agradecimiento.
         </p>
       </div>
 
