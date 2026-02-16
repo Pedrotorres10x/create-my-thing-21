@@ -40,6 +40,30 @@ export function AIChat() {
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/conector-chat`;
   const isStreamingRef = useRef(false);
   const hasInitializedRef = useRef(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const cooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Start cooldown after sending a message
+  const startCooldown = () => {
+    setCooldownSeconds(15);
+    if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
+    cooldownTimerRef.current = setInterval(() => {
+      setCooldownSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(cooldownTimerRef.current!);
+          cooldownTimerRef.current = null;
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
+    };
+  }, []);
 
   // Scroll inteligente: solo si el usuario está cerca del final
   const scrollToBottomIfNeeded = (force = false) => {
@@ -375,6 +399,7 @@ export function AIChat() {
 
       // Increment AI message count after successful response
       await incrementAIMessages();
+      startCooldown();
     } catch (err: any) {
       console.error("Chat error:", err);
       setMessages((prev) => [
@@ -888,17 +913,21 @@ export function AIChat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder="Escribe tu mensaje a Alic.ia..."
-            disabled={isLoading}
+            placeholder={cooldownSeconds > 0 ? `Puedes escribir en ${cooldownSeconds}s...` : "Escribe tu mensaje a Alic.ia..."}
+            disabled={isLoading || cooldownSeconds > 0}
             className="flex-1 bg-background/50 border-primary/30 focus:border-primary focus:ring-primary/30 transition-all rounded-xl text-base shadow-inner backdrop-blur-sm"
           />
           <Button
             onClick={sendMessage}
-            disabled={isLoading || !input.trim()}
+            disabled={isLoading || !input.trim() || cooldownSeconds > 0}
             size="icon"
             className="alicia-gradient hover:opacity-90 transition-opacity shadow-lg alicia-shadow h-10 w-10 rounded-xl"
           >
-            <Send className="h-5 w-5" />
+            {cooldownSeconds > 0 ? (
+              <span className="text-xs font-bold">{cooldownSeconds}</span>
+            ) : (
+              <Send className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </div>
