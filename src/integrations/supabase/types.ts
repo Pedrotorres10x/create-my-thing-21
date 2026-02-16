@@ -2170,6 +2170,8 @@ export type Database = {
         Row: {
           address: string | null
           ai_messages_count: number | null
+          ai_messages_daily_count: number
+          ai_messages_daily_reset_at: string
           ai_messages_reset_at: string | null
           bio: string | null
           birth_date: string | null
@@ -2232,6 +2234,8 @@ export type Database = {
         Insert: {
           address?: string | null
           ai_messages_count?: number | null
+          ai_messages_daily_count?: number
+          ai_messages_daily_reset_at?: string
           ai_messages_reset_at?: string | null
           bio?: string | null
           birth_date?: string | null
@@ -2294,6 +2298,8 @@ export type Database = {
         Update: {
           address?: string | null
           ai_messages_count?: number | null
+          ai_messages_daily_count?: number
+          ai_messages_daily_reset_at?: string
           ai_messages_reset_at?: string | null
           bio?: string | null
           birth_date?: string | null
