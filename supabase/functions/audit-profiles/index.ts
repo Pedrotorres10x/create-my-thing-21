@@ -171,14 +171,50 @@ Si todo está correcto, devuelve: {"issues": []}`
         .eq('id', profile.id);
     }
 
-    // Insert all audit logs at once
+    // Insert all audit logs and create admin notifications
     if (auditLogs.length > 0) {
-      const { error: insertError } = await supabase
+      const { data: insertedLogs, error: insertError } = await supabase
         .from('profile_audit_logs')
-        .insert(auditLogs);
+        .insert(auditLogs)
+        .select('id, professional_id, field_name, flagged_content, severity, reason');
 
       if (insertError) {
         console.error('Error inserting audit logs:', insertError);
+      }
+
+      // Create admin notifications for each flagged profile (grouped)
+      const flaggedByProfessional = new Map<string, typeof auditLogs>();
+      for (const log of auditLogs) {
+        const existing = flaggedByProfessional.get(log.professional_id) || [];
+        existing.push(log);
+        flaggedByProfessional.set(log.professional_id, existing);
+      }
+
+      const notifications: any[] = [];
+      for (const [profId, issues] of flaggedByProfessional) {
+        const profile = allProfiles.find(p => p.id === profId);
+        const issuesSummary = issues.map(i => `• ${i.field_name}: ${i.reason}`).join('\n');
+        const maxSeverity = issues.some(i => i.severity === 'high') ? 'high' 
+          : issues.some(i => i.severity === 'medium') ? 'medium' : 'low';
+
+        notifications.push({
+          notification_type: 'profile_audit',
+          title: `⚠️ Perfil sospechoso: ${profile?.full_name || 'Desconocido'}`,
+          description: `Se detectaron ${issues.length} problema(s) en el perfil:\n${issuesSummary}`,
+          related_professional_id: profId,
+          severity: maxSeverity,
+          metadata: { issues_count: issues.length, fields: issues.map(i => i.field_name) },
+        });
+      }
+
+      if (notifications.length > 0) {
+        const { error: notifError } = await supabase
+          .from('admin_notifications')
+          .insert(notifications);
+
+        if (notifError) {
+          console.error('Error creating admin notifications:', notifError);
+        }
       }
     }
 

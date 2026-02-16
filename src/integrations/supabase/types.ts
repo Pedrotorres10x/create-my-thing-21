@@ -14,6 +14,73 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notifications: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_read: boolean
+          metadata: Json | null
+          notification_type: string
+          read_at: string | null
+          read_by: string | null
+          related_audit_id: string | null
+          related_professional_id: string | null
+          severity: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_read?: boolean
+          metadata?: Json | null
+          notification_type: string
+          read_at?: string | null
+          read_by?: string | null
+          related_audit_id?: string | null
+          related_professional_id?: string | null
+          severity?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_read?: boolean
+          metadata?: Json | null
+          notification_type?: string
+          read_at?: string | null
+          read_by?: string | null
+          related_audit_id?: string | null
+          related_professional_id?: string | null
+          severity?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_notifications_related_audit_id_fkey"
+            columns: ["related_audit_id"]
+            isOneToOne: false
+            referencedRelation: "profile_audit_logs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_notifications_related_professional_id_fkey"
+            columns: ["related_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_notifications_related_professional_id_fkey"
+            columns: ["related_professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           category: string
