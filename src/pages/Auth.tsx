@@ -13,6 +13,7 @@ import { Loader2, Info, MailCheck } from "lucide-react";
 import { BackgroundImage } from "@/components/ui/background-image";
 import authBg from "@/assets/auth-background.jpg";
 import { lovable } from "@/integrations/lovable/index";
+import { useContentModeration } from "@/hooks/useContentModeration";
 
 const authSchema = z.object({
   email: z.string().email("Email inválido").max(255, "Email demasiado largo"),
@@ -35,6 +36,7 @@ const Auth = () => {
   const signupAttemptsRef = useRef<number[]>([]); // Timestamps of recent attempts
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { validateText, isModerating } = useContentModeration();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -109,6 +111,15 @@ const Auth = () => {
     signupAttemptsRef.current.push(Date.now());
     setLoading(true);
     try {
+      // Moderate the name before signup
+      if (fullName) {
+        const nameOk = await validateText(fullName, "Nombre completo");
+        if (!nameOk) {
+          setLoading(false);
+          return;
+        }
+      }
+
       const { error } = await supabase.auth.signUp({
         email,
         password,

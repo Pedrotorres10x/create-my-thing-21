@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useContentModeration } from "@/hooks/useContentModeration";
 
 const miniProfileSchema = z.object({
   full_name: z.string().min(2, "Nombre muy corto").max(100, "Nombre muy largo"),
@@ -60,6 +61,7 @@ interface ProfessionSpecialization {
 export function ProfileForm() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { validateFields, isModerating } = useContentModeration();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
@@ -279,6 +281,13 @@ export function ProfileForm() {
           full_name: formData.full_name,
           phone: formData.phone,
         });
+
+        // Moderate name before saving
+        const { isValid, invalidField } = await validateFields({
+          "Nombre completo": validated.full_name,
+        });
+        if (!isValid) return;
+
         setLoading(true);
 
         const profileData: any = {
@@ -313,6 +322,20 @@ export function ProfileForm() {
           ...formData,
           years_experience: formData.years_experience ? parseInt(formData.years_experience) : null,
         });
+
+        // Moderate text fields before saving
+        const fieldsToModerate: Record<string, string> = {};
+        if (validated.full_name) fieldsToModerate["Nombre completo"] = validated.full_name;
+        if (validated.company_name) fieldsToModerate["Nombre de empresa"] = validated.company_name;
+        if (validated.position) fieldsToModerate["Cargo"] = validated.position;
+        if (validated.bio) fieldsToModerate["Biografía"] = validated.bio;
+        if (validated.business_description) fieldsToModerate["Descripción de negocio"] = validated.business_description;
+
+        if (Object.keys(fieldsToModerate).length > 0) {
+          const { isValid } = await validateFields(fieldsToModerate);
+          if (!isValid) return;
+        }
+
         setLoading(true);
 
         const profileData: any = {
