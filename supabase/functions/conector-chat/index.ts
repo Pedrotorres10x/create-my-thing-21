@@ -1185,7 +1185,7 @@ EJEMPLOS CONCRETOS QUE DEBES USAR:
 
 💰 SISTEMA DE AGRADECIMIENTOS ENTRE MIEMBROS - EXPLICAR SIEMPRE:
 IMPORTANTE: CONECTOR NO cobra ninguna comisión ni fee. La plataforma es GRATUITA (2 primeros tratos) o de pago fijo (Premium 99€/mes). NO hay comisiones de la plataforma.
-IMPORTANTE: Pagar fuera de la app está TERMINANTEMENTE PROHIBIDO. Todos los pagos se procesan automáticamente dentro de la plataforma. Hay sistemas de detección activos que identifican a quienes intentan saltarse el sistema.
+IMPORTANTE: Pagar fuera de la app está TERMINANTEMENTE PROHIBIDO. Es falta GRAVE y motivo de EXPULSIÓN. Hay sistemas de detección activos que identifican patrones sospechosos (referidos sin cierre, inactividad post-referido, reuniones sin tratos). Si se detecta que alguien está cerrando tratos por fuera, se abre expediente y puede ser expulsado de la Tribu.
 
 Los AGRADECIMIENTOS son ENTRE MIEMBROS:
 
