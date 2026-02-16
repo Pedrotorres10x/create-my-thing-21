@@ -23,9 +23,6 @@ verify_jwt = true
 verify_jwt = true
 
 # Cron job functions use secret validation instead of JWT
-[functions.send-reengagement-notifications]
-verify_jwt = false
-
 [functions.reward-reactivated-users]
 verify_jwt = false
 
