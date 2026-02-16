@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import DOMPurify from "dompurify";
+import { useRateLimiter } from "@/hooks/useRateLimiter";
 
 interface Message {
   role: "user" | "assistant";
@@ -35,6 +36,7 @@ export function AIChat() {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const { checkRateLimit } = useRateLimiter();
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/conector-chat`;
   const isStreamingRef = useRef(false);
   const hasInitializedRef = useRef(false);
@@ -265,6 +267,16 @@ export function AIChat() {
         .select('id')
         .eq('user_id', user!.id)
         .single();
+
+      // Rate limit check
+      if (professional?.id) {
+        const allowed = await checkRateLimit(professional.id, 'chat_message', input);
+        if (!allowed) {
+          setIsLoading(false);
+          isStreamingRef.current = false;
+          return;
+        }
+      }
       
       const resp = await fetch(CHAT_URL, {
         method: "POST",

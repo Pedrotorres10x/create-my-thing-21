@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useRateLimiter } from "@/hooks/useRateLimiter";
 
 interface CreateDealDialogProps {
   open: boolean;
@@ -48,6 +49,7 @@ export const CreateDealDialog = ({
   const [loading, setLoading] = useState(false);
   const [loadingSectors, setLoadingSectors] = useState(true);
   const { toast } = useToast();
+  const { checkRateLimit } = useRateLimiter();
 
   useEffect(() => {
     if (open) fetchSectors();
@@ -101,6 +103,14 @@ export const CreateDealDialog = ({
 
     setLoading(true);
     try {
+      // Rate limit check
+      const allowed = await checkRateLimit(referrerId, 'deal_creation', description);
+      if (!allowed) {
+        setLoading(false);
+        return;
+      }
+
+      // Re-compute band to get internal income (stored server-side only)
       // Re-compute band to get internal income (stored server-side only)
       const { data: bandData } = await (supabase as any)
         .rpc("assign_thanks_band", {
