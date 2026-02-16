@@ -230,10 +230,19 @@ const Referrals = () => {
             <div className="bg-primary/10 rounded-full p-3 shrink-0">
               <Users className="h-6 w-6 text-primary" />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <h3 className="font-semibold text-base">"Ya me recomienda clientes sin la app, ¿para qué invitarle?"</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Tu amigo te pasa clientes, sí. Pero tu amigo tiene <span className="font-semibold text-foreground">otros amigos que tú no conoces</span>. Y esos amigos tienen otros amigos. Cuando tu contacto está en CONECTOR, no solo él te refiere: toda su red se convierte en tu red. Es la diferencia entre recibir clientes de UNA persona o de decenas. <span className="font-semibold text-foreground">Multiplica, no sumes.</span>
+                Cada persona tiene una media de <span className="font-semibold text-foreground">2.000 contactos en el móvil</span> (muchos tienen bastantes más). Si solo el 10% son contactos útiles para negocio, eso son <span className="font-semibold text-foreground">200 contactos por persona</span>.
+              </p>
+              <div className="bg-primary/5 rounded-lg p-4 space-y-1.5">
+                <p className="text-sm font-medium text-foreground">Haz las cuentas:</p>
+                <p className="text-sm text-muted-foreground">👤 Tú solo → <span className="font-semibold text-foreground">200 contactos útiles</span></p>
+                <p className="text-sm text-muted-foreground">👥 Invitas a 10 personas → <span className="font-semibold text-foreground">2.000 contactos a tu disposición</span></p>
+                <p className="text-sm text-muted-foreground">🚀 Con 50 en tu Tribu → <span className="font-semibold text-foreground">10.000 contactos trabajando para ti</span></p>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Tu amigo ya te pasa clientes, sí. Pero sus amigos tienen otros amigos que tú <span className="font-semibold text-foreground">ni conoces</span>. En CONECTOR, todos esos contactos están a tu alcance. <span className="font-semibold text-foreground">No sumes. Multiplica.</span>
               </p>
             </div>
           </div>
