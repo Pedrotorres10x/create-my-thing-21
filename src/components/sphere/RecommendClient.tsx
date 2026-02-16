@@ -96,7 +96,7 @@ export const RecommendClient = ({ professionalId, chapterId, sphereId }: Recomme
             Recomendar un cliente
           </CardTitle>
           <CardDescription>
-            Selecciona a un miembro de tu tribu para enviarle un cliente. Cuando el trato se cierre, cobras tu comisión (10% del beneficio).
+            Selecciona a un miembro de tu tribu para enviarle un cliente. Cuando el trato se cierre, recibirás un Agradecimiento.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
