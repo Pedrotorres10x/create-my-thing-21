@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, TrendingDown, Users, AlertTriangle, Activity, Mail, Award } from "lucide-react";
+import { TrendingDown, Users, AlertTriangle, Activity, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -109,26 +108,6 @@ export const EngagementAnalytics = () => {
     }
   };
 
-  const triggerReengagement = async () => {
-    try {
-      const { error } = await supabase.functions.invoke("send-reengagement-notifications");
-      
-      if (error) throw error;
-
-      toast({
-        title: "✅ Notificaciones enviadas",
-        description: "Se han enviado los emails de re-engagement"
-      });
-
-      loadAnalytics();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudieron enviar las notificaciones",
-        variant: "destructive"
-      });
-    }
-  };
 
   const getStageIcon = (stage: string) => {
     switch(stage) {
@@ -245,10 +224,6 @@ export const EngagementAnalytics = () => {
               <Award className="h-5 w-5" />
               Health Score de la Comunidad
             </span>
-            <Button onClick={triggerReengagement} size="sm">
-              <Mail className="h-4 w-4 mr-2" />
-              Enviar Notificaciones
-            </Button>
           </CardTitle>
           <CardDescription>
             Score general de engagement de todos los usuarios
