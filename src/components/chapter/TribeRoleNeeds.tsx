@@ -18,9 +18,11 @@ interface SpecNeed {
 
 interface TribeRoleNeedsProps {
   chapterId: string | null;
+  /** When true, hides the "Referir un cliente" button — use on pages focused solely on invitations */
+  hideReferAction?: boolean;
 }
 
-export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
+export function TribeRoleNeeds({ chapterId, hideReferAction = false }: TribeRoleNeedsProps) {
   const [needs, setNeeds] = useState<SpecNeed[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -136,6 +138,14 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
 
   // Progressive: 50 is optimal, no upper limit
   const getProgressMessage = () => {
+    if (hideReferAction) {
+      // On invite-only pages, don't mention referring
+      if (total >= 50) return `${total} miembros — tamaño óptimo. Sigue sumando profesionales.`;
+      if (total >= 35) return `${total} miembros — casi en el óptimo de 50. Cada nuevo profesional cuenta.`;
+      if (total >= 20) return `${total} miembros — buen tamaño. Sigue invitando para crecer.`;
+      if (total >= 10) return `${total} miembros — ya sois viables. Sigue invitando para maximizar oportunidades.`;
+      return `${total} miembros — tu Tribu empieza. Invita para hacerla crecer rápido.`;
+    }
     if (total >= 50) return `${total} miembros — tamaño óptimo. Refiere y sigue sumando profesionales.`;
     if (total >= 35) return `${total} miembros — casi en el óptimo de 50. Cada referencia cuenta.`;
     if (total >= 20) return `${total} miembros — buen tamaño. Refiere mientras seguís creciendo.`;
@@ -160,19 +170,21 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
           <div className="flex items-center gap-3">
             <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium">Tu Tribu tiene buena variedad — es momento de generar negocio</p>
+              <p className="text-sm font-medium">{hideReferAction ? 'Tu Tribu tiene buena variedad — sigue invitando para crecer' : 'Tu Tribu tiene buena variedad — es momento de generar negocio'}</p>
               <p className="text-xs text-muted-foreground">
                 {getProgressMessage()} ¿A quién conoces que necesite algo?
               </p>
             </div>
           </div>
-          <Button 
-            onClick={() => navigate('/recomendacion')} 
-            className="w-full gap-2"
-          >
-            Referir un cliente
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+          {!hideReferAction && (
+            <Button 
+              onClick={() => navigate('/recomendacion')} 
+              className="w-full gap-2"
+            >
+              Referir un cliente
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          )}
           <Button 
             variant={getInviteVariant()}
             size={getInviteSize()}
@@ -192,20 +204,22 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
             <Target className="h-5 w-5" />
-            Tu Tribu está lista para generar negocio
+            {hideReferAction ? 'Haz crecer tu Tribu' : 'Tu Tribu está lista para generar negocio'}
           </CardTitle>
           <p className="text-xs text-muted-foreground mt-1">
             {getProgressMessage()}
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Button 
-            onClick={() => navigate('/recomendacion')} 
-            className="w-full gap-2"
-          >
-            Referir un cliente
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+          {!hideReferAction && (
+            <Button 
+              onClick={() => navigate('/recomendacion')} 
+              className="w-full gap-2"
+            >
+              Referir un cliente
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          )}
           {total < 35 && needs.length > 0 && (
             <>
               <p className="text-xs text-muted-foreground text-center">
@@ -253,21 +267,23 @@ export function TribeRoleNeeds({ chapterId }: TribeRoleNeedsProps) {
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
           <Target className="h-5 w-5" />
-          Genera negocio y haz crecer tu Tribu
+          {hideReferAction ? 'Haz crecer tu Tribu' : 'Genera negocio y haz crecer tu Tribu'}
         </CardTitle>
         <p className="text-xs text-muted-foreground mt-1">
           {getProgressMessage()}
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
-        {/* Referir siempre es el motor */}
-        <Button 
-          onClick={() => navigate('/recomendacion')} 
-          className="w-full gap-2"
-        >
-          Referir un cliente
-          <ArrowRight className="h-4 w-4" />
-        </Button>
+        {/* Referir siempre es el motor — pero no en página de invitaciones */}
+        {!hideReferAction && (
+          <Button 
+            onClick={() => navigate('/recomendacion')} 
+            className="w-full gap-2"
+          >
+            Referir un cliente
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        )}
 
         {/* Invitar es urgente <10 */}
         {needs.length > 0 && (
