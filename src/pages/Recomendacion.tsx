@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { RecommendClient } from "@/components/sphere/RecommendClient";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Send, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -69,6 +69,53 @@ export default function Recomendacion() {
           Envía un cliente a un miembro de tu tribu. Cuando cierre el trato, cobras tu comisión.
         </p>
       </div>
+
+      {/* Ejemplos reales de cómo funciona */}
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+        <CardContent className="pt-6">
+          <div className="flex gap-4 items-start">
+            <div className="bg-primary/10 rounded-full p-3 shrink-0">
+              <Users className="h-6 w-6 text-primary" />
+            </div>
+            <div className="space-y-3">
+              <h3 className="font-semibold text-base">Así funciona en la vida real:</h3>
+              <div className="space-y-3">
+                <div className="bg-card rounded-lg p-4 border space-y-1">
+                  <p className="text-sm font-medium text-foreground">🔧 El fontanero que factura sin hacer nada</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Un arquitecto de tu tribu reforma una cocina. El cliente necesita fontanero. Te recomienda. 
+                    <span className="font-semibold text-foreground"> Tú cobras sin haber buscado al cliente.</span> El arquitecto gana puntos y comisión.
+                  </p>
+                </div>
+                <div className="bg-card rounded-lg p-4 border space-y-1">
+                  <p className="text-sm font-medium text-foreground">💼 La asesora fiscal que multiplica su agenda</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Un abogado cierra una herencia. Los herederos necesitan asesoría fiscal para declarar. Te envía 3 clientes de golpe. 
+                    <span className="font-semibold text-foreground"> Un solo trato = 3 clientes nuevos para ti.</span>
+                  </p>
+                </div>
+                <div className="bg-card rounded-lg p-4 border space-y-1">
+                  <p className="text-sm font-medium text-foreground">🏠 El agente inmobiliario que cierra en cadena</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Vendes un piso. El comprador necesita hipoteca → recomiendas al bróker. Necesita mudanza → recomiendas a la empresa de tu tribu. Necesita pintar → recomiendas al pintor. 
+                    <span className="font-semibold text-foreground"> Una venta tuya genera 3 comisiones extras.</span>
+                  </p>
+                </div>
+                <div className="bg-card rounded-lg p-4 border space-y-1">
+                  <p className="text-sm font-medium text-foreground">📸 El fotógrafo que cobra mientras duerme</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Haces las fotos de una boda. La novia pregunta por wedding planner para su hermana. Recomiendas al de tu tribu. 
+                    <span className="font-semibold text-foreground"> Tu trabajo de ayer te paga mañana.</span>
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed pt-1">
+                Cada cliente que recomiendas te genera <span className="font-semibold text-foreground">comisión del 10% del beneficio</span> cuando se cierra el trato. Y tú también recibes recomendaciones de todos ellos.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <RecommendClient
         professionalId={professionalId}
