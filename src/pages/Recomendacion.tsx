@@ -110,7 +110,7 @@ export default function Recomendacion() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed pt-1">
-                Cada cliente que recomiendas te genera <span className="font-semibold text-foreground">comisión del 10% del beneficio</span> cuando se cierra el trato. Y tú también recibes recomendaciones de todos ellos.
+                Cuando recomiendas un cliente y se cierra el trato, el profesional que lo recibe te envía un <span className="font-semibold text-foreground">Agradecimiento</span> — un gesto de gratitud que fortalece la relación y la confianza del grupo.
               </p>
             </div>
           </div>
