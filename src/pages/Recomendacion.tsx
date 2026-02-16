@@ -110,7 +110,7 @@ export default function Recomendacion() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed pt-1">
-                Cuando recomiendas un cliente y se cierra el trato, el profesional que lo recibe te envía un <span className="font-semibold text-foreground">Agradecimiento</span> — un gesto de gratitud que fortalece la relación y la confianza del grupo.
+                Cada recomendación que se cierra es <span className="font-semibold text-foreground">dinero que entra en tu cuenta sin haber buscado al cliente</span>. Cuantos más profesionales tengas en tu tribu, más tratos se cierran a tu alrededor — y más Agradecimientos recibes.
               </p>
             </div>
           </div>
