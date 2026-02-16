@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Shield, Activity, Heart, AlertTriangle as AlertTriangleIcon, UserCheck, UserX, Trash2 } from "lucide-react";
+import { CheckCircle, XCircle, Users, Gift, TrendingUp, Loader2, Filter, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Shield, Activity, Heart, AlertTriangle as AlertTriangleIcon, UserCheck, UserX, Trash2, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,7 @@ import { RedFlagsDashboard } from "@/components/admin/RedFlagsDashboard";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LovableEmotionalDashboard } from "@/components/admin/LovableEmotionalDashboard";
 import { ThanksAdminPanel } from "@/components/admin/ThanksAdminPanel";
+import { AICostDashboard } from "@/components/admin/AICostDashboard";
 import { BarChart3 } from "lucide-react";
 
 interface AuthUser {
@@ -581,6 +582,10 @@ const Admin = () => {
             <Heart className="w-4 h-4 mr-2" />
             Agradecimiento
           </TabsTrigger>
+          <TabsTrigger value="ai-costs">
+            <Zap className="w-4 h-4 mr-2" />
+            Coste IA
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard" className="space-y-6">
@@ -1044,6 +1049,10 @@ const Admin = () => {
 
         <TabsContent value="thanks" className="space-y-4">
           <ThanksAdminPanel />
+        </TabsContent>
+
+        <TabsContent value="ai-costs" className="space-y-4">
+          <AICostDashboard />
         </TabsContent>
 
       </Tabs>
