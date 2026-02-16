@@ -110,7 +110,7 @@ export default function Recomendacion() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed pt-1">
-                Cada recomendación que se cierra es <span className="font-semibold text-foreground">dinero que entra en tu cuenta sin haber buscado al cliente</span>. Cuantos más profesionales tengas en tu tribu, más tratos se cierran a tu alrededor — y más Agradecimientos recibes.
+                Cada recomendación que se cierra es <span className="font-semibold text-foreground">dinero que entra en tu cuenta sin haber buscado al cliente</span>. Cuantos más profesionales tengas en tu tribu, más tratos se cierran a tu alrededor — y <span className="font-semibold text-foreground">más dinero entra</span>.
               </p>
             </div>
           </div>
