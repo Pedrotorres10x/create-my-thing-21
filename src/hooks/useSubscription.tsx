@@ -49,7 +49,7 @@ export function useSubscription() {
     queryKey: ["user-subscription", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data: professional, error } = await supabase
+      const { data: professional, error } = await (supabase as any)
         .from("professionals")
         .select(`
           subscription_status,
@@ -57,6 +57,8 @@ export function useSubscription() {
           subscription_ends_at,
           ai_messages_count,
           ai_messages_reset_at,
+          ai_messages_daily_count,
+          ai_messages_daily_reset_at,
           subscription_plans (*)
         `)
         .eq("user_id", user!.id)
@@ -69,8 +71,8 @@ export function useSubscription() {
         status: professional.subscription_status,
         starts_at: professional.subscription_starts_at,
         ends_at: professional.subscription_ends_at,
-        ai_messages_count: professional.ai_messages_count,
-        ai_messages_reset_at: professional.ai_messages_reset_at,
+        ai_messages_count: professional.ai_messages_daily_count ?? professional.ai_messages_count ?? 0,
+        ai_messages_reset_at: professional.ai_messages_daily_reset_at ?? professional.ai_messages_reset_at,
       } as UserSubscription;
     },
   });

@@ -228,6 +228,14 @@ export function AIChat() {
       return;
     }
 
+    // Check daily AI message limit
+    if (!canSendAIMessage) {
+      toast.error("Límite diario alcanzado", {
+        description: "Has usado todos tus mensajes de IA por hoy. Vuelve mañana o mejora tu plan.",
+      });
+      return;
+    }
+
     const accessToken = session.access_token;
 
     const userMessage: Message = { role: "user", content: input };
