@@ -212,13 +212,21 @@ async function generateUserSnapshot(supabase: any, prof: any): Promise<UserSnaps
     .eq("referrer_id", prof.id)
     .gte("created_at", oneDayAgo.toISOString());
 
-  const { count: messages24h } = await supabase
-    .from("chat_messages")
-    .select("*", { count: "exact", head: true })
-    .in("conversation_id", 
-      supabase.from("chat_conversations").select("id").eq("professional_id", prof.id)
-    )
-    .gte("created_at", oneDayAgo.toISOString());
+  // Get conversation IDs first, then count messages
+  const { data: convIds } = await supabase
+    .from("chat_conversations")
+    .select("id")
+    .eq("professional_id", prof.id);
+
+  const conversationIds = (convIds || []).map((c: any) => c.id);
+
+  const { count: messages24h } = conversationIds.length > 0
+    ? await supabase
+        .from("chat_messages")
+        .select("*", { count: "exact", head: true })
+        .in("conversation_id", conversationIds)
+        .gte("created_at", oneDayAgo.toISOString())
+    : { count: 0 };
 
   const { count: marketplaceActions24h } = await supabase
     .from("offer_contacts")
