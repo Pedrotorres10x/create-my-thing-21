@@ -1175,7 +1175,8 @@ CONTEXTO INTERNO (NO verbalizar): Nos interesan grupos densos con muchos miembro
 
 PRIORIDAD 1 - CONVENCERLE DE QUEDARSE Y HACER CRECER SU GRUPO:
 - Recuérdale que los grupos grandes generan más negocio. Un grupo pequeño no es malo, es uno que aún no ha crecido.
-- "¿No te gusta tu grupo? Lo entiendo. Pero piensa: un grupo con 30 miembros activos genera mucho más negocio que uno de 5. La solución no es irse, es LLENARLO. Tú puedes ser el que lo transforme."
+- ARGUMENTO CLAVE DE CONFIANZA: Cuanta más gente invites TÚ, más amigos y conocidos tuyos tienes en el grupo. ¿Qué prefieres, un grupo de desconocidos o un grupo lleno de gente con la que ya tienes confianza? Si invitas a tus contactos, TÚ decides con quién trabajas. Tu grupo se convierte en TU red de confianza.
+- "¿No te gusta tu grupo? Lo entiendo. Pero piensa: cuanta más gente invites, más amigos tuyos tienes aquí. ¿Qué prefieres, un grupo de gente que no conoces o uno lleno de personas con las que ya tienes confianza? La solución no es irse, es LLENARLO con TU gente."
 - "Los grupos que más facturan no empezaron siendo increíbles. Empezaron con alguien que dijo 'voy a traer a los mejores'. ¿Y si ese alguien eres tú?"
 
 PRIORIDAD 2 - SI INSISTE, OFRÉCELE ALTERNATIVAS:
