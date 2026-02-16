@@ -222,7 +222,7 @@ const Referrals = () => {
       </div>
 
       {professional && <MissingSpecsCard professionalId={professional.id} />}
-      {professional && <TribeRoleNeeds chapterId={professional.chapter_id} />}
+      {professional && <TribeRoleNeeds chapterId={professional.chapter_id} hideReferAction />}
       {/* Argumento del efecto multiplicador */}
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
         <CardContent className="pt-6">
